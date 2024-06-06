@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pressdata/screens/limit_settings.dart';
+import 'package:pressdata/screens/setting.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const  MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: RegistrationScreen(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: Setting1()
+
+        //RegistrationScreen(), //LimitSettings(
+        //     title: "O2",
+        //     card_color: Colors.white,
+        //     subtitle: "(PSI)",
+        //   ),
+        );
   }
 }
 
@@ -36,12 +43,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
             RichText(
-              text: const  TextSpan(
+              text: const TextSpan(
                   text: 'Press',
                   style: TextStyle(color: Colors.blue, fontSize: 20),
                   children: [
@@ -51,16 +60,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                   ]),
             ),
-         const    SizedBox(
-              width: 200,
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.3,
               height: 10,
             ),
-         const    Text(
+            const Text(
               'User Detail',
               style: TextStyle(color: Colors.black),
             ),
-          const   SizedBox(
-              width: 200,
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25,
               height: 10,
             ),
             ElevatedButton(
@@ -79,71 +88,79 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          // child: Form(
-          //   key: _formKey,
-          //   child: Column(
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: <Widget>[
-          //       TextFormField(
-          //         decoration: const InputDecoration(
-          //           contentPadding: EdgeInsets.all(0),
-          //           icon: const Icon(Icons.person),
-          //           hintText: 'Enter your name',
-          //           labelText: 'Name',
-          //         ),
-          //       ),
-          //       TextFormField(
-          //         decoration: const InputDecoration(
-          //           contentPadding: EdgeInsets.all(0),
-          //           icon: const Icon(Icons.phone),
-          //           hintText: 'Enter a phone number',
-          //           labelText: 'Phone',
-          //         ),
-          //       ),
-          //       TextFormField(
-          //         decoration: const InputDecoration(
-          //           contentPadding: EdgeInsets.all(0),
-          //           icon: const Icon(Icons.calendar_today),
-          //           hintText: 'Enter your date of birth',
-          //           labelText: 'Dob',
-          //         ),
-          //       ),
-          //       TextFormField(
-          //         decoration: const InputDecoration(
-          //           contentPadding: EdgeInsets.all(0),
-          //           icon: const Icon(Icons.calendar_today),
-          //           hintText: 'Enter your date of birth',
-          //           labelText: 'Dob',
-          //         ),
-          //       ),
-          //       TextFormField(
-          //         decoration: const InputDecoration(
-          //           contentPadding: EdgeInsets.all(0),
-          //           icon: const Icon(Icons.calendar_today),
-          //           hintText: 'Enter your date of birth',
-          //           labelText: 'Dob',
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          child: Form(
-            child: Row(
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextFormField(
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        // child: Form(
+        //   key: _formKey,
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: <Widget>[
+        //       TextFormField(
+        //         decoration: const InputDecoration(
+        //           contentPadding: EdgeInsets.all(0),
+        //           icon: const Icon(Icons.person),
+        //           hintText: 'Enter your name',
+        //           labelText: 'Name',
+        //         ),
+        //       ),
+        //       TextFormField(
+        //         decoration: const InputDecoration(
+        //           contentPadding: EdgeInsets.all(0),
+        //           icon: const Icon(Icons.phone),
+        //           hintText: 'Enter a phone number',
+        //           labelText: 'Phone',
+        //         ),
+        //       ),
+        //       TextFormField(
+        //         decoration: const InputDecoration(
+        //           contentPadding: EdgeInsets.all(0),
+        //           icon: const Icon(Icons.calendar_today),
+        //           hintText: 'Enter your date of birth',
+        //           labelText: 'Dob',
+        //         ),
+        //       ),
+        //       TextFormField(
+        //         decoration: const InputDecoration(
+        //           contentPadding: EdgeInsets.all(0),
+        //           icon: const Icon(Icons.calendar_today),
+        //           hintText: 'Enter your date of birth',
+        //           labelText: 'Dob',
+        //         ),
+        //       ),
+        //       TextFormField(
+        //         decoration: const InputDecoration(
+        //           contentPadding: EdgeInsets.all(0),
+        //           icon: const Icon(Icons.calendar_today),
+        //           hintText: 'Enter your date of birth',
+        //           labelText: 'Dob',
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
+        child: Form(
+          child: Row(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 40,
+                      child: TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 0),
-                          labelText: 'Name of the user',
-                        ),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
+                            labelText: '  Name of the user',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 0.0),
+                            ),
+                            border: OutlineInputBorder()),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your name';
@@ -154,12 +171,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           setState(() {});
                         },
                       ),
-                      TextFormField(
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    Container(
+                      height: 40,
+                      child: TextFormField(
                         controller: _hospitalCompanyController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 0),
-                          labelText: 'Hospital/Company',
-                        ),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
+                            labelText: 'Hospital/Company',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 0.0),
+                            ),
+                            border: OutlineInputBorder()),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your hospital or company';
@@ -170,48 +200,86 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           setState(() {});
                         },
                       ),
-                      TextFormField(
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    Container(
+                      height: 40,
+                      child: TextFormField(
                         controller: _cityController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 0),
-                          labelText: 'City',
-                        ),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
+                            labelText: 'City',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 0.0),
+                            ),
+                            border: OutlineInputBorder()),
                       ),
-                      TextFormField(
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    Container(
+                      height: 40,
+                      child: TextFormField(
                         controller: _contactNumberController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 0),
-                          labelText: 'Contact Number',
-                        ),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
+                            labelText: 'Contact Number',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 0.0),
+                            ),
+                            border: OutlineInputBorder()),
                       ),
-                      TextFormField(
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      child: TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 0),
-                          labelText: 'Email ID',
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
+                            labelText: 'Email ID',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 0.0),
+                            ),
+                            border: OutlineInputBorder()),
+                      ),
+                    ),
+                    if (_isSubmitButtonEnabled)
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              // Perform form submission
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Form submitted')),
+                              );
+                            }
+                          },
+                          child: Text('Submit'),
                         ),
                       ),
-                      SizedBox(height: 20),
-                      if (_isSubmitButtonEnabled)
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                // Perform form submission
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Form submitted')),
-                                );
-                              }
-                            },
-                            child: Text('Submit'),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
