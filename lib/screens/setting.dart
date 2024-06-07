@@ -19,6 +19,14 @@ class Product {
 }
 
 class _Setting1State extends State<Setting1> {
+  bool isMuted = false;
+
+  void toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+    });
+  }
+
   late List<Product> products;
 
   @override
@@ -122,18 +130,32 @@ class _Setting1State extends State<Setting1> {
           ),
         ),
       ),
-      body: Container(
-        height: double.infinity,
-        child: GridView.count(
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 50,
-          crossAxisCount: 2,
-          childAspectRatio: 9 / 2,
-          children: [
-            for (int i = 0; i < products.length; i++)
-              _buildProductCard(products[i], i),
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              height: double.infinity,
+              child: GridView.count(
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 50,
+                crossAxisCount: 2,
+                childAspectRatio: 9 / 2,
+                children: [
+                  for (int i = 0; i < products.length; i++)
+                    _buildProductCard(products[i], i),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: isMuted ? Icon(Icons.volume_off) : Icon(Icons.volume_up),
+            iconSize: 48,
+            onPressed: () {
+              toggleMute();
+              // Perform mute/unmute actions here
+            },
+          ),
+        ],
       ),
     );
   }
