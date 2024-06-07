@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pressdata/screens/limit_settings.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class LineCharWid extends StatefulWidget {
@@ -16,7 +16,6 @@ class ParameterData {
   final String name;
   final Color color;
   int value;
-
   ParameterData(this.name, this.color, this.value);
 }
 
@@ -46,15 +45,35 @@ class _LineCharWidState extends State<LineCharWid> {
         Random().nextInt(100)),
   ];
 
-  List parameterNames = [
-    "O2(1)",
+  // List parameterNames = [
+  //   "O2(1)",
+  //   "VAC",
+  //   "NO2",
+  //   "AIR",
+  //   "CO2",
+  //   "O2(2)",
+  //   "TEMP",
+  //   "HUMI",
+  // ];
+  List<String> parameterNames = [
+    "O₂(1)", // Subscript O₂ for O2(1)
     "VAC",
-    "NO2",
+    "N₂O", // Subscript NO₂ for NO2
     "AIR",
-    "CO2",
-    "O2(2)",
+    "CO₂", // Subscript CO₂ for CO2
+    "O₂(2)", // Subscript O₂ for O2(2)
     "TEMP",
     "HUMI",
+  ];
+  List parameterUnit = [
+    "PSI",
+    "mmHg",
+    "PSI",
+    "PSI",
+    "PSI",
+    "PSI",
+    "°C",
+    "%",
   ];
 
   final List<Color> parameterColors = [
@@ -78,7 +97,18 @@ class _LineCharWidState extends State<LineCharWid> {
     const Color.fromARGB(255, 255, 255, 255),
   ];
   void _navigateToDetailPage(int index) {
-    print('Navigating to detail page for ${parameterNames[index]}');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LimitSettings(
+          title: parameterNames[index],
+          card_color: parameterColors[index],
+          subtitle: parameterUnit[index],
+          Font_color: parameterTextColor[
+              index], // Additional subtitle information if required
+        ),
+      ),
+    );
   }
 
   late StreamController<void> _updateController;
@@ -93,7 +123,7 @@ class _LineCharWidState extends State<LineCharWid> {
       _updateData();
     });
 
-    Timer.periodic(Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
       _updateController.add(null);
     });
   }
@@ -149,7 +179,9 @@ class _LineCharWidState extends State<LineCharWid> {
                 tooltipBehavior: TooltipBehavior(enable: true),
                 legend: Legend(isVisible: true),
                 primaryXAxis: const NumericAxis(
-                  title: AxisTitle(text: 'Reading for Press Data'),
+                  title: AxisTitle(
+                      text: 'Reading for Press Data',
+                      textStyle: TextStyle(fontSize: 10)),
                 ),
                 primaryYAxis: const NumericAxis(
                   title: AxisTitle(text: 'Values'),
@@ -235,7 +267,7 @@ class _LineCharWidState extends State<LineCharWid> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        mainAxisSpacing: 8.0,
+                        mainAxisSpacing: 3.0,
                         crossAxisSpacing: 8.0,
                         childAspectRatio: 1.55 /
                             1, // Adjust the aspect ratio to change card size
@@ -243,9 +275,7 @@ class _LineCharWidState extends State<LineCharWid> {
                       itemCount: 8,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {
-                            _navigateToDetailPage(index);
-                          },
+                          onTap: () => _navigateToDetailPage(index),
                           child: Card(
                             color: parameterColors[index],
                             elevation: 4.0,
@@ -254,21 +284,29 @@ class _LineCharWidState extends State<LineCharWid> {
                                   2.0), // Adjust the padding inside the card
                               child: Column(
                                 children: [
-                                  Center(
-                                    child: Text(
-                                      ' ${parameters[index].value}', // Random number displayed alongside the parameter name
-                                      style: TextStyle(
-                                          color: parameterTextColor[index],
-                                          fontSize:
-                                              25), // Use white text color for contrast
-                                    ),
+                                  Text(
+                                    ' ${parameters[index].value}', // Random number displayed alongside the parameter name
+                                    style: TextStyle(
+                                        color: parameterTextColor[index],
+                                        fontSize: 22,
+                                        fontWeight: FontWeight
+                                            .bold), // Use white text color for contrast
+                                  ),
+                                  Text(
+                                    ' ${parameterUnit[index]}', // Random number displayed alongside the parameter name
+                                    style: TextStyle(
+                                        color: parameterTextColor[index],
+                                        fontSize: 7,
+                                        fontWeight: FontWeight
+                                            .bold), // Use white text color for contrast
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     parameterNames[index],
                                     style: TextStyle(
-                                        color: parameterTextColor[
-                                            index]), // Use white text color for contrast
+                                        color: parameterTextColor[index],
+                                        fontSize:
+                                            12), // Use white text color for contrast
                                   ),
                                 ],
                               ),

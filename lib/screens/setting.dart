@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pressdata/screens/main_page.dart';
 
 class Setting1 extends StatefulWidget {
   Setting1({
@@ -95,8 +97,16 @@ class _Setting1State extends State<Setting1> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_outlined)),
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Dashboard(),
+                ),
+              );
+            },
+            icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
           child: Text(
             "Port Settings",
