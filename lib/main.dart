@@ -4,6 +4,8 @@ import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/screens/report_screen.dart';
 import 'package:pressdata/screens/setting.dart';
 
+import 'screens/limit_settings.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
@@ -16,9 +18,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ReportScreen(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: Dashboard());
   }
 }

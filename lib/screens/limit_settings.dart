@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LimitSettings extends StatefulWidget {
   LimitSettings(
@@ -17,15 +18,35 @@ class _LimitSettingsState extends State<LimitSettings> {
   int maxLimit = 0;
   int minLimit = 0;
 
-  void updateMaxLimit(double value) {
+  @override
+  void initState() {
+    loadData();
+    // TODO: implement initState
+    super.initState();
+  }
+
+  void loadData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     setState(() {
-      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      maxLimit = prefs.getInt('maxLimit') ?? 0;
+      minLimit = prefs.getInt('minLimit') ?? 0;
     });
   }
 
-  void updateMinLimit(double value) {
+  void updateMaxLimit(double value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      prefs.setInt('maxLimit', maxLimit);
+    });
+  }
+
+  void updateMinLimit(double value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
+      prefs.setInt('minLimit', minLimit);
     });
   }
 

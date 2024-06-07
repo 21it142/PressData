@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'package:open_file/open_file.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -8,6 +13,47 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
+  void generatePDF() async {
+    // Generate PDF report based on selected data
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Column(
+              children: [
+                pw.Text('Report for $selectedOption',
+                    style: pw.TextStyle(fontSize: 20)),
+                pw.SizedBox(height: 20),
+                pw.Text('Selected Gases:', style: pw.TextStyle(fontSize: 16)),
+                for (var gas in _selectedItems) pw.Text(gas),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+// Save PDF to local storage
+    final directory = await getDownloadsDirectory();
+    final filePath = '${directory!.path}/example.pdf';
+    final file = File(filePath);
+
+    final pdfBytes = await pdf.save();
+    await file.writeAsBytes(pdfBytes);
+    OpenFile.open(filePath);
+    // Show a message to indicate the file is saved
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF saved to $filePath')),
+    );
+    // Save PDF or display it
+    // For simplicity, saving it to local storage
+    // You can use plugins like path_provider to get the directory
+
+    // For example, you can save it to a file like this:
+    // File('example.pdf').writeAsBytesSync(output);
+  }
+
   List<String> _selectedItems = [];
 
   void _showMultiSelect() async {
@@ -131,7 +177,7 @@ class _ReportScreenState extends State<ReportScreen> {
               }).toList(),
             ),
             SizedBox(
-              height: 60,
+              height: 45,
             ),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -140,7 +186,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: generatePDF,
                 child: Text(
                   "Generate Report",
                   style: TextStyle(

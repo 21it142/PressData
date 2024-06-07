@@ -67,6 +67,11 @@ class _LineCharWidState extends State<LineCharWid> {
     "TEMP",
     "HUMI",
   ];
+  final LinearGradient gradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Colors.blue, Colors.green], // Two colors for the gradient
+  );
 
   final List<Color> parameterColors = [
     Colors.white,
