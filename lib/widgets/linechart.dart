@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pressdata/screens/limit_settings.dart';
@@ -16,6 +17,7 @@ class ParameterData {
   final String name;
   final Color color;
   int value;
+
   ParameterData(this.name, this.color, this.value);
 }
 
@@ -64,6 +66,16 @@ class _LineCharWidState extends State<LineCharWid> {
     "O₂(2)", // Subscript O₂ for O2(2)
     "TEMP",
     "HUMI",
+  ];
+  List parameterUnit = [
+    "PSI",
+    "mmHg",
+    "PSI",
+    "PSI",
+    "PSI",
+    "PSI",
+    "°C",
+    "%",
   ];
 
   final List<Color> parameterColors = [
@@ -265,9 +277,7 @@ class _LineCharWidState extends State<LineCharWid> {
                       itemCount: 8,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {
-                            _navigateToDetailPage(index);
-                          },
+                          onTap: () => _navigateToDetailPage(index),
                           child: Card(
                             color: parameterColors[index],
                             elevation: 4.0,
@@ -276,21 +286,29 @@ class _LineCharWidState extends State<LineCharWid> {
                                   2.0), // Adjust the padding inside the card
                               child: Column(
                                 children: [
-                                  Center(
-                                    child: Text(
-                                      ' ${parameters[index].value}', // Random number displayed alongside the parameter name
-                                      style: TextStyle(
-                                          color: parameterTextColor[index],
-                                          fontSize:
-                                              25), // Use white text color for contrast
-                                    ),
+                                  Text(
+                                    ' ${parameters[index].value}', // Random number displayed alongside the parameter name
+                                    style: TextStyle(
+                                        color: parameterTextColor[index],
+                                        fontSize: 22,
+                                        fontWeight: FontWeight
+                                            .bold), // Use white text color for contrast
+                                  ),
+                                  Text(
+                                    ' ${parameterUnit[index]}', // Random number displayed alongside the parameter name
+                                    style: TextStyle(
+                                        color: parameterTextColor[index],
+                                        fontSize: 7,
+                                        fontWeight: FontWeight
+                                            .bold), // Use white text color for contrast
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     parameterNames[index],
                                     style: TextStyle(
-                                        color: parameterTextColor[
-                                            index]), // Use white text color for contrast
+                                        color: parameterTextColor[index],
+                                        fontSize:
+                                            12), // Use white text color for contrast
                                   ),
                                 ],
                               ),
