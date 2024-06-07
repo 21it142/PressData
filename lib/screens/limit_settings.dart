@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pressdata/screens/main_page.dart';
 
 class LimitSettings extends StatefulWidget {
   LimitSettings(
       {super.key,
       required this.title,
       required this.card_color,
-      required this.subtitle});
+      required this.subtitle,
+      required this.Font_color});
   String title;
   String subtitle;
   Color card_color;
+  Color Font_color;
   @override
   State<LimitSettings> createState() => _LimitSettingsState();
 }
@@ -55,8 +58,16 @@ class _LimitSettingsState extends State<LimitSettings> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_outlined)),
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Dashboard(),
+                ),
+              );
+            },
+            icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
           child: Column(
             children: [
@@ -109,11 +120,13 @@ class _LimitSettingsState extends State<LimitSettings> {
                         children: [
                           Text(
                             '${maxLimit}',
-                            style: TextStyle(fontSize: 31),
+                            style: TextStyle(
+                                fontSize: 31, color: widget.Font_color),
                           ),
                           Text(
                             "Maximum Limit",
-                            style: TextStyle(fontSize: 10),
+                            style: TextStyle(
+                                fontSize: 10, color: widget.Font_color),
                           )
                         ],
                       ),
@@ -150,11 +163,13 @@ class _LimitSettingsState extends State<LimitSettings> {
                         children: [
                           Text(
                             '${minLimit}',
-                            style: TextStyle(fontSize: 31),
+                            style: TextStyle(
+                                fontSize: 31, color: widget.Font_color),
                           ),
                           Text(
                             "Minimum Limit",
-                            style: TextStyle(fontSize: 10),
+                            style: TextStyle(
+                                fontSize: 10, color: widget.Font_color),
                           )
                         ],
                       ),

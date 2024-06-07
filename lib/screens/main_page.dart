@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+//import 'package:get/get.dart';
+import 'package:pressdata/screens/setting.dart';
 import 'package:pressdata/widgets/linechart.dart';
 
 class Dashboard extends StatefulWidget {
@@ -42,7 +44,78 @@ class _DashboardState extends State<Dashboard> {
         toolbarHeight: 15,
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),
       ),
-      body: const LineCharWid(),
+      body: Stack(
+        children: [
+          const LineCharWid(),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 30,
+              color: Colors.grey[200], // Background color of the bar
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // IconButton(
+                  //   icon: const Icon(
+                  //     Icons.report,
+                  //     size: 18, // Icon size
+                  //   ),
+                  //   onPressed: () {
+                  //     // Handle report button press
+                  //   },
+                  // ),
+                  // TextButton(
+                  //   style: ButtonStyle(),
+                  //   onPressed: () {
+                  //     // Handle report button press
+                  //   },
+                  //   child: const Text(
+                  //     'Report',
+                  //     style: TextStyle(fontSize: 12),
+                  //   ),
+                  // ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero, // Square corners
+                      ),
+                      minimumSize:
+                          Size(60, 20), // Set minimum size to maintain height
+                    ),
+                    onPressed: () {
+                      // Handle report button press
+                    },
+                    child: const Text(
+                      'Report',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                  ),
+                  const Text(
+                    'System running ok',
+                    style: TextStyle(fontSize: 12), // Text size
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.settings,
+                      size: 18, // Icon size
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Setting1(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
