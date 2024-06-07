@@ -3,22 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:pressdata/screens/limit_settings.dart';
 import 'package:pressdata/screens/setting.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: Setting1()
-
-        //RegistrationScreen(), //LimitSettings(
-        //     title: "O2",
-        //     card_color: Colors.white,
-        //     subtitle: "(PSI)",
-        //   ),
-        );
-  }
-}
-
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 

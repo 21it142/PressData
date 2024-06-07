@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pressdata/screens/limit_settings.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class LineCharWid extends StatefulWidget {
@@ -47,6 +48,16 @@ class _LineCharWidState extends State<LineCharWid> {
   ];
 
   List parameterNames = [
+    "O2(1)",
+    "VAC",
+    "NO2",
+    "AIR",
+    "CO2",
+    "O2(2)",
+    "TEMP",
+    "HUMI",
+  ];
+  List parameterSubtitles = [
     "O2(1)",
     "VAC",
     "NO2",
@@ -244,7 +255,8 @@ class _LineCharWidState extends State<LineCharWid> {
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
-                            _navigateToDetailPage(index);
+                            // _navigateToDetailPage(index);
+                            //Navigator.push(context, MaterialPageRoute(builder: (context)=>LimitSettings(title: parameterNames[index], card_color: parameterColors[index], subtitle: subtitle)));
                           },
                           child: Card(
                             color: parameterColors[index],
@@ -259,16 +271,17 @@ class _LineCharWidState extends State<LineCharWid> {
                                       ' ${parameters[index].value}', // Random number displayed alongside the parameter name
                                       style: TextStyle(
                                           color: parameterTextColor[index],
-                                          fontSize:
-                                              25), // Use white text color for contrast
+                                          fontSize: 25,
+                                          fontWeight: FontWeight
+                                              .bold), // Use white text color for contrast
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     parameterNames[index],
                                     style: TextStyle(
-                                        color: parameterTextColor[
-                                            index]), // Use white text color for contrast
+                                      color: parameterTextColor[index],
+                                    ), // Use white text color for contrast
                                   ),
                                 ],
                               ),
