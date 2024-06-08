@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pressdata/screens/report_screen.dart';
 //import 'package:get/get.dart';
 import 'package:pressdata/screens/setting.dart';
 import 'package:pressdata/widgets/linechart.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  Dashboard({super.key, required this.maxLlimit, required this.minLlimit});
+  int maxLlimit;
+  int minLlimit;
 
   @override
   State<StatefulWidget> createState() {
@@ -46,7 +49,10 @@ class _DashboardState extends State<Dashboard> {
       ),
       body: Stack(
         children: [
-          const LineCharWid(),
+          LineCharWid(
+            maxLimit: widget.maxLlimit,
+            minLimit: widget.minLlimit,
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -85,7 +91,10 @@ class _DashboardState extends State<Dashboard> {
                           Size(60, 20), // Set minimum size to maintain height
                     ),
                     onPressed: () {
-                      // Handle report button press
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ReportScreen()));
                     },
                     child: const Text(
                       'Report',
@@ -105,7 +114,10 @@ class _DashboardState extends State<Dashboard> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Setting1(),
+                          builder: (context) => Setting1(
+                            max: widget.maxLlimit,
+                            min: widget.minLlimit,
+                          ),
                         ),
                       );
                     },

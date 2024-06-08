@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pressdata/screens/main_page.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -14,14 +15,22 @@ class _ReportScreenState extends State<ReportScreen> {
     // a list of selectable items
     // these items can be hard-coded or dynamically fetched from a database/API
     final List<String> items = [
-      'O2(1)',
-      'VAC',
-      'NO2',
-      'AIR',
-      'CO2',
-      'O2(2)',
-      'TEMP',
-      'HUMI'
+      // 'O2(1)',
+      // 'VAC',
+      // 'NO2',
+      // 'AIR',
+      // 'CO2',
+      // 'O2(2)',
+      // 'TEMP',
+      // 'HUMI'
+      "O₂(1)", // Subscript O₂ for O2(1)
+      "VAC",
+      "N₂O", // Subscript NO₂ for NO2
+      "AIR",
+      "CO₂", // Subscript CO₂ for CO2
+      "O₂(2)", // Subscript O₂ for O2(2)
+      "TEMP",
+      "HUMI",
     ];
 
     final List<String>? results = await showDialog(
@@ -46,8 +55,12 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 145, 248, 248),
       appBar: AppBar(
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_outlined)),
+        leading: IconButton(
+            onPressed: () {
+              // Navigator.push(context,
+              //     MaterialPageRoute(builder: (context) => Dashboard()));
+            },
+            icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
           child: Text(
             "Report",

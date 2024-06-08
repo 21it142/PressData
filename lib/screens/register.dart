@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pressdata/screens/limit_settings.dart';
-import 'package:pressdata/screens/setting.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});

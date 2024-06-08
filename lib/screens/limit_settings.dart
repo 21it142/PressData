@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/widgets/linechart.dart';
 
+// ignore: must_be_immutable
 class LimitSettings extends StatefulWidget {
-  LimitSettings(
-      {super.key,
-      required this.title,
-      required this.card_color,
-      required this.subtitle,
-      required this.Font_color});
+  LimitSettings({
+    super.key,
+    required this.title,
+    required this.card_color,
+    required this.subtitle,
+    required this.Font_color,
+  });
   String title;
   String subtitle;
   Color card_color;
@@ -17,7 +20,7 @@ class LimitSettings extends StatefulWidget {
 }
 
 class _LimitSettingsState extends State<LimitSettings> {
-  int maxLimit = 0;
+  int maxLimit = 100;
   int minLimit = 0;
 
   void updateMaxLimit(double value) {
@@ -39,10 +42,13 @@ class _LimitSettingsState extends State<LimitSettings> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
+              print(maxLimit);
+              print(minLimit);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Dashboard(),
+                  builder: (context) =>
+                      Dashboard(maxLlimit: maxLimit, minLlimit: minLimit),
                 ),
               );
             },
@@ -91,7 +97,7 @@ class _LimitSettingsState extends State<LimitSettings> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: widget.card_color,
@@ -134,7 +140,7 @@ class _LimitSettingsState extends State<LimitSettings> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: widget.card_color,
