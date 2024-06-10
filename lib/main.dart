@@ -8,25 +8,18 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
-  runApp(MyApp(
-    m: 0,
-    mi: 0,
-  ));
+  runApp(MyApp());
 }
 
 // ignore: must_be_immutable
 class MyApp extends StatelessWidget {
-  MyApp({super.key, required this.m, required this.mi});
-  int m;
-  int mi;
+  MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Dashboard(
-        maxLlimit: 0,
-        minLlimit: 0,
-      ),
+      home: Dashboard(),
     );
   }
 }

@@ -6,9 +6,8 @@ import 'package:pressdata/screens/setting.dart';
 import 'package:pressdata/widgets/linechart.dart';
 
 class Dashboard extends StatefulWidget {
-  Dashboard({super.key, required this.maxLlimit, required this.minLlimit});
-  int maxLlimit;
-  int minLlimit;
+  Dashboard({super.key,});
+
 
   @override
   State<StatefulWidget> createState() {
@@ -49,10 +48,7 @@ class _DashboardState extends State<Dashboard> {
       ),
       body: Stack(
         children: [
-          LineCharWid(
-            maxLimit: widget.maxLlimit,
-            minLimit: widget.minLlimit,
-          ),
+          LineCharWid(),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -115,8 +111,6 @@ class _DashboardState extends State<Dashboard> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => Setting1(
-                            max: widget.maxLlimit,
-                            min: widget.minLlimit,
                           ),
                         ),
                       );

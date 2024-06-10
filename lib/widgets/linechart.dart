@@ -3,8 +3,18 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pressdata/screens/limit_settings.dart';
+import 'package:pressdata/screens/Limit%20Setting/AIR.dart';
+import 'package:pressdata/screens/Limit%20Setting/HUMI.dart';
+import 'package:pressdata/screens/Limit%20Setting/N2O.dart';
+import 'package:pressdata/screens/Limit%20Setting/O2.dart';
+import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
+import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:syncfusion_flutter_charts/charts.dart';
+
+import '../screens/Limit Setting/CO2.dart';
+import '../screens/Limit Setting/VAC.dart';
 
 class LiveData {
   LiveData(this.time, this.o2_1, this.vac, this.n2o, this.air, this.co2,
@@ -21,8 +31,7 @@ class LiveData {
 }
 
 class LineCharWid extends StatefulWidget {
-  const LineCharWid({Key? key, required int maxLimit, required int minLimit})
-      : super(key: key);
+  const LineCharWid({Key? key}) : super(key: key);
 
   @override
   State<LineCharWid> createState() => _LineCharWidState();
@@ -46,7 +55,22 @@ class _LineCharWidState extends State<LineCharWid> {
   late ChartSeriesController _chartSeriesController5;
   late ChartSeriesController _chartSeriesController6;
   late ChartSeriesController _chartSeriesController7;
-
+  int? O2_maxLimit;
+  int? O2_minLimit;
+  int? VAC_maxLimit;
+  int? VAC_minLimit;
+  int? N2O_maxLimit;
+  int? N2O_minLimit;
+  int? AIR_maxLimit;
+  int? AIR_minLimit;
+  int? CO2_maxLimit;
+  int? CO2_minLimit;
+  int? O2_2_maxLimit;
+  int? O2_2_minLimit;
+  int? TEMP_maxLimit;
+  int? TEMP_minLimit;
+  int? HUMI_maxLimit;
+  int? HUMI_minLimit;
   List<LiveData> getChartData() {
     return <LiveData>[
       LiveData(
@@ -267,14 +291,14 @@ class _LineCharWidState extends State<LineCharWid> {
     ParameterData(
         "N2O", const Color.fromARGB(255, 0, 34, 145), Random().nextInt(100)),
     ParameterData(
-        "AIR", const Color.fromARGB(255, 195, 0, 0), Random().nextInt(100)),
-    ParameterData("CO2", Colors.blue, Random().nextInt(100)),
-    ParameterData("O2(2)", const Color.fromARGB(255, 198, 230, 255),
+        "AIR", const Color.fromARGB(255, 198, 230, 255), Random().nextInt(100)),
+    ParameterData(
+        "CO2", const Color.fromRGBO(62, 66, 70, 1), Random().nextInt(100)),
+    ParameterData("O2(2)", const Color.fromARGB(255, 255, 255, 255),
         Random().nextInt(100)),
     ParameterData(
-        "TEMP", const Color.fromRGBO(62, 66, 70, 1), Random().nextInt(100)),
-    ParameterData("HUMI", const Color.fromARGB(255, 255, 255, 255),
-        Random().nextInt(100)),
+        "TEMP", const Color.fromARGB(255, 255, 0, 0), Random().nextInt(100)),
+    ParameterData("HUMI", Colors.blue, Random().nextInt(100)),
   ];
 
   List parameterNames = [
@@ -323,19 +347,70 @@ class _LineCharWidState extends State<LineCharWid> {
     const Color.fromARGB(255, 255, 255, 255),
     const Color.fromARGB(255, 255, 255, 255),
   ];
+  void _storeData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
+      O2_minLimit = prefs.getInt('O2_minLimit') ?? 0;
+      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 0;
+      VAC_minLimit = prefs.getInt('VAC_minLimit') ?? 0;
+      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 0;
+      N2O_minLimit = prefs.getInt('N2O_minLimit') ?? 0;
+      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 0;
+      AIR_minLimit = prefs.getInt('AIR_minLimit') ?? 0;
+      CO2_maxLimit = prefs.getInt('CO2_maxLimit') ?? 0;
+      CO2_minLimit = prefs.getInt('CO2_minLimit') ?? 0;
+      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 0;
+      O2_2_minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
+      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 0;
+      TEMP_minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
+      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 0;
+      HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
+    });
+  }
+
   void _navigateToDetailPage(int index) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LimitSettings(
-          title: parameterNames[index],
-          card_color: parameterColors[index],
-          subtitle: parameterUnit[index],
-          Font_color: parameterTextColor[
-              index], // Additional subtitle information if required
-        ),
-      ),
-    );
+    if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => O2()),
+      );
+    } else if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => VAC()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => N2O()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AIR()),
+      );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CO2()),
+      );
+    } else if (index == 5) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => O2_2()),
+      );
+    } else if (index == 6) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => TEMP()),
+      );
+    } else if (index == 7) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HUMI()),
+      );
+    }
   }
 
   late StreamController<void> _updateController;
@@ -348,7 +423,7 @@ class _LineCharWidState extends State<LineCharWid> {
     chartData = getChartData();
     Timer.periodic(Duration(seconds: 1), updateDataSource);
     _updateController = StreamController<void>.broadcast();
-
+    _storeData();
     _streamSubscription = _updateController.stream.listen((_) {
       _updateData();
     });
@@ -361,28 +436,128 @@ class _LineCharWidState extends State<LineCharWid> {
     setState(() {
       parameters = parameters.map((param) {
         if (param.name == "O2(1)") {
-          return ParameterData(param.name, param.color, Random().nextInt(10));
+          int newvalue = Random().nextInt(10);
+          if (newvalue > O2_maxLimit! || newvalue < O2_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(param.name, Colors.white, newvalue);
+          }
         } else if (param.name == "VAC") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 11);
+          int newvalue = Random().nextInt(10) + 11;
+          if (newvalue > VAC_maxLimit! || newvalue < VAC_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(param.name, Colors.yellow, newvalue);
+          }
         } else if (param.name == "N2O") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 21);
+          int newvalue = Random().nextInt(10) + 21;
+          if (newvalue > N2O_maxLimit! || newvalue < N2O_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(
+                param.name, const Color.fromARGB(255, 0, 34, 145), newvalue);
+          }
         } else if (param.name == "AIR") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 31);
+          int newvalue = Random().nextInt(10) + 31;
+          if (newvalue > AIR_maxLimit! || newvalue < AIR_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(
+                param.name, const Color.fromARGB(255, 198, 230, 255), newvalue);
+          }
         } else if (param.name == "CO2") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 41);
+          int newvalue = Random().nextInt(10) + 41;
+          if (newvalue > CO2_maxLimit! || newvalue < CO2_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(
+                param.name, const Color.fromRGBO(62, 66, 70, 1), newvalue);
+          }
         } else if (param.name == "O2(2)") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 51);
+          int newvalue = Random().nextInt(10) + 51;
+          if (newvalue > O2_2_maxLimit! || newvalue < O2_2_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(param.name, Colors.white, newvalue);
+          }
         } else if (param.name == "TEMP") {
-          return ParameterData(
-              param.name, param.color, Random().nextInt(10) + 61);
+          int newvalue = Random().nextInt(10) + 61;
+          if (newvalue > TEMP_maxLimit! || newvalue < TEMP_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: const Duration(milliseconds: 550),
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(
+                param.name, const Color.fromARGB(255, 195, 0, 0), newvalue);
+          }
+        } else {
+          int newvalue = Random().nextInt(10) + 71;
+          if (newvalue > HUMI_maxLimit! || newvalue < HUMI_minLimit!) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${param.name} is not in range!'),
+                ),
+              );
+            });
+            return ParameterData(param.name, Colors.red, newvalue);
+          } else {
+            return ParameterData(param.name, Colors.blue, newvalue);
+          }
         }
-        return ParameterData(
-            param.name, param.color, Random().nextInt(10) + 71);
       }).toList();
     });
   }
@@ -571,11 +746,12 @@ class _LineCharWidState extends State<LineCharWid> {
                         return GestureDetector(
                           onTap: () => _navigateToDetailPage(index),
                           child: Card(
-                            color: parameterColors[index],
+                            color: parameters[index].color,
                             elevation: 4.0,
                             child: Container(
+                            
                               decoration: BoxDecoration(
-                                color: parameterColors[index],
+                                color: parameters[index].color,
                                 gradient: index == 3
                                     ? const LinearGradient(
                                         colors: [

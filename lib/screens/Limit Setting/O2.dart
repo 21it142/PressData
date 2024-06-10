@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pressdata/screens/main_page.dart';
-//import 'package:pressdata/widgets/linechart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// ignore: must_be_immutable
-class LimitSettings extends StatefulWidget {
-  LimitSettings({
-    super.key,
-    required this.title,
-    required this.card_color,
-    required this.subtitle,
-    required this.Font_color,
-  });
-  String title;
-  String subtitle;
-  Color card_color;
-  Color Font_color;
+class O2 extends StatefulWidget {
+  const O2({super.key});
+
   @override
-  State<LimitSettings> createState() => _LimitSettingsState();
+  State<O2> createState() => _O2State();
 }
 
-class _LimitSettingsState extends State<LimitSettings> {
-  int maxLimit = 100;
+class _O2State extends State<O2> {
+  int maxLimit = 0;
   int minLimit = 0;
-
   @override
   void initState() {
     loadData();
@@ -35,8 +23,8 @@ class _LimitSettingsState extends State<LimitSettings> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('maxLimit') ?? 0;
-      minLimit = prefs.getInt('minLimit') ?? 0;
+      maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
+      minLimit = prefs.getInt('O2_minLimit') ?? 0;
     });
   }
 
@@ -44,7 +32,7 @@ class _LimitSettingsState extends State<LimitSettings> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
-      prefs.setInt('maxLimit', maxLimit);
+      prefs.setInt('O2_maxLimit', maxLimit);
     });
   }
 
@@ -52,8 +40,14 @@ class _LimitSettingsState extends State<LimitSettings> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('minLimit', minLimit);
+      prefs.setInt('O2_minLimit', minLimit);
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -63,26 +57,19 @@ class _LimitSettingsState extends State<LimitSettings> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              print(maxLimit);
-              print(minLimit);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Dashboard(maxLlimit: maxLimit, minLlimit: minLimit),
-                ),
-              );
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => Dashboard()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
           child: Column(
             children: [
               Text(
-                "${widget.title} Limit Settings",
+                "O2(1) Limit Settings",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                "${widget.subtitle}",
+                "PSI",
                 style: TextStyle(fontSize: 15),
               )
             ],
@@ -121,18 +108,16 @@ class _LimitSettingsState extends State<LimitSettings> {
                     height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
-                      color: widget.card_color,
+                      color: Colors.white,
                       child: Column(
                         children: [
                           Text(
                             '${maxLimit}',
-                            style: TextStyle(
-                                fontSize: 31, color: widget.Font_color),
+                            style: TextStyle(fontSize: 31, color: Colors.black),
                           ),
                           Text(
                             "Maximum Limit",
-                            style: TextStyle(
-                                fontSize: 10, color: widget.Font_color),
+                            style: TextStyle(fontSize: 10, color: Colors.black),
                           )
                         ],
                       ),
@@ -164,18 +149,16 @@ class _LimitSettingsState extends State<LimitSettings> {
                     height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
-                      color: widget.card_color,
+                      color: Colors.white,
                       child: Column(
                         children: [
                           Text(
                             '${minLimit}',
-                            style: TextStyle(
-                                fontSize: 31, color: widget.Font_color),
+                            style: TextStyle(fontSize: 31, color: Colors.black),
                           ),
                           Text(
                             "Minimum Limit",
-                            style: TextStyle(
-                                fontSize: 10, color: widget.Font_color),
+                            style: TextStyle(fontSize: 10, color: Colors.black),
                           )
                         ],
                       ),

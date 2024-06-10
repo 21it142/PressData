@@ -5,11 +5,9 @@ import 'package:pressdata/screens/main_page.dart';
 class Setting1 extends StatefulWidget {
   Setting1({
     super.key,
-    required this.max,
-    required this.min,
+  
   });
-  int min;
-  int max;
+
 
   @override
   State<Setting1> createState() => _Setting1State();
@@ -115,8 +113,7 @@ class _Setting1State extends State<Setting1> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => Dashboard(
-                    maxLlimit: 0,
-                    minLlimit: 0,
+                 
                   ),
                 ),
               );
