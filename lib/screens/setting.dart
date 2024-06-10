@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:pressdata/screens/main_page.dart';
 
 class Setting1 extends StatefulWidget {
@@ -115,8 +115,8 @@ class _Setting1State extends State<Setting1> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => Dashboard(
-                    maxLlimit: widget.max,
-                    minLlimit: widget.min,
+                    maxLlimit: 0,
+                    minLlimit: 0,
                   ),
                 ),
               );
