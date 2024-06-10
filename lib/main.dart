@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/report_screen.dart';
+//import 'package:pressdata/screens/setting.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +24,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Dashboard(
-        maxLlimit: m,
-        minLlimit: mi,
+        maxLlimit: 0,
+        minLlimit: 0,
       ),
     );
   }
