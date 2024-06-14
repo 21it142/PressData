@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pressdata/widgets/demo.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -55,7 +56,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               height: 10,
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                DemoWid();
+              },
               child: Text(
                 'Demo Mode',
                 style: TextStyle(fontSize: 15),

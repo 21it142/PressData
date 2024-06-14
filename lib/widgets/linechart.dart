@@ -1,34 +1,21 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pressdata/models/model.dart';
 import 'package:pressdata/screens/Limit%20Setting/AIR.dart';
 import 'package:pressdata/screens/Limit%20Setting/HUMI.dart';
 import 'package:pressdata/screens/Limit%20Setting/N2O.dart';
 import 'package:pressdata/screens/Limit%20Setting/O2.dart';
 import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
 import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:http/http.dart' as http;
+import 'package:pressdata/widgets/line.dart';
+//import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../screens/Limit Setting/CO2.dart';
 import '../screens/Limit Setting/VAC.dart';
-
-class LiveData {
-  LiveData(this.time, this.o2_1, this.vac, this.n2o, this.air, this.co2,
-      this.o2_2, this.temp, this.humi);
-  final int time;
-  final num o2_1;
-  final num vac;
-  final num n2o;
-  final num air;
-  final num co2;
-  final num o2_2;
-  final num temp;
-  final num humi;
-}
 
 class LineCharWid extends StatefulWidget {
   const LineCharWid({Key? key}) : super(key: key);
@@ -46,15 +33,16 @@ class ParameterData {
 }
 
 class _LineCharWidState extends State<LineCharWid> {
-  late List<LiveData> chartData;
-  late ChartSeriesController _chartSeriesController0;
-  late ChartSeriesController _chartSeriesController1;
-  late ChartSeriesController _chartSeriesController2;
-  late ChartSeriesController _chartSeriesController3;
-  late ChartSeriesController _chartSeriesController4;
-  late ChartSeriesController _chartSeriesController5;
-  late ChartSeriesController _chartSeriesController6;
-  late ChartSeriesController _chartSeriesController7;
+  List<PressData> pressdata = [];
+  StreamController<PressData> _streamData = StreamController();
+  StreamController<PressData> _streamDatatemp = StreamController();
+  StreamController<PressData> _streamDatahumi = StreamController();
+  StreamController<PressData> _streamDatao21 = StreamController();
+  StreamController<PressData> _streamDatavac = StreamController();
+  StreamController<PressData> _streamDatan2o = StreamController();
+  StreamController<PressData> _streamDataair = StreamController();
+  StreamController<PressData> _streamDataco2 = StreamController();
+  StreamController<PressData> _streamDatao22 = StreamController();
   int? O2_maxLimit;
   int? O2_minLimit;
   int? VAC_maxLimit;
@@ -71,303 +59,12 @@ class _LineCharWidState extends State<LineCharWid> {
   int? TEMP_minLimit;
   int? HUMI_maxLimit;
   int? HUMI_minLimit;
-  List<LiveData> getChartData() {
-    return <LiveData>[
-      LiveData(
-        0,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        1,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        2,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        3,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        4,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        5,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        6,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        7,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        8,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        9,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        10,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        11,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        12,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        13,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        14,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        15,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        16,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        17,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      ),
-      LiveData(
-        18,
-        Random().nextInt(10) + 1,
-        Random().nextInt(10) + 11,
-        Random().nextInt(10) + 21,
-        Random().nextInt(10) + 31,
-        Random().nextInt(10) + 41,
-        Random().nextInt(10) + 51,
-        Random().nextInt(10) + 61,
-        Random().nextInt(10) + 71,
-      )
-    ];
-  }
 
-  List<ParameterData> parameters = [
-    ParameterData("O2(1)", Colors.white, Random().nextInt(100)),
-    ParameterData("VAC", Colors.yellow, Random().nextInt(100)),
-    ParameterData(
-        "N2O", const Color.fromARGB(255, 0, 34, 145), Random().nextInt(100)),
-    ParameterData(
-        "AIR", const Color.fromARGB(255, 198, 230, 255), Random().nextInt(100)),
-    ParameterData(
-        "CO2", const Color.fromRGBO(62, 66, 70, 1), Random().nextInt(100)),
-    ParameterData("O2(2)", const Color.fromARGB(255, 255, 255, 255),
-        Random().nextInt(100)),
-    ParameterData(
-        "TEMP", const Color.fromARGB(255, 255, 0, 0), Random().nextInt(100)),
-    ParameterData("HUMI", Colors.blue, Random().nextInt(100)),
-  ];
-
-  List parameterNames = [
-    "O2(1)",
-    "VAC",
-    "N₂O", // Subscript NO₂ for NO2
-    "AIR",
-    "CO₂", // Subscript CO₂ for CO2
-    "O₂(2)", // Subscript O₂ for O2(2)
-    "TEMP",
-    "HUMI",
-  ];
-  List parameterUnit = [
-    "PSI",
-    "mmHg",
-    "PSI",
-    "PSI",
-    "PSI",
-    "PSI",
-    "°C",
-    "%",
-  ];
   final LinearGradient gradient = const LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
     colors: [Colors.blue, Colors.green], // Two colors for the gradient
   );
-
-  final List<Color> parameterColors = [
-    Colors.white,
-    Colors.yellow,
-    const Color.fromARGB(255, 0, 34, 145),
-    const Color.fromARGB(255, 198, 230, 255),
-    const Color.fromRGBO(62, 66, 70, 1),
-    const Color.fromARGB(255, 255, 255, 255),
-    const Color.fromARGB(255, 195, 0, 0),
-    Colors.blue,
-  ];
-  final List<Color> parameterTextColor = [
-    const Color.fromARGB(255, 0, 0, 0),
-    const Color.fromARGB(255, 0, 0, 0),
-    const Color.fromARGB(255, 255, 255, 255),
-    const Color.fromARGB(255, 0, 0, 0),
-    const Color.fromARGB(255, 255, 255, 255),
-    const Color.fromARGB(255, 0, 0, 0),
-    const Color.fromARGB(255, 255, 255, 255),
-    const Color.fromARGB(255, 255, 255, 255),
-  ];
-  void _storeData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
-      O2_minLimit = prefs.getInt('O2_minLimit') ?? 0;
-      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 0;
-      VAC_minLimit = prefs.getInt('VAC_minLimit') ?? 0;
-      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 0;
-      N2O_minLimit = prefs.getInt('N2O_minLimit') ?? 0;
-      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 0;
-      AIR_minLimit = prefs.getInt('AIR_minLimit') ?? 0;
-      CO2_maxLimit = prefs.getInt('CO2_maxLimit') ?? 0;
-      CO2_minLimit = prefs.getInt('CO2_minLimit') ?? 0;
-      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 0;
-      O2_2_minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
-      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 0;
-      TEMP_minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
-      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 0;
-      HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
-    });
-  }
 
   void _navigateToDetailPage(int index) {
     if (index == 0) {
@@ -420,393 +117,594 @@ class _LineCharWidState extends State<LineCharWid> {
   void initState() {
     super.initState();
 
-    chartData = getChartData();
-    Timer.periodic(Duration(seconds: 1), updateDataSource);
-    _updateController = StreamController<void>.broadcast();
-    _storeData();
-    _streamSubscription = _updateController.stream.listen((_) {
-      _updateData();
-    });
     Timer.periodic(const Duration(seconds: 1), (timer) {
       _updateController.add(null);
     });
-  }
-
-  void _updateData() {
-    setState(() {
-      parameters = parameters.map((param) {
-        if (param.name == "O2(1)") {
-          int newvalue = Random().nextInt(10);
-          if (newvalue > O2_maxLimit! || newvalue < O2_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(param.name, Colors.white, newvalue);
-          }
-        } else if (param.name == "VAC") {
-          int newvalue = Random().nextInt(10) + 11;
-          if (newvalue > VAC_maxLimit! || newvalue < VAC_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(param.name, Colors.yellow, newvalue);
-          }
-        } else if (param.name == "N2O") {
-          int newvalue = Random().nextInt(10) + 21;
-          if (newvalue > N2O_maxLimit! || newvalue < N2O_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(
-                param.name, const Color.fromARGB(255, 0, 34, 145), newvalue);
-          }
-        } else if (param.name == "AIR") {
-          int newvalue = Random().nextInt(10) + 31;
-          if (newvalue > AIR_maxLimit! || newvalue < AIR_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(
-                param.name, const Color.fromARGB(255, 198, 230, 255), newvalue);
-          }
-        } else if (param.name == "CO2") {
-          int newvalue = Random().nextInt(10) + 41;
-          if (newvalue > CO2_maxLimit! || newvalue < CO2_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(
-                param.name, const Color.fromRGBO(62, 66, 70, 1), newvalue);
-          }
-        } else if (param.name == "O2(2)") {
-          int newvalue = Random().nextInt(10) + 51;
-          if (newvalue > O2_2_maxLimit! || newvalue < O2_2_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(param.name, Colors.white, newvalue);
-          }
-        } else if (param.name == "TEMP") {
-          int newvalue = Random().nextInt(10) + 61;
-          if (newvalue > TEMP_maxLimit! || newvalue < TEMP_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(
-                param.name, const Color.fromARGB(255, 195, 0, 0), newvalue);
-          }
-        } else {
-          int newvalue = Random().nextInt(10) + 71;
-          if (newvalue > HUMI_maxLimit! || newvalue < HUMI_minLimit!) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
-            });
-            return ParameterData(param.name, Colors.red, newvalue);
-          } else {
-            return ParameterData(param.name, Colors.blue, newvalue);
-          }
-        }
-      }).toList();
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      getdata();
     });
-  }
-
-  int time = 19;
-  void updateDataSource(Timer timer) {
-    chartData.add(LiveData(
-      time++,
-      Random().nextInt(10) + 1,
-      Random().nextInt(10) + 11,
-      Random().nextInt(10) + 21,
-      Random().nextInt(10) + 31,
-      Random().nextInt(10) + 41,
-      Random().nextInt(10) + 51,
-      Random().nextInt(10) + 61,
-      Random().nextInt(10) + 71,
-    ));
-    chartData.removeAt(0);
-    _chartSeriesController0.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController1.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController2.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController3.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController4.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController4.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController5.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController6.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-    _chartSeriesController7.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
   }
 
   @override
   void dispose() {
     _updateController.close(); // Close the stream controller
     _streamSubscription.cancel(); // Cancel the subscription
+    _streamDatatemp.close();
+    _streamDataair.close();
+    _streamDatao21.close();
+    _streamDatahumi.close();
+    _streamDatao22.close();
+    _streamDatavac.close();
+    _streamDataco2.close();
+    _streamDatan2o.close();
+    _streamData.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    final List<Color> parameterColors = [
+      const Color.fromARGB(255, 195, 0, 0),
+      Colors.blue,
+      Colors.white,
+      Colors.yellow,
+      const Color.fromARGB(255, 0, 34, 145),
+      const Color.fromARGB(255, 198, 230, 255),
+      const Color.fromRGBO(62, 66, 70, 1),
+      const Color.fromARGB(255, 255, 255, 255),
+    ];
+    final List<Color> parameterTextColor = [
+      const Color.fromARGB(255, 255, 255, 255),
+      const Color.fromARGB(255, 255, 255, 255),
+      const Color.fromARGB(255, 0, 0, 0),
+      const Color.fromARGB(255, 0, 0, 0),
+      const Color.fromARGB(255, 255, 255, 255),
+      const Color.fromARGB(255, 0, 0, 0),
+      const Color.fromARGB(255, 255, 255, 255),
+      const Color.fromARGB(255, 0, 0, 0),
+    ];
+    List parameterUnit = [
+      "°C",
+      "%",
+      "PSI",
+      "mmHg",
+      "PSI",
+      "PSI",
+      "PSI",
+      "PSI",
+    ];
+    List parameterNames = [
+      "TEMP",
+      "HUMI",
+      "O2(1)",
+      "VAC",
+      "N₂O", // Subscript NO₂ for NO2
+      "AIR",
+      "CO₂", // Subscript CO₂ for CO2
+      "O₂(2)", // Subscript O₂ for O2(2)
+    ];
 
     return Scaffold(
       body: Row(
         children: [
           // Graph on the left
           Expanded(
-            flex: 2,
             child: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: SfCartesianChart(
-                tooltipBehavior: TooltipBehavior(enable: true),
-                legend: Legend(isVisible: true),
-                primaryXAxis: const NumericAxis(
-                  majorGridLines: MajorGridLines(width: 0),
-                  edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  interval: 3,
-                  title: AxisTitle(
-                      text: 'Reading for Press Data',
-                      textStyle: TextStyle(fontSize: 10)),
-                ),
-                primaryYAxis: const NumericAxis(
-                  axisLine: AxisLine(width: 0),
-                  majorTickLines: MajorTickLines(size: 0),
-                  title: AxisTitle(text: 'Values'),
-                ),
-                series: <LineSeries<LiveData, int>>[
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController0 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.o2_1,
-                    //  markerSettings: const MarkerSettings(isVisible: true),
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    name: "O2(1)",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController1 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.vac,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.yellow,
-                    name: "VAC",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController2 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.n2o,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromARGB(255, 0, 34, 145),
-                    name: "N2o",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController3 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.air,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: Color.fromARGB(114, 1, 2, 1),
-                    name: "AIR",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController4 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.co2,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromRGBO(62, 66, 70, 1),
-                    name: "co2",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController5 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.o2_2,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.white,
-                    name: "O2_2",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController6 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.temp,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromARGB(255, 255, 0, 0),
-                    name: "Temp",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController7 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.humi,
-                    //  markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.blue,
-                    name: "HUMI",
-                  ),
-                ],
-              ),
+              child: LiveLineChart(),
             ),
           ),
           // Parameters on the right
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
+
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 3.0,
-                        crossAxisSpacing: 8.0,
-                        childAspectRatio: 1.55 /
-                            1, // Adjust the aspect ratio to change card size
-                      ),
-                      itemCount: 8,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () => _navigateToDetailPage(index),
-                          child: Card(
-                            color: parameters[index].color,
-                            elevation: 4.0,
-                            child: Container(
-                            
-                              decoration: BoxDecoration(
-                                color: parameters[index].color,
-                                gradient: index == 3
-                                    ? const LinearGradient(
-                                        colors: [
-                                          Colors.black,
-                                          Colors.white,
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.centerRight,
-                                      )
-                                    : null,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(
-                                    2.0), // Adjust the padding inside the card
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      ' ${parameters[index].value}', // Random number displayed alongside the parameter name
-                                      style: TextStyle(
-                                          color: parameterTextColor[index],
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(0),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[0],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatatemp.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                //  String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[0],
                                           fontSize: 22,
-                                          fontWeight: FontWeight
-                                              .bold), // Use white text color for contrast
-                                    ),
-                                    Text(
-                                      ' ${parameterUnit[index]}', // Random number displayed alongside the parameter name
-                                      style: TextStyle(
-                                          color: parameterTextColor[index],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[0],
+                                        style: TextStyle(
+                                          color: parameterTextColor[0],
                                           fontSize: 7,
-                                          fontWeight: FontWeight
-                                              .bold), // Use white text color for contrast
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      parameterNames[index],
-                                      style: TextStyle(
-                                          color: parameterTextColor[index],
-                                          fontSize:
-                                              12), // Use white text color for contrast
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[0],
+                                        style: TextStyle(
+                                          color: parameterTextColor[0],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[0],
+                                );
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(1),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[1],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatahumi.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                // String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[1],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[1],
+                                        style: TextStyle(
+                                          color: parameterTextColor[1],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[1],
+                                        style: TextStyle(
+                                          color: parameterTextColor[0],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(2),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[2],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatao21.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                // String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[2],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[2],
+                                        style: TextStyle(
+                                          color: parameterTextColor[2],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[2],
+                                        style: TextStyle(
+                                          color: parameterTextColor[2],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+
+                                      // You can add additional widgets or logic based on type here
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(3),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[3],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatavac.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                // String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[3],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[3],
+                                        style: TextStyle(
+                                          color: parameterTextColor[3],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[3],
+                                        style: TextStyle(
+                                          color: parameterTextColor[3],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // You can add additional widgets or logic based on type here
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(4),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[4],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatan2o.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                //  String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[4],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[4],
+                                        style: TextStyle(
+                                          color: parameterTextColor[4],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[4],
+                                        style: TextStyle(
+                                          color: parameterTextColor[4],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // You can add additional widgets or logic based on type here
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(5),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[5],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDataair.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                //String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[5],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[5],
+                                        style: TextStyle(
+                                          color: parameterTextColor[5],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[5],
+                                        style: TextStyle(
+                                          color: parameterTextColor[5],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // You can add additional widgets or logic based on type here
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(6),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[6],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDataco2.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                //  String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[6],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        parameterUnit[6],
+                                        style: TextStyle(
+                                          color: parameterTextColor[6],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        parameterNames[6],
+                                        style: TextStyle(
+                                          color: parameterTextColor[6],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // You can add additional widgets or logic based on type here
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _navigateToDetailPage(7),
+                    child: Container(
+                      height: 80,
+                      width: 120,
+                      child: Card(
+                        color: parameterColors[7],
+                        elevation: 4.0,
+                        child: StreamBuilder<PressData>(
+                            stream: _streamDatao22.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                PressData pressData = snapshot.data!;
+                                PressData data = pressData;
+                                // String type = data.type;
+                                String value = data.value.toString();
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        value,
+                                        style: TextStyle(
+                                          color: parameterTextColor[7],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+
+                                      Text(
+                                        parameterUnit[7],
+                                        style: TextStyle(
+                                          color: parameterTextColor[7],
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      // You can add additional widgets or logic based on type here
+
+                                      Text(
+                                        parameterNames[7],
+                                        style: TextStyle(
+                                          color: parameterTextColor[7],
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return Text("Hello");
+                              }
+                            }),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> getdata() async {
+    var url = Uri.parse('http://192.168.0.113/event');
+    final response = await http.get(url);
+
+    final data = json.decode(response.body);
+
+    // Debugging: Print out the type and structure of the data
+    print('Type of data: ${data.runtimeType}');
+    print('Data structure: $data');
+
+    // Iterate over each map in the list and create PressData objects
+    for (var jsonData in data) {
+      PressData pressdata = PressData.fromJson(jsonData);
+      if (pressdata.type == 'temperature') {
+        _streamDatatemp.sink.add(pressdata);
+      } else if (pressdata.type == 'humidity') {
+        _streamDatahumi.sink.add(pressdata);
+      } else if (pressdata.type == 'o21') {
+        _streamDatao21.sink.add(pressdata);
+      } else if (pressdata.type == 'vac') {
+        _streamDatavac.sink.add(pressdata);
+      } else if (pressdata.type == 'n2o') {
+        _streamDatan2o.sink.add(pressdata);
+      } else if (pressdata.type == 'air') {
+        _streamDataair.sink.add(pressdata);
+      } else if (pressdata.type == 'co2') {
+        _streamDataco2.sink.add(pressdata);
+      } else if (pressdata.type == 'o22') {
+        _streamDatao22.sink.add(pressdata);
+      }
+      _streamData.sink.add(pressdata);
+    }
   }
 }

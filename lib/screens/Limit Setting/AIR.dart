@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:pressdata/screens/Limit%20Setting/httpLimit.dart';
 import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,12 +15,31 @@ class AIR extends StatefulWidget {
 class _AIRState extends State<AIR> {
   int maxLimit = 0;
   int minLimit = 0;
-
+  final LimitSetting _dataService = LimitSetting();
+  List<dynamic> _postJson = [];
+  late Timer _timer;
   @override
   void initState() {
     loadData();
-    // TODO: implement initState
+    _fetchData();
     super.initState();
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _fetchData();
+    });
+  }
+
+  Future<void> _fetchData() async {
+    final data = await _dataService.fetchData();
+    setState(() {
+      _postJson = data;
+    });
+  }
+
+  Future<void> _updateData(String type, double min, double max) async {
+    final success = await _dataService.updateData(type, min, max);
+    if (success) {
+      _fetchData(); // Refresh the data after update
+    }
   }
 
   void loadData() async {
@@ -34,6 +56,12 @@ class _AIRState extends State<AIR> {
     setState(() {
       maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
       prefs.setInt('AIR_maxLimit', maxLimit);
+
+      // Check if _postJson is not empty and has at least 3 elements
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[2];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
@@ -42,26 +70,36 @@ class _AIRState extends State<AIR> {
     setState(() {
       minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('AIR_minLimit', minLimit);
+
+      // Check if _postJson is not empty and has at least 3 elements
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[2];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Check if _postJson is not empty and has at least 3 elements
+    final post =
+        (_postJson.isNotEmpty && _postJson.length > 2) ? _postJson[2] : {};
+
     return Scaffold(
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
-            },
-            icon: Icon(Icons.arrow_back_outlined)),
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Dashboard()));
+          },
+          icon: Icon(Icons.arrow_back_outlined),
+        ),
         title: Center(
           child: Column(
             children: [
@@ -92,8 +130,6 @@ class _AIRState extends State<AIR> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Text("O2", style: TextStyle(fontSize: 20)),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -101,19 +137,17 @@ class _AIRState extends State<AIR> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       updateMaxLimit(maxLimit.toDouble() - 1.0);
-                      // product.minLimit = (product.minLimit > 0) ? product.minLimit - 1 : 0;
-                      // onChanged();
                     },
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 198, 230, 255),
                       child: Column(
                         children: [
                           Text(
-                            '${maxLimit}',
+                            '${post['MAX'] ?? ''}',
                             style: TextStyle(fontSize: 31, color: Colors.black),
                           ),
                           Text(
@@ -124,13 +158,11 @@ class _AIRState extends State<AIR> {
                       ),
                       margin: EdgeInsets.all(10),
                     ),
-                  ), //${product.minLimit}
+                  ),
                   IconButton(
                     icon: Icon(Icons.add),
                     onPressed: () {
                       updateMaxLimit(maxLimit.toDouble() + 1.0);
-                      // product.minLimit++;
-                      // onChanged();
                     },
                   ),
                 ],
@@ -142,19 +174,17 @@ class _AIRState extends State<AIR> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       updateMinLimit(minLimit.toDouble() - 1.0);
-                      // product.maxLimit = (product.maxLimit > 0) ? product.maxLimit - 1 : 0;
-                      // onChanged();
                     },
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 198, 230, 255),
                       child: Column(
                         children: [
                           Text(
-                            '${minLimit}',
+                            '${post['MIN'] ?? ''}',
                             style: TextStyle(fontSize: 31, color: Colors.black),
                           ),
                           Text(
@@ -165,13 +195,11 @@ class _AIRState extends State<AIR> {
                       ),
                       margin: EdgeInsets.all(10),
                     ),
-                  ), //${product.maxLimit}
+                  ),
                   IconButton(
                     icon: Icon(Icons.add),
                     onPressed: () {
                       updateMinLimit(minLimit.toDouble() + 1.0);
-                      // product.maxLimit++;
-                      // onChanged();
                     },
                   ),
                 ],

@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'httpLimit.dart';
 
 class CO2 extends StatefulWidget {
   const CO2({super.key});
@@ -12,12 +16,44 @@ class CO2 extends StatefulWidget {
 class _CO2State extends State<CO2> {
   int maxLimit = 0;
   int minLimit = 0;
-
+  final LimitSetting _dataService = LimitSetting();
+  List<dynamic> _postJson = [];
+  bool _isLoading = false;
+  late Timer _timer;
   @override
   void initState() {
-    loadData();
-    // TODO: implement initState
     super.initState();
+    loadData();
+    _fetchData();
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _fetchData();
+    });
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final data = await _dataService.fetchData();
+      setState(() {
+        _postJson = data;
+        _isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+      });
+      // Handle error as needed
+      print('Error fetching data: $error');
+    }
+  }
+
+  Future<void> _updateData(String type, double min, double max) async {
+    final success = await _dataService.updateData(type, min, max);
+    if (success) {
+      _fetchData(); // Refresh the data after update
+    }
   }
 
   void loadData() async {
@@ -34,6 +70,12 @@ class _CO2State extends State<CO2> {
     setState(() {
       maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
       prefs.setInt('CO2_maxLimit', maxLimit);
+
+      // Check if _postJson is not empty and has at least 3 elements
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[0];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
@@ -42,26 +84,38 @@ class _CO2State extends State<CO2> {
     setState(() {
       minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('CO2_minLimit', minLimit);
+
+      // Check if _postJson is not empty and has at least 3 elements
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[0];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final post =
+        (_postJson.isNotEmpty && _postJson.length > 2) ? _postJson[0] : {};
+
     return Scaffold(
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
-            },
-            icon: Icon(Icons.arrow_back_outlined)),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Dashboard()),
+            );
+          },
+          icon: Icon(Icons.arrow_back_outlined),
+        ),
         title: Center(
           child: Column(
             children: [
@@ -92,8 +146,6 @@ class _CO2State extends State<CO2> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Text("O2", style: TextStyle(fontSize: 20)),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -101,36 +153,38 @@ class _CO2State extends State<CO2> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       updateMaxLimit(maxLimit.toDouble() - 1.0);
-                      // product.minLimit = (product.minLimit > 0) ? product.minLimit - 1 : 0;
-                      // onChanged();
                     },
                   ),
                   Container(
-                   height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromRGBO(62, 66, 70, 1),
                       child: Column(
                         children: [
                           Text(
-                            '${maxLimit}',
-                            style: TextStyle(fontSize: 31, color: Colors.white),
+                            '${post['MAX'] ?? ''}',
+                            style: TextStyle(
+                              fontSize: 31,
+                              color: Colors.white,
+                            ),
                           ),
                           Text(
                             "Maximum Limit",
-                            style: TextStyle(fontSize: 10, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                            ),
                           )
                         ],
                       ),
                       margin: EdgeInsets.all(10),
                     ),
-                  ), //${product.minLimit}
+                  ),
                   IconButton(
                     icon: Icon(Icons.add),
                     onPressed: () {
                       updateMaxLimit(maxLimit.toDouble() + 1.0);
-                      // product.minLimit++;
-                      // onChanged();
                     },
                   ),
                 ],
@@ -142,36 +196,38 @@ class _CO2State extends State<CO2> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       updateMinLimit(minLimit.toDouble() - 1.0);
-                      // product.maxLimit = (product.maxLimit > 0) ? product.maxLimit - 1 : 0;
-                      // onChanged();
                     },
                   ),
                   Container(
-                  height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromRGBO(62, 66, 70, 1),
                       child: Column(
                         children: [
                           Text(
-                            '${minLimit}',
-                            style: TextStyle(fontSize: 31, color: Colors.white),
+                            '${post['MIN'] ?? ''}',
+                            style: TextStyle(
+                              fontSize: 31,
+                              color: Colors.white,
+                            ),
                           ),
                           Text(
                             "Minimum Limit",
-                            style: TextStyle(fontSize: 10, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                            ),
                           )
                         ],
                       ),
                       margin: EdgeInsets.all(10),
                     ),
-                  ), //${product.maxLimit}
+                  ),
                   IconButton(
                     icon: Icon(Icons.add),
                     onPressed: () {
                       updateMinLimit(minLimit.toDouble() + 1.0);
-                      // product.maxLimit++;
-                      // onChanged();
                     },
                   ),
                 ],

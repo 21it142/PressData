@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'httpLimit.dart';
 
 class N2O extends StatefulWidget {
   const N2O({super.key});
@@ -12,12 +16,37 @@ class N2O extends StatefulWidget {
 class _N2OState extends State<N2O> {
   int maxLimit = 0;
   int minLimit = 0;
+  final LimitSetting _dataService = LimitSetting();
+  List<dynamic> _postJson = [];
 
+  late Timer _timer;
   @override
   void initState() {
-    loadData();
-    // TODO: implement initState
     super.initState();
+    loadData();
+    _fetchData();
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _fetchData();
+    });
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final data = await _dataService.getData();
+      setState(() {
+        _postJson = data;
+      });
+    } catch (error) {
+      // Handle error as needed
+      print('Error fetching data: $error');
+    }
+  }
+
+  Future<void> _updateData(String type, double min, double max) async {
+    final success = await _dataService.updateData(type, min, max);
+    if (success) {
+      _fetchData(); // Refresh the data after update
+    }
   }
 
   void loadData() async {
@@ -34,6 +63,11 @@ class _N2OState extends State<N2O> {
     setState(() {
       maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
       prefs.setInt('N2O_maxLimit', maxLimit);
+
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[2];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
@@ -42,17 +76,24 @@ class _N2OState extends State<N2O> {
     setState(() {
       minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('N2O_minLimit', minLimit);
+
+      if (_postJson.isNotEmpty && _postJson.length > 2) {
+        final post = _postJson[2];
+        _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
+      }
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final post =
+        (_postJson.isNotEmpty && _postJson.length > 2) ? _postJson[2] : {};
     return Scaffold(
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
@@ -106,14 +147,14 @@ class _N2OState extends State<N2O> {
                     },
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 0, 34, 145),
                       child: Column(
                         children: [
                           Text(
-                            '${maxLimit}',
+                            '${post['MAX'] ?? ''}',
                             style: TextStyle(fontSize: 31, color: Colors.white),
                           ),
                           Text(
@@ -147,14 +188,14 @@ class _N2OState extends State<N2O> {
                     },
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: 80,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 0, 34, 145),
                       child: Column(
                         children: [
                           Text(
-                            '${minLimit}',
+                            '${post['MIN'] ?? ''}',
                             style: TextStyle(fontSize: 31, color: Colors.white),
                           ),
                           Text(
