@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class LimitSetting {
-  final String url = 'http://192.168.0.113/MinMax1';
-  final String postUrl = 'http://192.168.0.113/MinMax3';
-  final String url1 = 'http://192.168.0.113/MinMax2';
+  final String url = 'http://192.168.4.1/MinMax1';
+  final String url1 = 'http://192.168.4.1/MinMax2';
+  final String postUrl = 'http://192.168.4.1/MinMax3';
 
   Future<List<dynamic>> fetchData() async {
     try {

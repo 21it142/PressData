@@ -148,7 +148,7 @@ class _TEMPState extends State<TEMP> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 195, 0, 0),
@@ -189,7 +189,7 @@ class _TEMPState extends State<TEMP> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 195, 0, 0),

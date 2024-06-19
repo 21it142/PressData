@@ -148,7 +148,7 @@ class _VACState extends State<VAC> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.yellow,
@@ -189,7 +189,7 @@ class _VACState extends State<VAC> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.yellow,

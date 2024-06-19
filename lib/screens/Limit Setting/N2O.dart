@@ -147,7 +147,7 @@ class _N2OState extends State<N2O> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 0, 34, 145),
@@ -188,7 +188,7 @@ class _N2OState extends State<N2O> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 0, 34, 145),

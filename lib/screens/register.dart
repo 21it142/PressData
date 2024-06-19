@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/widgets/demo.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -21,7 +23,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool get _isSubmitButtonEnabled {
     return _nameController.text.isNotEmpty &&
-        _hospitalCompanyController.text.isNotEmpty;
+        _hospitalCompanyController.text.isNotEmpty &&
+        _contactNumberController.text.isNotEmpty &&
+        _emailController.text.isNotEmpty;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstRun();
+  }
+
+  Future<void> _checkFirstRun() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isFirstRun = prefs.getBool('isFirstRun') ?? true;
+
+    if (!isFirstRun) {
+      _navigateToMainPage();
+    }
+  }
+
+  Future<void> _setFirstRunComplete() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstRun', false);
+  }
+
+  void _navigateToMainPage() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Dashboard(),
+      ),
+    );
   }
 
   @override
@@ -34,14 +67,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           children: [
             RichText(
               text: const TextSpan(
-                  text: 'Press',
-                  style: TextStyle(color: Colors.blue, fontSize: 20),
-                  children: [
-                    TextSpan(
-                      text: 'Data',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ]),
+                text: 'Press',
+                style: TextStyle(color: Colors.blue, fontSize: 20),
+                children: [
+                  TextSpan(
+                    text: 'Data',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ],
+              ),
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.3,
@@ -57,7 +91,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                DemoWid();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DemoWid(),
+                  ),
+                );
               },
               child: Text(
                 'Demo Mode',
@@ -75,198 +114,135 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        // child: Form(
-        //   key: _formKey,
-        //   child: Column(
-        //     crossAxisAlignment: CrossAxisAlignment.start,
-        //     children: <Widget>[
-        //       TextFormField(
-        //         decoration: const InputDecoration(
-        //           contentPadding: EdgeInsets.all(0),
-        //           icon: const Icon(Icons.person),
-        //           hintText: 'Enter your name',
-        //           labelText: 'Name',
-        //         ),
-        //       ),
-        //       TextFormField(
-        //         decoration: const InputDecoration(
-        //           contentPadding: EdgeInsets.all(0),
-        //           icon: const Icon(Icons.phone),
-        //           hintText: 'Enter a phone number',
-        //           labelText: 'Phone',
-        //         ),
-        //       ),
-        //       TextFormField(
-        //         decoration: const InputDecoration(
-        //           contentPadding: EdgeInsets.all(0),
-        //           icon: const Icon(Icons.calendar_today),
-        //           hintText: 'Enter your date of birth',
-        //           labelText: 'Dob',
-        //         ),
-        //       ),
-        //       TextFormField(
-        //         decoration: const InputDecoration(
-        //           contentPadding: EdgeInsets.all(0),
-        //           icon: const Icon(Icons.calendar_today),
-        //           hintText: 'Enter your date of birth',
-        //           labelText: 'Dob',
-        //         ),
-        //       ),
-        //       TextFormField(
-        //         decoration: const InputDecoration(
-        //           contentPadding: EdgeInsets.all(0),
-        //           icon: const Icon(Icons.calendar_today),
-        //           hintText: 'Enter your date of birth',
-        //           labelText: 'Dob',
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ),
-        child: Form(
-          child: Row(
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 40,
-                      child: TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 20),
-                            labelText: '  Name of the user',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 0.0),
-                            ),
-                            border: OutlineInputBorder()),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          return null;
-                        },
-                        onChanged: (_) {
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    Container(
-                      height: 40,
-                      child: TextFormField(
-                        controller: _hospitalCompanyController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 20),
-                            labelText: 'Hospital/Company',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 0.0),
-                            ),
-                            border: OutlineInputBorder()),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your hospital or company';
-                          }
-                          return null;
-                        },
-                        onChanged: (_) {
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    Container(
-                      height: 40,
-                      child: TextFormField(
-                        controller: _cityController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 20),
-                            labelText: 'City',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 0.0),
-                            ),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    Container(
-                      height: 40,
-                      child: TextFormField(
-                        controller: _contactNumberController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 20),
-                            labelText: 'Contact Number',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 0.0),
-                            ),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.1,
-                      child: TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 20),
-                            labelText: 'Email ID',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 0.0),
-                            ),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    if (_isSubmitButtonEnabled)
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              // Perform form submission
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Form submitted')),
-                              );
-                            }
-                          },
-                          child: Text('Submit'),
-                        ),
-                      ),
-                  ],
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(
+                  controller: _nameController,
+                  label: 'Name of the user',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                _buildTextField(
+                  controller: _hospitalCompanyController,
+                  label: 'Hospital/Company',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your hospital or company';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                _buildTextField(
+                  controller: _cityController,
+                  label: 'City',
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                _buildTextField(
+                  controller: _contactNumberController,
+                  label: 'Contact Number',
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your contact number';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email ID',
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email address';
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                if (_isSubmitButtonEnabled)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          await _setFirstRunComplete();
+                          _navigateToMainPage();
+                          // Perform form submission
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Form submitted')),
+                          );
+                        }
+                      },
+                      child: Text('Submit'),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      height: 40,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          labelText: label,
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 0.0),
+          ),
+          border: OutlineInputBorder(),
+          suffixIcon: validator != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                    '*',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )
+              : null, 
+        ),
+        validator: validator,
+        onChanged: (_) {
+          setState(() {});
+        },
       ),
     );
   }

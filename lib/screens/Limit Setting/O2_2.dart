@@ -162,7 +162,7 @@ class _O2_2State extends State<O2_2> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.white,
@@ -199,7 +199,7 @@ class _O2_2State extends State<O2_2> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.white,

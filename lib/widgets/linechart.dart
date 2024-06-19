@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +12,9 @@ import 'package:pressdata/screens/Limit%20Setting/O2.dart';
 import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
 import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
 import 'package:http/http.dart' as http;
-import 'package:pressdata/widgets/line.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 //import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
 
 import '../screens/Limit Setting/CO2.dart';
 import '../screens/Limit Setting/VAC.dart';
@@ -30,6 +32,14 @@ class ParameterData {
   int value;
 
   ParameterData(this.name, this.color, this.value);
+}
+
+class ChartData {
+  ChartData(this.x, this.y, this.type);
+
+  final double x;
+  final double y;
+  final String type;
 }
 
 class _LineCharWidState extends State<LineCharWid> {
@@ -60,52 +70,137 @@ class _LineCharWidState extends State<LineCharWid> {
   int? HUMI_maxLimit;
   int? HUMI_minLimit;
 
+  List<LineSeries<ChartData, DateTime>> _getLineSeries() {
+    Map<String, List<ChartData>> groupedData = {};
+
+    // Find the maximum y value to normalize the data
+    double maxY =
+        chartData.map((data) => data.y).reduce((a, b) => a > b ? a : b);
+
+    for (var data in chartData) {
+      if (!groupedData.containsKey(data.type)) {
+        groupedData[data.type] = [];
+      }
+      groupedData[data.type]!.add(data);
+    }
+
+    return seriesOrder
+        .map((type) {
+          final data = groupedData[type];
+          if (data != null) {
+            final color = colorMap[type] ?? Colors.black;
+            return LineSeries<ChartData, DateTime>(
+              name: type,
+              color: color,
+              dataSource: data,
+              xValueMapper: (ChartData data, _) =>
+                  DateTime.fromMillisecondsSinceEpoch(data.x.toInt()),
+              yValueMapper: (ChartData data, _) =>
+                  (data.y / maxY) * 100, // Convert to percentage
+            );
+          }
+          return null;
+        })
+        .where((series) => series != null)
+        .cast<LineSeries<ChartData, DateTime>>()
+        .toList();
+  }
+
+  List<ChartData> chartData = [];
+  final StreamController<List<ChartData>> _streamController =
+      StreamController<List<ChartData>>.broadcast();
+
+  // Fixed color map for predefined types
+  final Map<String, Color> colorMap = {
+    'temperature': Color.fromARGB(255, 255, 0, 0),
+    'humidity': Colors.blue,
+    'o21': Color.fromARGB(255, 255, 255, 255),
+    'vac': Colors.yellow,
+    'n2o': Color.fromARGB(255, 0, 34, 145),
+    'air': Color.fromARGB(114, 1, 2, 1),
+    'co2': Color.fromRGBO(62, 66, 70, 1),
+    'o22': Colors.white,
+  };
+
+  // Fixed order of types for series
+  final List<String> seriesOrder = [
+    'temperature',
+    'humidity',
+    'o21',
+    'vac',
+    'n2o',
+    'air',
+    'co2',
+    'o22',
+  ];
+
   final LinearGradient gradient = const LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
     colors: [Colors.blue, Colors.green], // Two colors for the gradient
   );
+  void _updateData(List<dynamic> data) {
+    double x = DateTime.now().millisecondsSinceEpoch.toDouble();
+    print('Received Data: $data');
+    List<ChartData> newData = [];
+    for (var entry in data) {
+      newData.add(ChartData(x, entry['value'].toDouble(), entry['type']));
+    }
+
+    print('New Data: $newData');
+
+    // Combine new data with existing data and keep only the most recent 60 data points
+    setState(() {
+      chartData.addAll(newData);
+      if (chartData.length > 60) {
+        chartData = chartData.sublist(chartData.length - 60);
+      }
+
+      // Add the updated data to the stream
+      _streamController.add(List.from(chartData));
+    });
+  }
 
   void _navigateToDetailPage(int index) {
     if (index == 0) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => O2()),
+        MaterialPageRoute(builder: (context) => TEMP()),
       );
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => VAC()),
+        MaterialPageRoute(builder: (context) => HUMI()),
       );
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => N2O()),
+        MaterialPageRoute(builder: (context) => O2()),
       );
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AIR()),
+        MaterialPageRoute(builder: (context) => VAC()),
       );
     } else if (index == 4) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CO2()),
+        MaterialPageRoute(builder: (context) => N2O()),
       );
     } else if (index == 5) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => O2_2()),
+        MaterialPageRoute(builder: (context) => AIR()),
       );
     } else if (index == 6) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => TEMP()),
+        MaterialPageRoute(builder: (context) => O2_2()),
       );
     } else if (index == 7) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => HUMI()),
+        MaterialPageRoute(builder: (context) => CO2()),
       );
     }
   }
@@ -138,11 +233,13 @@ class _LineCharWidState extends State<LineCharWid> {
     _streamDataco2.close();
     _streamDatan2o.close();
     _streamData.close();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isDataAvailable = chartData.isNotEmpty;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     final List<Color> parameterColors = [
       const Color.fromARGB(255, 195, 0, 0),
@@ -190,9 +287,34 @@ class _LineCharWidState extends State<LineCharWid> {
         children: [
           // Graph on the left
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: LiveLineChart(),
+            child: Container(
+              height: 350, // Adjust height here
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: isDataAvailable
+                    ? SfCartesianChart(
+                        primaryXAxis: DateTimeAxis(
+                          intervalType: DateTimeIntervalType.seconds,
+                          interval: 1, // 1-second interval
+                          dateFormat: DateFormat('mm:ss'),
+                          minimum: chartData.isNotEmpty
+                              ? DateTime.fromMillisecondsSinceEpoch(
+                                  chartData.first.x.toInt())
+                              : DateTime.now().subtract(Duration(seconds: 60)),
+                          maximum: DateTime.now(),
+                        ),
+                        primaryYAxis: NumericAxis(
+                          minimum: 0, // Set the minimum value of y-axis to 0
+                          maximum:
+                              100, // Set the maximum value of y-axis to 100
+                        ),
+                        legend: Legend(isVisible: true),
+                        series: _getLineSeries(),
+                      )
+                    : Center(
+                        child: CircularProgressIndicator(),
+                      ),
+              ),
             ),
           ),
           // Parameters on the right
@@ -299,7 +421,7 @@ class _LineCharWidState extends State<LineCharWid> {
                                       Text(
                                         parameterNames[1],
                                         style: TextStyle(
-                                          color: parameterTextColor[0],
+                                          color: parameterTextColor[1],
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -308,7 +430,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[1],
+                                );
                               }
                             }),
                       ),
@@ -369,7 +493,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[2],
+                                );
                               }
                             }),
                       ),
@@ -425,7 +551,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[3],
+                                );
                               }
                             }),
                       ),
@@ -485,7 +613,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[4],
+                                );
                               }
                             }),
                       ),
@@ -541,7 +671,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[5],
+                                );
                               }
                             }),
                       ),
@@ -601,7 +733,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[6],
+                                );
                               }
                             }),
                       ),
@@ -659,7 +793,9 @@ class _LineCharWidState extends State<LineCharWid> {
                                   ),
                                 );
                               } else {
-                                return Text("Hello");
+                                return CircularProgressIndicator(
+                                  color: parameterTextColor[7],
+                                );
                               }
                             }),
                       ),
@@ -675,7 +811,7 @@ class _LineCharWidState extends State<LineCharWid> {
   }
 
   Future<void> getdata() async {
-    var url = Uri.parse('http://192.168.0.113/event');
+    var url = Uri.parse('http://192.168.4.1/event');
     final response = await http.get(url);
 
     final data = json.decode(response.body);
@@ -706,5 +842,13 @@ class _LineCharWidState extends State<LineCharWid> {
       }
       _streamData.sink.add(pressdata);
     }
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      _updateData(data);
+    } else {
+      print('Failed to load data');
+    }
+    // Delay before fetching data again (optional)
+    await Future.delayed(Duration(seconds: 1));
   }
 }

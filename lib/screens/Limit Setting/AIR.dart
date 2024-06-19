@@ -140,7 +140,7 @@ class _AIRState extends State<AIR> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.50,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 198, 230, 255),
@@ -177,7 +177,7 @@ class _AIRState extends State<AIR> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 198, 230, 255),

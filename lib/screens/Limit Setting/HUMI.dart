@@ -146,7 +146,7 @@ class _HUMIState extends State<HUMI> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.blue,
@@ -187,7 +187,7 @@ class _HUMIState extends State<HUMI> {
                     },
                   ),
                   Container(
-                    height: 80,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: Colors.blue,
