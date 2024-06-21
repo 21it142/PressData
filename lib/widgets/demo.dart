@@ -2,16 +2,17 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pressdata/screens/Limit%20Setting/AIR.dart';
-import 'package:pressdata/screens/Limit%20Setting/HUMI.dart';
-import 'package:pressdata/screens/Limit%20Setting/N2O.dart';
-import 'package:pressdata/screens/Limit%20Setting/O2.dart';
-import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
-import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
+
+import 'package:pressdata/screens/LimitSetting(Demo)/air.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/co2.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/humi.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/n2o.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/o2-1.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/o2-2.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/temp.dart';
+import 'package:pressdata/screens/LimitSetting(Demo)/vac.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import '../screens/Limit Setting/CO2.dart';
-import '../screens/Limit Setting/VAC.dart';
 
 class LiveData {
   LiveData(this.time, this.o2_1, this.vac, this.n2o, this.air, this.co2,
@@ -370,42 +371,42 @@ class _DemoWidState extends State<DemoWid> {
     if (index == 0) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => O2()),
+        MaterialPageRoute(builder: (context) => O21()),
       );
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => VAC()),
+        MaterialPageRoute(builder: (context) => VACD()),
       );
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => N2O()),
+        MaterialPageRoute(builder: (context) => N2OD()),
       );
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AIR()),
+        MaterialPageRoute(builder: (context) => AIRD()),
       );
     } else if (index == 4) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CO2()),
+        MaterialPageRoute(builder: (context) => CO2D()),
       );
     } else if (index == 5) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => O2_2()),
+        MaterialPageRoute(builder: (context) => O22()),
       );
     } else if (index == 6) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => TEMP()),
+        MaterialPageRoute(builder: (context) => TEMPD()),
       );
     } else if (index == 7) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => HUMI()),
+        MaterialPageRoute(builder: (context) => HUMID()),
       );
     }
   }
@@ -607,6 +608,34 @@ class _DemoWidState extends State<DemoWid> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: RichText(
+                text: const TextSpan(
+                    text: 'Press ',
+                    style: TextStyle(color: Colors.blue, fontSize: 25),
+                    children: [
+                      TextSpan(
+                        text: 'Data ',
+                        style: TextStyle(color: Colors.red, fontSize: 25),
+                      ),
+                      TextSpan(
+                        text: 'Medical Gas Alram + Analyser ',
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 20),
+                      ),
+                    ]),
+              ),
+            ),
+          ],
+        ),
+        toolbarHeight: 40,
+        backgroundColor: Color.fromRGBO(228, 100, 128, 100),
+      ),
       body: Row(
         children: [
           // Graph on the left
@@ -731,8 +760,7 @@ class _DemoWidState extends State<DemoWid> {
               child: Column(
                 children: [
                   Expanded(
-                    child: 
-                    GridView.builder(
+                    child: GridView.builder(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,

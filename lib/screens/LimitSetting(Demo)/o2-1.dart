@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class O2 extends StatefulWidget {
-  const O2({super.key});
+class O21 extends StatefulWidget {
+  const O21({super.key});
 
   @override
-  State<O2> createState() => _O2State();
+  State<O21> createState() => _O2State();
 }
 
-class _O2State extends State<O2> {
-  int maxLimit = 0;
+class _O2State extends State<O21> {
+  int maxLimit = 10;
   int minLimit = 0;
   @override
   void initState() {
@@ -57,8 +58,8 @@ class _O2State extends State<O2> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

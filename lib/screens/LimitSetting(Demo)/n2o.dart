@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class N2O extends StatefulWidget {
-  const N2O({super.key});
+class N2OD extends StatefulWidget {
+  const N2OD({super.key});
 
   @override
-  State<N2O> createState() => _N2OState();
+  State<N2OD> createState() => _N2OState();
 }
 
-class _N2OState extends State<N2O> {
-  int maxLimit = 0;
+class _N2OState extends State<N2OD> {
+  int maxLimit = 80;
   int minLimit = 0;
 
   @override
@@ -58,8 +59,8 @@ class _N2OState extends State<N2O> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

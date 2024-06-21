@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class VAC extends StatefulWidget {
-  const VAC({super.key});
+class VACD extends StatefulWidget {
+  const VACD({super.key});
 
   @override
-  State<VAC> createState() => _VACState();
+  State<VACD> createState() => _VACState();
 }
 
-class _VACState extends State<VAC> {
-  int maxLimit = 0;
+class _VACState extends State<VACD> {
+  int maxLimit = 40;
   int minLimit = 0;
 
   @override
@@ -58,8 +59,8 @@ class _VACState extends State<VAC> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

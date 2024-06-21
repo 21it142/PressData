@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HUMI extends StatefulWidget {
-  const HUMI({super.key});
+class HUMID extends StatefulWidget {
+  const HUMID({super.key});
 
   @override
-  State<HUMI> createState() => _HUMIState();
+  State<HUMID> createState() => _HUMIState();
 }
 
-class _HUMIState extends State<HUMI> {
+class _HUMIState extends State<HUMID> {
   int maxLimit = 0;
   int minLimit = 0;
 
@@ -58,8 +59,8 @@ class _HUMIState extends State<HUMI> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

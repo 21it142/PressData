@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -23,14 +24,72 @@ class _ReportScreenState extends State<ReportScreen> {
   void generatePDF() async {
     final pdf = pw.Document();
 
+    final titleStyle = pw.TextStyle(
+      fontSize: 14,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final regularStyle = pw.TextStyle(
+      fontSize: 12,
+    );
+
+    // Join selected items to display in the header
+    final selectedGasesHeader = _selectedItems.join(', ');
+
+    final dynamicHeading = selectedOption == 'Daily'
+        ? 'Daily Report for ${DateFormat.yMMMd().format(_selectedDailyDate!)}'
+        : selectedOption == 'Weekly'
+            ? 'Weekly Report from ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} to ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}'
+            : 'Monthly Report for $_selectedMonthlyDate';
+
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
           return pw.Center(
             child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text('Report for $selectedOption',
-                    style: pw.TextStyle(fontSize: 20)),
+                pw.Header(
+                  level: 1,
+                  child: pw.Text('PressData® Report - $selectedGasesHeader',
+                      style: titleStyle),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Hospital name: General Hospital, Vadodara',
+                            style: regularStyle),
+                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                      ],
+                    ),
+                    pw.Text('PressData unit Sr no: PDA12345678',
+                        style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.Text(
+                    'Date: ${DateFormat('dd-MM-yyyy').format(DateTime.now())}',
+                    style: regularStyle),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                    'Report generation Date: ${DateFormat('dd-MM-yyyy, HH:mm').format(DateTime.now())}',
+                    style: regularStyle),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Container(
+                  padding: pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.black),
+                    borderRadius: pw.BorderRadius.circular(5),
+                  ),
+                  child: pw.Text(dynamicHeading,
+                      style: pw.TextStyle(fontSize: 20)),
+                ),
                 pw.SizedBox(height: 20),
                 pw.Text('Selected Gases:', style: pw.TextStyle(fontSize: 16)),
                 for (var gas in _selectedItems) pw.Text(gas),
@@ -44,6 +103,55 @@ class _ReportScreenState extends State<ReportScreen> {
                       'Selected Date Range: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}'),
                 if (selectedOption == 'Monthly' && _selectedMonthlyDate != null)
                   pw.Text('Selected Month: $_selectedMonthlyDate'),
+                pw.SizedBox(height: 20),
+                pw.Text('Graph - Time (HH 00 to 24) Vs Selected Gas Values'),
+                pw.Container(
+                  height: 200,
+                  child: pw.Center(
+                      child: pw.Text(
+                          'Graph Placeholder')), // Add dynamic graph drawing logic here
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure: 79 PSI', style: regularStyle),
+                        pw.Text('Min Pressure: 42 PSI', style: regularStyle),
+                        pw.Text('Average Pressure: 56 PSI',
+                            style: regularStyle),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure Time: 14:09',
+                            style: regularStyle),
+                        pw.Text('Min Pressure Time: 22:32',
+                            style: regularStyle),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text('Alarm conditions:', style: regularStyle),
+                pw.Text('No alarm detected today.', style: regularStyle),
+                pw.SizedBox(height: 8),
+                pw.Text('Remarks:', style: regularStyle),
+                pw.Text('Two Laparoscopic Procedures carried out today',
+                    style: regularStyle),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                        'Report generated from PressData® by wavevisions.in',
+                        style: regularStyle),
+                    pw.Text('Sign:', style: regularStyle),
+                  ],
+                ),
               ],
             ),
           );
@@ -64,30 +172,14 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  void _showMultiSelect() async {
-    final List<String> items = [
-      'O2(1)',
-      'VAC',
-      'NO2',
-      'AIR',
-      'CO2',
-      'O2(2)',
-      'TEMP',
-      'HUMI'
-    ];
-
-    final List<String>? results = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return MultiSelect(items: items);
-      },
-    );
-
-    if (results != null) {
-      setState(() {
-        _selectedItems = results;
-      });
-    }
+  void _toggleItemSelection(String item) {
+    setState(() {
+      if (_selectedItems.contains(item)) {
+        _selectedItems.remove(item);
+      } else {
+        _selectedItems.add(item);
+      }
+    });
   }
 
   void _selectDate(BuildContext context) async {
@@ -117,10 +209,14 @@ class _ReportScreenState extends State<ReportScreen> {
 
     if (selected != null) {
       setState(() {
-        _selectedWeeklyDateRange = selected;
-        selectedOption = 'Weekly';
-        _selectedDailyDate = null;
-        _selectedMonthlyDate = null;
+        if (_selectedWeeklyDateRange == selected) {
+          _selectedWeeklyDateRange = null;
+        } else {
+          _selectedWeeklyDateRange = selected;
+          selectedOption = 'Weekly';
+          _selectedDailyDate = null;
+          _selectedMonthlyDate = null;
+        }
       });
     }
   }
@@ -160,11 +256,25 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> items = [
+      'O2(1)',
+      'VAC',
+      'NO2',
+      'AIR',
+      'CO2',
+      'O2(2)',
+      'TEMP',
+      'HUMI'
+    ];
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 145, 248, 248),
       appBar: AppBar(
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_outlined)),
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
           child: Text(
             "Report",
@@ -185,137 +295,133 @@ class _ReportScreenState extends State<ReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              onPressed: _showMultiSelect,
-              child: const Text(
-                'Select Report',
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              ),
+            Wrap(
+              spacing: 4.0, // Horizontal space between buttons
+              runSpacing: 4.0, // Vertical space between button rows
+              children: items.map((item) {
+                final isSelected = _selectedItems.contains(item);
+                return SizedBox(
+                  width: (MediaQuery.of(context).size.width - 60) /
+                      4, // Ensure 8 buttons fit
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      backgroundColor: isSelected ? Colors.blue : Colors.grey,
+                    ),
+                    onPressed: () => _toggleItemSelection(item),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => _toggleItemSelection(item),
+                        ),
+                        Text(
+                          item,
+                          style: TextStyle(
+                            fontSize: 10, // Reduced font size
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
             const Divider(
               height: 10,
             ),
-            Wrap(
-              children: _selectedItems
-                  .map((e) => Chip(
-                        label: Text(e),
-                      ))
-                  .toList(),
+            SizedBox(
+              height: 25,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedOption == 'Daily'
+                            ? Colors.green
+                            : const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onPressed: () => _selectDate(context),
+                      child: Text('Daily'),
+                    ),
+                    if (_selectedDailyDate != null)
+                      Text(
+                        'Selected Date: ${DateFormat.yMMMd().format(_selectedDailyDate!)}',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedOption == 'Weekly'
+                            ? Colors.green
+                            : const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onPressed: () => _selectDateRange(context),
+                      child: Text(
+                        'Weekly',
+                      ),
+                    ),
+                    if (_selectedWeeklyDateRange != null)
+                      Text(
+                        'Selected Date Range: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedOption == 'Monthly'
+                            ? Colors.green
+                            : const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onPressed: () => _selectMonth(context),
+                      child: Text('Monthly'),
+                    ),
+                    if (_selectedMonthlyDate != null)
+                      Text(
+                        'Selected Month: $_selectedMonthlyDate',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                  ],
+                ),
+              ],
             ),
             SizedBox(
-              height: 35,
+              height: 10,
             ),
-            ElevatedButton(
-              onPressed: () => _selectDate(context),
-              child: Text('Select Daily'),
-            ),
-            if (_selectedDailyDate != null)
-              Text(
-                  'Selected Date: ${DateFormat.yMMMd().format(_selectedDailyDate!)}'),
-            SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(
-              onPressed: () => _selectDateRange(context),
-              child: Text('Select Weekly'),
-            ),
-            if (_selectedWeeklyDateRange != null)
-              Text(
-                  'Selected Date Range: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}'),
-            SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(
-              onPressed: () => _selectMonth(context),
-              child: Text('Select Monthly'),
-            ),
-            if (_selectedMonthlyDate != null)
-              Text('Selected Month: $_selectedMonthlyDate'),
-            SizedBox(
-              height: 45,
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+            if (_selectedItems.isNotEmpty && selectedOption != null)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    side: BorderSide(color: Colors.black),
+                  ),
+                  minimumSize: Size(200, 40), // Set the button size
+                ),
+                onPressed: generatePDF,
+                child: Text(
+                  "Generate Report",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ),
-              onPressed: generatePDF,
-              child: Text(
-                "Generate Report",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontSize: 20),
-              ),
-            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class MultiSelect extends StatefulWidget {
-  final List<String> items;
-  const MultiSelect({Key? key, required this.items}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _MultiSelectState();
-}
-
-class _MultiSelectState extends State<MultiSelect> {
-  final List<String> _selectedItems = [];
-
-  void _itemChange(String itemValue, bool isSelected) {
-    setState(() {
-      if (isSelected) {
-        _selectedItems.add(itemValue);
-      } else {
-        _selectedItems.remove(itemValue);
-      }
-    });
-  }
-
-  void _cancel() {
-    Navigator.pop(context);
-  }
-
-  void _submit() {
-    Navigator.pop(context, _selectedItems);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Select Topics'),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: widget.items
-              .map((item) => CheckboxListTile(
-                    value: _selectedItems.contains(item),
-                    title: Text(item),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    onChanged: (isChecked) => _itemChange(item, isChecked!),
-                  ))
-              .toList(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _cancel,
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Submit'),
-        ),
-      ],
     );
   }
 }

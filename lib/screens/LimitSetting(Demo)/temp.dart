@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class TEMP extends StatefulWidget {
-  const TEMP({super.key});
+class TEMPD extends StatefulWidget {
+  const TEMPD({super.key});
 
   @override
-  State<TEMP> createState() => _TEMPState();
+  State<TEMPD> createState() => _TEMPState();
 }
 
-class _TEMPState extends State<TEMP> {
-  int maxLimit = 0;
+class _TEMPState extends State<TEMPD> {
+  int maxLimit = 78;
   int minLimit = 0;
 
   @override
@@ -58,8 +59,8 @@ class _TEMPState extends State<TEMP> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

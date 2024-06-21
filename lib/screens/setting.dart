@@ -5,9 +5,7 @@ import 'package:pressdata/screens/main_page.dart';
 class Setting1 extends StatefulWidget {
   Setting1({
     super.key,
-  
   });
-
 
   @override
   State<Setting1> createState() => _Setting1State();
@@ -109,14 +107,7 @@ class _Setting1State extends State<Setting1> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Dashboard(
-                 
-                  ),
-                ),
-              );
+              Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

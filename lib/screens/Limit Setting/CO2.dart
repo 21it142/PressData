@@ -109,10 +109,7 @@ class _CO2State extends State<CO2> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Dashboard()),
-            );
+            Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back_outlined),
         ),

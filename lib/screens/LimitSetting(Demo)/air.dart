@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CO2 extends StatefulWidget {
-  const CO2({super.key});
+class AIRD extends StatefulWidget {
+  const AIRD({super.key});
 
   @override
-  State<CO2> createState() => _CO2State();
+  State<AIRD> createState() => _CO2State();
 }
 
-class _CO2State extends State<CO2> {
-  int maxLimit = 0;
+class _CO2State extends State<AIRD> {
+  int maxLimit = 50;
   int minLimit = 0;
 
   @override
@@ -58,8 +59,8 @@ class _CO2State extends State<CO2> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => DemoWid()));
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(

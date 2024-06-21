@@ -333,51 +333,57 @@ class _LineCharWidState extends State<LineCharWid> {
                         color: parameterColors[0],
                         elevation: 4.0,
                         child: StreamBuilder<PressData>(
-                            stream: _streamDatatemp.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                //  String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[0],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
+                          stream: _streamDatatemp.stream,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              PressData pressData = snapshot.data!;
+                              String value = pressData.value.toString();
+                              return Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          value,
+                                          style: TextStyle(
+                                            color: parameterTextColor[0],
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        parameterUnit[0],
-                                        style: TextStyle(
-                                          color: parameterTextColor[0],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
+                                        const SizedBox(width: 15),
+                                        Text(
+                                          parameterUnit[0],
+                                          style: TextStyle(
+                                            color: parameterTextColor[0],
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
+                                      ],
+                                    ),
+                                    Text(
+                                      parameterNames[0],
+                                      style: TextStyle(
+                                        color: parameterTextColor[0],
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        parameterNames[0],
-                                        style: TextStyle(
-                                          color: parameterTextColor[0],
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[0],
-                                );
-                              }
-                            }),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              return CircularProgressIndicator(
+                                color: parameterTextColor[0],
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -401,28 +407,34 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[1],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[1],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[1],
+                                            style: TextStyle(
+                                              color: parameterTextColor[1],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[1],
-                                        style: TextStyle(
-                                          color: parameterTextColor[1],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[1],
                                         style: TextStyle(
                                           color: parameterTextColor[1],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -462,33 +474,37 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[2],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[2],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[2],
+                                            style: TextStyle(
+                                              color: parameterTextColor[2],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[2],
-                                        style: TextStyle(
-                                          color: parameterTextColor[2],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[2],
                                         style: TextStyle(
                                           color: parameterTextColor[2],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-
-                                      // You can add additional widgets or logic based on type here
                                     ],
                                   ),
                                 );
@@ -521,32 +537,37 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[3],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[3],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[3],
+                                            style: TextStyle(
+                                              color: parameterTextColor[3],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[3],
-                                        style: TextStyle(
-                                          color: parameterTextColor[3],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[3],
                                         style: TextStyle(
                                           color: parameterTextColor[3],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // You can add additional widgets or logic based on type here
                                     ],
                                   ),
                                 );
@@ -583,32 +604,37 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[4],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[4],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[4],
+                                            style: TextStyle(
+                                              color: parameterTextColor[4],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[4],
-                                        style: TextStyle(
-                                          color: parameterTextColor[4],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[4],
                                         style: TextStyle(
                                           color: parameterTextColor[4],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // You can add additional widgets or logic based on type here
                                     ],
                                   ),
                                 );
@@ -641,32 +667,37 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[5],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[5],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[5],
+                                            style: TextStyle(
+                                              color: parameterTextColor[5],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[5],
-                                        style: TextStyle(
-                                          color: parameterTextColor[5],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[5],
                                         style: TextStyle(
                                           color: parameterTextColor[5],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // You can add additional widgets or logic based on type here
                                     ],
                                   ),
                                 );
@@ -703,28 +734,34 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[6],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[6],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[6],
+                                            style: TextStyle(
+                                              color: parameterTextColor[6],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        parameterUnit[6],
-                                        style: TextStyle(
-                                          color: parameterTextColor[6],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
                                       Text(
                                         parameterNames[6],
                                         style: TextStyle(
                                           color: parameterTextColor[6],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -761,31 +798,34 @@ class _LineCharWidState extends State<LineCharWid> {
                                   padding: const EdgeInsets.all(2.0),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: parameterTextColor[7],
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: parameterTextColor[7],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[7],
+                                            style: TextStyle(
+                                              color: parameterTextColor[7],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-
-                                      Text(
-                                        parameterUnit[7],
-                                        style: TextStyle(
-                                          color: parameterTextColor[7],
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      // You can add additional widgets or logic based on type here
-
                                       Text(
                                         parameterNames[7],
                                         style: TextStyle(
                                           color: parameterTextColor[7],
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),

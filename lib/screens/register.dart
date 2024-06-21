@@ -108,6 +108,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
+            SizedBox(
+              width: 10,
+            ),
           ],
         ),
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),
@@ -175,9 +178,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email address';
                     }
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                      return 'Please enter a valid email address';
-                    }
+                    // if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                    //   return 'Please enter a valid email address';
+                    // }
                     return null;
                   },
                 ),
@@ -237,7 +240,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     style: TextStyle(color: Colors.red),
                   ),
                 )
-              : null, 
+              : null,
         ),
         validator: validator,
         onChanged: (_) {
