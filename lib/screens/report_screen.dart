@@ -1,13 +1,23 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:pressdata/screens/Daily_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  final Uint8List? imageBytes;
+  const ReportScreen({
+    super.key,
+    this.imageBytes,
+  });
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -33,7 +43,6 @@ class _ReportScreenState extends State<ReportScreen> {
       fontSize: 12,
     );
 
-    // Join selected items to display in the header
     final selectedGasesHeader = _selectedItems.join(', ');
 
     final dynamicHeading = selectedOption == 'Daily'
@@ -45,71 +54,71 @@ class _ReportScreenState extends State<ReportScreen> {
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
-          return pw.Center(
+          return pw.Container(
+            margin: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
+              borderRadius: pw.BorderRadius.circular(5),
+            ),
             child: pw.Column(
-              mainAxisAlignment: pw.MainAxisAlignment.center,
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Header(
-                  level: 1,
                   child: pw.Text('PressData® Report - $selectedGasesHeader',
                       style: titleStyle),
                 ),
                 pw.SizedBox(height: 8),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                pw.Center(
+                  child: pw.Container(
+                    padding: pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.black),
+                      borderRadius: pw.BorderRadius.circular(5),
+                    ),
+                    child: pw.Text(dynamicHeading,
+                        style: pw.TextStyle(fontSize: 20)),
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    pw.Row(
                       children: [
                         pw.Text('Hospital name: General Hospital, Vadodara',
                             style: regularStyle),
-                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                        pw.SizedBox(width: 16),
+                        pw.Text('PressData unit Sr no: PDA12345678',
+                            style: regularStyle),
                       ],
                     ),
-                    pw.Text('PressData unit Sr no: PDA12345678',
+                    pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                        'Date: ${DateFormat('dd-MM-yyyy').format(DateTime.now())}',
+                        style: regularStyle),
+                    pw.SizedBox(width: 130),
+                    pw.Text(
+                        'Report generation Date: ${DateFormat('dd-MM-yyyy, HH:mm').format(DateTime.now())}',
                         style: regularStyle),
                   ],
                 ),
                 pw.Divider(),
-                pw.Text(
-                    'Date: ${DateFormat('dd-MM-yyyy').format(DateTime.now())}',
-                    style: regularStyle),
                 pw.SizedBox(height: 8),
-                pw.Text(
-                    'Report generation Date: ${DateFormat('dd-MM-yyyy, HH:mm').format(DateTime.now())}',
-                    style: regularStyle),
-                pw.Divider(),
-                pw.SizedBox(height: 8),
-                pw.Container(
-                  padding: pw.EdgeInsets.all(8),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.black),
-                    borderRadius: pw.BorderRadius.circular(5),
-                  ),
-                  child: pw.Text(dynamicHeading,
-                      style: pw.TextStyle(fontSize: 20)),
+                pw.Center(
+                  child: pw.Text(
+                      'Graph - Time (HH 00 to 24) Vs Selected Gas Values'),
                 ),
-                pw.SizedBox(height: 20),
-                pw.Text('Selected Gases:', style: pw.TextStyle(fontSize: 16)),
-                for (var gas in _selectedItems) pw.Text(gas),
-                pw.SizedBox(height: 20),
-                if (selectedOption == 'Daily' && _selectedDailyDate != null)
-                  pw.Text(
-                      'Selected Date: ${DateFormat.yMMMd().format(_selectedDailyDate!)}'),
-                if (selectedOption == 'Weekly' &&
-                    _selectedWeeklyDateRange != null)
-                  pw.Text(
-                      'Selected Date Range: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}'),
-                if (selectedOption == 'Monthly' && _selectedMonthlyDate != null)
-                  pw.Text('Selected Month: $_selectedMonthlyDate'),
-                pw.SizedBox(height: 20),
-                pw.Text('Graph - Time (HH 00 to 24) Vs Selected Gas Values'),
                 pw.Container(
                   height: 200,
-                  child: pw.Center(
-                      child: pw.Text(
-                          'Graph Placeholder')), // Add dynamic graph drawing logic here
+                  child: widget.imageBytes != null
+                      ? pw.Image(pw.MemoryImage(widget.imageBytes!))
+                      : pw.Center(child: pw.Text('Graph Placeholder')),
                 ),
                 pw.SizedBox(height: 8),
                 pw.Row(
@@ -135,22 +144,30 @@ class _ReportScreenState extends State<ReportScreen> {
                     ),
                   ],
                 ),
-                pw.SizedBox(height: 8),
+                pw.SizedBox(height: 22),
                 pw.Text('Alarm conditions:', style: regularStyle),
-                pw.Text('No alarm detected today.', style: regularStyle),
-                pw.SizedBox(height: 8),
+                pw.Row(children: [
+                  pw.SizedBox(width: 150),
+                  pw.Text('No alarm detected today.', style: regularStyle),
+                ]),
+                pw.SizedBox(height: 49),
+                pw.Divider(),
                 pw.Text('Remarks:', style: regularStyle),
                 pw.Text('Two Laparoscopic Procedures carried out today',
                     style: regularStyle),
                 pw.SizedBox(height: 8),
                 pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: pw.MainAxisAlignment.end,
                   children: [
-                    pw.Text(
-                        'Report generated from PressData® by wavevisions.in',
-                        style: regularStyle),
                     pw.Text('Sign:', style: regularStyle),
                   ],
+                ),
+                pw.SizedBox(height: 45),
+                pw.Divider(),
+                pw.Footer(
+                  title: pw.Text(
+                      'Report generated from PressData® by wavevisions.in',
+                      style: regularStyle),
                 ),
               ],
             ),
@@ -172,6 +189,42 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  void _loadPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedDailyDate = prefs.getString('dailyDate') != null
+          ? DateTime.parse(prefs.getString('dailyDate')!)
+          : null;
+      _selectedWeeklyDateRange = prefs.getString('weeklyStart') != null &&
+              prefs.getString('weeklyEnd') != null
+          ? DateTimeRange(
+              start: DateTime.parse(prefs.getString('weeklyStart')!),
+              end: DateTime.parse(prefs.getString('weeklyEnd')!))
+          : null;
+      _selectedMonthlyDate = prefs.getString('monthlyDate');
+      _selectedItems = prefs.getStringList('selectedItems') ?? [];
+      selectedOption = prefs.getString('selectedOption');
+    });
+  }
+
+  void _savePreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('dailyDate', _selectedDailyDate?.toIso8601String() ?? '');
+    prefs.setString(
+        'weeklyStart', _selectedWeeklyDateRange?.start.toIso8601String() ?? '');
+    prefs.setString(
+        'weeklyEnd', _selectedWeeklyDateRange?.end.toIso8601String() ?? '');
+    prefs.setString('monthlyDate', _selectedMonthlyDate ?? '');
+    prefs.setStringList('selectedItems', _selectedItems);
+    prefs.setString('selectedOption', selectedOption ?? '');
+  }
+
   void _toggleItemSelection(String item) {
     setState(() {
       if (_selectedItems.contains(item)) {
@@ -180,6 +233,7 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedItems.add(item);
       }
     });
+    _savePreferences();
   }
 
   void _selectDate(BuildContext context) async {
@@ -197,6 +251,8 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedWeeklyDateRange = null;
         _selectedMonthlyDate = null;
       });
+      _savePreferences();
+      _navigateToDailyChart();
     }
   }
 
@@ -209,20 +265,18 @@ class _ReportScreenState extends State<ReportScreen> {
 
     if (selected != null) {
       setState(() {
-        if (_selectedWeeklyDateRange == selected) {
-          _selectedWeeklyDateRange = null;
-        } else {
-          _selectedWeeklyDateRange = selected;
-          selectedOption = 'Weekly';
-          _selectedDailyDate = null;
-          _selectedMonthlyDate = null;
-        }
+        _selectedWeeklyDateRange = selected;
+        selectedOption = 'Weekly';
+        _selectedDailyDate = null;
+        _selectedMonthlyDate = null;
       });
+      _savePreferences();
+      _navigateToDailyChart();
     }
   }
 
   void _selectMonth(BuildContext context) async {
-    final List<String> months = List.generate(3, (index) {
+    final List<String> months = List.generate(4, (index) {
       final date = DateTime.now().subtract(Duration(days: 30 * index));
       return DateFormat('MMMM yyyy').format(date);
     });
@@ -251,10 +305,20 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedDailyDate = null;
         _selectedWeeklyDateRange = null;
       });
+      _savePreferences();
+      _navigateToDailyChart();
     }
   }
 
-  @override
+  void _navigateToDailyChart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DailyChart(),
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     final List<String> items = [
       'O2(1)',
@@ -403,7 +467,7 @@ class _ReportScreenState extends State<ReportScreen> {
             SizedBox(
               height: 10,
             ),
-            if (_selectedItems.isNotEmpty && selectedOption != null)
+            if (_selectedItems.isNotEmpty && _selectedDailyDate != null)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -412,7 +476,23 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
                   minimumSize: Size(200, 40), // Set the button size
                 ),
-                onPressed: generatePDF,
+                onPressed: () => (generatePDF()),
+                child: Text(
+                  "Generate Report",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ),
+            if (_selectedItems.isNotEmpty)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    side: BorderSide(color: Colors.black),
+                  ),
+                  minimumSize: Size(200, 40), // Set the button size
+                ),
+                onPressed: () => (generatePDF()),
                 child: Text(
                   "Generate Report",
                   style: TextStyle(

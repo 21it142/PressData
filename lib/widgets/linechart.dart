@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +11,8 @@ import 'package:pressdata/screens/Limit%20Setting/O2.dart';
 import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
 import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
 import 'package:http/http.dart' as http;
+import 'package:pressdata/screens/report_screen.dart';
+import 'package:pressdata/screens/setting.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 //import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
@@ -24,6 +25,8 @@ class LineCharWid extends StatefulWidget {
 
   @override
   State<LineCharWid> createState() => _LineCharWidState();
+
+  captureChartImage() {}
 }
 
 class ParameterData {
@@ -237,6 +240,19 @@ class _LineCharWidState extends State<LineCharWid> {
     super.dispose();
   }
 
+  Map<int, String> specialValues = {
+    -333: 'Gas Not found',
+    -11: 'Not Connected',
+    -1111: 'Out of Range (Positive)',
+    -1112: 'Out of Range (Negative)',
+  };
+
+  Map<int, Color> specialValueColors = {
+    -333: Colors.red,
+    -11: Colors.red,
+    -1111: Colors.red,
+    -1112: Colors.red,
+  };
   @override
   Widget build(BuildContext context) {
     bool isDataAvailable = chartData.isNotEmpty;
@@ -848,6 +864,18 @@ class _LineCharWidState extends State<LineCharWid> {
         ],
       ),
     );
+    // : Center(
+    //     child: Column(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: [
+    //         Icon(
+    //           Icons.wifi_off,
+    //           size: 30,
+    //         ),
+    //         Text("Internet is not connected"),
+    //       ],
+    //     ),
+    //   )
   }
 
   Future<void> getdata() async {
