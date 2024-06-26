@@ -10,6 +10,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pressdata/screens/Daily_chart.dart';
+import 'package:pressdata/screens/Monthly_chart.dart';
+import 'package:pressdata/screens/Weekly_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -27,13 +29,50 @@ class _ReportScreenState extends State<ReportScreen> {
   DateTime? _selectedDailyDate;
   DateTimeRange? _selectedWeeklyDateRange;
   String? _selectedMonthlyDate;
-
+  TextEditingController _remarkController = TextEditingController();
   List<String> _selectedItems = [];
   String? selectedOption;
+  void _showRemarkDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add Remark'),
+          content: TextField(
+            controller: _remarkController,
+            decoration: InputDecoration(hintText: "Enter your remark here"),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: Text('Submit'),
+              onPressed: () {
+                if (_selectedDailyDate != null) {
+                  Navigator.of(context).pop();
+                  generatePDF_Daily();
+                } else if (_selectedWeeklyDateRange != null) {
+                  Navigator.of(context).pop();
+                  generatePDF_Weekly();
+                } else if (_selectedMonthlyDate != null) {
+                  Navigator.of(context).pop();
+                  generatePDF_Monthly();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  void generatePDF() async {
+  void generatePDF_Daily() async {
     final pdf = pw.Document();
-
+    String remark = _remarkController.text;
     final titleStyle = pw.TextStyle(
       fontSize: 14,
       fontWeight: pw.FontWeight.bold,
@@ -45,11 +84,18 @@ class _ReportScreenState extends State<ReportScreen> {
 
     final selectedGasesHeader = _selectedItems.join(', ');
 
-    final dynamicHeading = selectedOption == 'Daily'
-        ? 'Daily Report for ${DateFormat.yMMMd().format(_selectedDailyDate!)}'
-        : selectedOption == 'Weekly'
-            ? 'Weekly Report from ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} to ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}'
-            : 'Monthly Report for $_selectedMonthlyDate';
+    // String dynamicHeading;
+    // if (selectedOption == 'Daily' && _selectedDailyDate != null) {
+    //   dynamicHeading =
+    //       'Daily Report for ${DateFormat.yMMMd().format(_selectedDailyDate!)}';
+    // } else if (selectedOption == 'Weekly' && _selectedWeeklyDateRange != null) {
+    //   dynamicHeading =
+    //       'Weekly Report from ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} to ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}';
+    // } else if (selectedOption == 'Monthly' && _selectedMonthlyDate != null) {
+    //   dynamicHeading = 'Monthly Report for $_selectedMonthlyDate';
+    // } else {
+    //   dynamicHeading = 'Report';
+    // }
 
     pdf.addPage(
       pw.Page(
@@ -64,22 +110,19 @@ class _ReportScreenState extends State<ReportScreen> {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Header(
-                  child: pw.Text('PressData® Report - $selectedGasesHeader',
-                      style: titleStyle),
-                ),
-                pw.SizedBox(height: 8),
-                pw.Center(
-                  child: pw.Container(
-                    padding: pw.EdgeInsets.all(8),
-                    decoration: pw.BoxDecoration(
-                      border: pw.Border.all(color: PdfColors.black),
-                      borderRadius: pw.BorderRadius.circular(5),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Header(
+                      child: pw.Text('PressData® Report - $selectedGasesHeader',
+                          style: titleStyle),
                     ),
-                    child: pw.Text(dynamicHeading,
-                        style: pw.TextStyle(fontSize: 20)),
-                  ),
+                  ],
                 ),
+                //pw.Divider(),
+                pw.SizedBox(height: 8),
+                // pw.Text(dynamicHeading, style: pw.TextStyle(fontSize: 20)),
                 pw.SizedBox(height: 8),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -89,11 +132,11 @@ class _ReportScreenState extends State<ReportScreen> {
                         pw.Text('Hospital name: General Hospital, Vadodara',
                             style: regularStyle),
                         pw.SizedBox(width: 16),
-                        pw.Text('PressData unit Sr no: PDA12345678',
-                            style: regularStyle),
+                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
                       ],
                     ),
-                    pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                    pw.Text('PressData unit Sr no: PDA12345678',
+                        style: regularStyle),
                   ],
                 ),
                 pw.Divider(),
@@ -112,7 +155,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 pw.SizedBox(height: 8),
                 pw.Center(
                   child: pw.Text(
-                      'Graph - Time (HH 00 to 24) Vs Selected Gas Values'),
+                      'Graph - Time (HH 00 to 24) Vs $selectedGasesHeader Gas Values'),
                 ),
                 pw.Container(
                   height: 200,
@@ -153,8 +196,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 pw.SizedBox(height: 49),
                 pw.Divider(),
                 pw.Text('Remarks:', style: regularStyle),
-                pw.Text('Two Laparoscopic Procedures carried out today',
-                    style: regularStyle),
+                pw.Text('$remark', style: regularStyle),
                 pw.SizedBox(height: 8),
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.end,
@@ -187,42 +229,337 @@ class _ReportScreenState extends State<ReportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('PDF saved to $filePath')),
     );
+    _clearSelectedData();
+  }
+
+  void generatePDF_Weekly() async {
+    final pdf = pw.Document();
+    String remark = _remarkController.text;
+    final titleStyle = pw.TextStyle(
+      fontSize: 14,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final regularStyle = pw.TextStyle(
+      fontSize: 12,
+    );
+
+    final selectedGasesHeader = _selectedItems.join(', ');
+
+    // String dynamicHeading;
+    // if (selectedOption == 'Daily' && _selectedDailyDate != null) {
+    //   dynamicHeading =
+    //       'Daily Report for ${DateFormat.yMMMd().format(_selectedDailyDate!)}';
+    // } else if (selectedOption == 'Weekly' && _selectedWeeklyDateRange != null) {
+    //   dynamicHeading =
+    //       'Weekly Report from ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} to ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}';
+    // } else if (selectedOption == 'Monthly' && _selectedMonthlyDate != null) {
+    //   dynamicHeading = 'Monthly Report for $_selectedMonthlyDate';
+    // } else {
+    //   dynamicHeading = 'Report';
+    // }
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Container(
+            margin: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
+              borderRadius: pw.BorderRadius.circular(5),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Header(
+                      child: pw.Text('PressData® Report - $selectedGasesHeader',
+                          style: titleStyle),
+                    ),
+                  ],
+                ),
+                //pw.Divider(),
+                pw.SizedBox(height: 8),
+                // pw.Text(dynamicHeading, style: pw.TextStyle(fontSize: 20)),
+                pw.SizedBox(height: 8),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      children: [
+                        pw.Text('Hospital name: General Hospital, Vadodara',
+                            style: regularStyle),
+                        pw.SizedBox(width: 16),
+                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                      ],
+                    ),
+                    pw.Text('PressData unit Sr no: PDA12345678',
+                        style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                        'Date: ${DateFormat('dd-MM-yyyy').format(DateTime.now())}',
+                        style: regularStyle),
+                    pw.SizedBox(width: 130),
+                    pw.Text(
+                        'Report generation Date: ${DateFormat('dd-MM-yyyy, HH:mm').format(DateTime.now())}',
+                        style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Center(
+                  child: pw.Text(
+                      'Graph - Day (Mon to Sun) Vs $selectedGasesHeader Gas Values'),
+                ),
+                pw.Container(
+                  height: 200,
+                  child: widget.imageBytes != null
+                      ? pw.Image(pw.MemoryImage(widget.imageBytes!))
+                      : pw.Center(child: pw.Text('Graph Placeholder')),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure: 79 PSI', style: regularStyle),
+                        pw.Text('Min Pressure: 42 PSI', style: regularStyle),
+                        pw.Text('Average Pressure: 56 PSI',
+                            style: regularStyle),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure Time: 14:09',
+                            style: regularStyle),
+                        pw.Text('Min Pressure Time: 22:32',
+                            style: regularStyle),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 22),
+                pw.Text('Alarm conditions:', style: regularStyle),
+                pw.Row(children: [
+                  pw.SizedBox(width: 150),
+                  pw.Text('No alarm detected today.', style: regularStyle),
+                ]),
+                pw.SizedBox(height: 49),
+                pw.Divider(),
+                pw.Text('Remarks:', style: regularStyle),
+                pw.Text('$remark', style: regularStyle),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.end,
+                  children: [
+                    pw.Text('Sign:', style: regularStyle),
+                  ],
+                ),
+                pw.SizedBox(height: 45),
+                pw.Divider(),
+                pw.Footer(
+                  title: pw.Text(
+                      'Report generated from PressData® by wavevisions.in',
+                      style: regularStyle),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    final directory = await getDownloadsDirectory();
+    final filePath = '${directory!.path}/example.pdf';
+    final file = File(filePath);
+
+    final pdfBytes = await pdf.save();
+    await file.writeAsBytes(pdfBytes);
+    OpenFile.open(filePath);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF saved to $filePath')),
+    );
+    _clearSelectedData();
+  }
+
+  void generatePDF_Monthly() async {
+    final pdf = pw.Document();
+    String remark = _remarkController.text;
+    final titleStyle = pw.TextStyle(
+      fontSize: 14,
+      fontWeight: pw.FontWeight.bold,
+    );
+
+    final regularStyle = pw.TextStyle(
+      fontSize: 12,
+    );
+
+    final selectedGasesHeader = _selectedItems.join(', ');
+
+    // String dynamicHeading;
+    // if (selectedOption == 'Daily' && _selectedDailyDate != null) {
+    //   dynamicHeading =
+    //       'Daily Report for ${DateFormat.yMMMd().format(_selectedDailyDate!)}';
+    // } else if (selectedOption == 'Weekly' && _selectedWeeklyDateRange != null) {
+    //   dynamicHeading =
+    //       'Weekly Report from ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} to ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}';
+    // } else if (selectedOption == 'Monthly' && _selectedMonthlyDate != null) {
+    //   dynamicHeading = 'Monthly Report for $_selectedMonthlyDate';
+    // } else {
+    //   dynamicHeading = 'Report';
+    // }
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Container(
+            margin: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
+              borderRadius: pw.BorderRadius.circular(5),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Header(
+                      child: pw.Text('PressData® Report - $selectedGasesHeader',
+                          style: titleStyle),
+                    ),
+                  ],
+                ),
+                //pw.Divider(),
+                pw.SizedBox(height: 8),
+                // pw.Text(dynamicHeading, style: pw.TextStyle(fontSize: 20)),
+                pw.SizedBox(height: 8),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      children: [
+                        pw.Text('Hospital name: General Hospital, Vadodara',
+                            style: regularStyle),
+                        pw.SizedBox(width: 16),
+                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                      ],
+                    ),
+                    pw.Text('PressData unit Sr no: PDA12345678',
+                        style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                        'Date: ${DateFormat('dd-MM-yyyy').format(DateTime.now())}',
+                        style: regularStyle),
+                    pw.SizedBox(width: 130),
+                    pw.Text(
+                        'Report generation Date: ${DateFormat('dd-MM-yyyy, HH:mm').format(DateTime.now())}',
+                        style: regularStyle),
+                  ],
+                ),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Center(
+                  child: pw.Text(
+                      'Graph - Date ( 1 to 30 ) Vs $selectedGasesHeader Gas Values'),
+                ),
+                pw.Container(
+                  height: 200,
+                  child: widget.imageBytes != null
+                      ? pw.Image(pw.MemoryImage(widget.imageBytes!))
+                      : pw.Center(child: pw.Text('Graph Placeholder')),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure: 79 PSI', style: regularStyle),
+                        pw.Text('Min Pressure: 42 PSI', style: regularStyle),
+                        pw.Text('Average Pressure: 56 PSI',
+                            style: regularStyle),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Max Pressure Time: 14:09',
+                            style: regularStyle),
+                        pw.Text('Min Pressure Time: 22:32',
+                            style: regularStyle),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 22),
+                pw.Text('Alarm conditions:', style: regularStyle),
+                pw.Row(children: [
+                  pw.SizedBox(width: 150),
+                  pw.Text('No alarm detected today.', style: regularStyle),
+                ]),
+                pw.SizedBox(height: 49),
+                pw.Divider(),
+                pw.Text('Remarks:', style: regularStyle),
+                pw.Text('$remark', style: regularStyle),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.end,
+                  children: [
+                    pw.Text('Sign:', style: regularStyle),
+                  ],
+                ),
+                pw.SizedBox(height: 45),
+                pw.Divider(),
+                pw.Footer(
+                  title: pw.Text(
+                      'Report generated from PressData® by wavevisions.in',
+                      style: regularStyle),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    final directory = await getDownloadsDirectory();
+    final filePath = '${directory!.path}/example.pdf';
+    final file = File(filePath);
+
+    final pdfBytes = await pdf.save();
+    await file.writeAsBytes(pdfBytes);
+    OpenFile.open(filePath);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('PDF saved to $filePath')),
+    );
+    _clearSelectedData();
   }
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
-  }
-
-  void _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedDailyDate = prefs.getString('dailyDate') != null
-          ? DateTime.parse(prefs.getString('dailyDate')!)
-          : null;
-      _selectedWeeklyDateRange = prefs.getString('weeklyStart') != null &&
-              prefs.getString('weeklyEnd') != null
-          ? DateTimeRange(
-              start: DateTime.parse(prefs.getString('weeklyStart')!),
-              end: DateTime.parse(prefs.getString('weeklyEnd')!))
-          : null;
-      _selectedMonthlyDate = prefs.getString('monthlyDate');
-      _selectedItems = prefs.getStringList('selectedItems') ?? [];
-      selectedOption = prefs.getString('selectedOption');
-    });
-  }
-
-  void _savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('dailyDate', _selectedDailyDate?.toIso8601String() ?? '');
-    prefs.setString(
-        'weeklyStart', _selectedWeeklyDateRange?.start.toIso8601String() ?? '');
-    prefs.setString(
-        'weeklyEnd', _selectedWeeklyDateRange?.end.toIso8601String() ?? '');
-    prefs.setString('monthlyDate', _selectedMonthlyDate ?? '');
-    prefs.setStringList('selectedItems', _selectedItems);
-    prefs.setString('selectedOption', selectedOption ?? '');
+    _loadSelectedData();
   }
 
   void _toggleItemSelection(String item) {
@@ -233,7 +570,7 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedItems.add(item);
       }
     });
-    _savePreferences();
+    _saveSelectedData();
   }
 
   void _selectDate(BuildContext context) async {
@@ -251,8 +588,16 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedWeeklyDateRange = null;
         _selectedMonthlyDate = null;
       });
-      _savePreferences();
-      _navigateToDailyChart();
+      _saveSelectedData();
+
+      // Navigate to DailyCart page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => DailyChart(
+                  selectedValues: _selectedItems,
+                )),
+      );
     }
   }
 
@@ -270,8 +615,15 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedDailyDate = null;
         _selectedMonthlyDate = null;
       });
-      _savePreferences();
-      _navigateToDailyChart();
+      _saveSelectedData();
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => WeeklyChart(
+                  selectedValues: _selectedItems,
+                )),
+      );
     }
   }
 
@@ -305,25 +657,107 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedDailyDate = null;
         _selectedWeeklyDateRange = null;
       });
-      _savePreferences();
-      _navigateToDailyChart();
+      _saveSelectedData();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MonthlyChart(
+                  selectedValues: _selectedItems,
+                )),
+      );
     }
   }
 
-  void _navigateToDailyChart() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DailyChart(),
-      ),
-    );
+  Future<void> _saveSelectedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (_selectedDailyDate != null) {
+      prefs.setString(
+          'selectedDailyDate', _selectedDailyDate!.toIso8601String());
+    } else {
+      prefs.remove('selectedDailyDate');
+    }
+
+    if (_selectedWeeklyDateRange != null) {
+      prefs.setString('selectedWeeklyDateRangeStart',
+          _selectedWeeklyDateRange!.start.toIso8601String());
+      prefs.setString('selectedWeeklyDateRangeEnd',
+          _selectedWeeklyDateRange!.end.toIso8601String());
+    } else {
+      prefs.remove('selectedWeeklyDateRangeStart');
+      prefs.remove('selectedWeeklyDateRangeEnd');
+    }
+
+    if (_selectedMonthlyDate != null) {
+      prefs.setString('selectedMonthlyDate', _selectedMonthlyDate!);
+    } else {
+      prefs.remove('selectedMonthlyDate');
+    }
+
+    prefs.setStringList('selectedItems', _selectedItems);
+    prefs.setString('selectedOption', selectedOption ?? '');
+  }
+
+  Future<void> _loadSelectedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? dailyDateString = prefs.getString('selectedDailyDate');
+    if (dailyDateString != null) {
+      setState(() {
+        _selectedDailyDate = DateTime.parse(dailyDateString);
+      });
+    }
+
+    String? weeklyStartString = prefs.getString('selectedWeeklyDateRangeStart');
+    String? weeklyEndString = prefs.getString('selectedWeeklyDateRangeEnd');
+    if (weeklyStartString != null && weeklyEndString != null) {
+      setState(() {
+        _selectedWeeklyDateRange = DateTimeRange(
+          start: DateTime.parse(weeklyStartString),
+          end: DateTime.parse(weeklyEndString),
+        );
+      });
+    }
+
+    String? monthlyDateString = prefs.getString('selectedMonthlyDate');
+    if (monthlyDateString != null) {
+      setState(() {
+        _selectedMonthlyDate = monthlyDateString;
+      });
+    }
+
+    List<String>? selectedItems = prefs.getStringList('selectedItems');
+    if (selectedItems != null) {
+      setState(() {
+        _selectedItems = selectedItems;
+      });
+    }
+
+    String? option = prefs.getString('selectedOption');
+    if (option != null) {
+      setState(() {
+        selectedOption = option;
+      });
+    }
+  }
+
+  Future<void> _clearSelectedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    setState(() {
+      _selectedDailyDate = null;
+      _selectedWeeklyDateRange = null;
+      _selectedMonthlyDate = null;
+      _selectedItems = [];
+      selectedOption = null;
+    });
   }
 
   Widget build(BuildContext context) {
     final List<String> items = [
       'O2(1)',
       'VAC',
-      'NO2',
+      'N2O',
       'AIR',
       'CO2',
       'O2(2)',
@@ -467,7 +901,7 @@ class _ReportScreenState extends State<ReportScreen> {
             SizedBox(
               height: 10,
             ),
-            if (_selectedItems.isNotEmpty && _selectedDailyDate != null)
+            if (_selectedItems.isNotEmpty && (_selectedDailyDate != null))
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -476,14 +910,14 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
                   minimumSize: Size(200, 40), // Set the button size
                 ),
-                onPressed: () => (generatePDF()),
+                onPressed: _showRemarkDialog,
                 child: Text(
-                  "Generate Report",
+                  "Generate Daily Report",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ),
-            if (_selectedItems.isNotEmpty)
+            if (_selectedItems.isNotEmpty && _selectedWeeklyDateRange != null)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -492,9 +926,25 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
                   minimumSize: Size(200, 40), // Set the button size
                 ),
-                onPressed: () => (generatePDF()),
+                onPressed: _showRemarkDialog,
                 child: Text(
-                  "Generate Report",
+                  "Generate Weekly Report",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ),
+            if (_selectedItems.isNotEmpty && _selectedMonthlyDate != null)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    side: BorderSide(color: Colors.black),
+                  ),
+                  minimumSize: Size(200, 40), // Set the button size
+                ),
+                onPressed: _showRemarkDialog,
+                child: Text(
+                  "Generate Monthly Report",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.black),
                 ),

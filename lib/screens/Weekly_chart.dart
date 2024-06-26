@@ -7,47 +7,45 @@ import 'package:pressdata/screens/report_screen.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
-class DailyChart extends StatefulWidget {
+class WeeklyChart extends StatefulWidget {
   final List<String> selectedValues;
-  const DailyChart({super.key, required this.selectedValues});
 
+  const WeeklyChart({super.key, required this.selectedValues});
   @override
-  State<DailyChart> createState() => _DailyChartState();
+  State<WeeklyChart> createState() => _WeeklyChartState();
 }
 
-class _DailyChartState extends State<DailyChart> {
+class _WeeklyChartState extends State<WeeklyChart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Daily Report Line Chart'),
+        title: Text('Weekly Report Line Chart'),
       ),
-      body: LineChartScreen(
+      body: WeeklyChartScreen(
         selectedValues: widget.selectedValues,
       ),
     );
   }
 }
 
-class LineChartScreen extends StatefulWidget {
+class WeeklyChartScreen extends StatefulWidget {
   final List<String> selectedValues;
-  const LineChartScreen({super.key, required this.selectedValues});
+  const WeeklyChartScreen({super.key, required this.selectedValues});
 
   @override
-  _LineChartScreenState createState() => _LineChartScreenState();
+  _WeeklyChartScreenState createState() => _WeeklyChartScreenState();
 }
 
-class _LineChartScreenState extends State<LineChartScreen> {
+class _WeeklyChartScreenState extends State<WeeklyChartScreen> {
   final GlobalKey chartKey = GlobalKey();
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    final data =
-        generateRandomData(); // Assume this generates data for O2 or CO2
-    final minData = generateConstantData(47);
-    final maxData = generateConstantData(60);
-
+    final data = generateWeeklyRandomData();
+    final minData = generateWeeklyConstantData(47);
+    final maxData = generateWeeklyConstantData(60);
     List<CartesianSeries> seriesList = [];
 
     // Add selected value series
@@ -150,40 +148,58 @@ class _LineChartScreenState extends State<LineChartScreen> {
       ));
     }
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: RepaintBoundary(
-              key: chartKey,
-              child: SfCartesianChart(
-                primaryXAxis: DateTimeAxis(
-                  intervalType: DateTimeIntervalType.hours,
-                  dateFormat: DateFormat.Hm(),
-                ),
-                primaryYAxis: NumericAxis(
-                  minimum: 0,
-                  maximum: 100,
-                ),
-                tooltipBehavior: TooltipBehavior(enable: true),
-                legend: Legend(isVisible: true),
-                series: seriesList,
+    return Column(
+      children: [
+        Expanded(
+          child: RepaintBoundary(
+            key: chartKey,
+            child: SfCartesianChart(
+              primaryXAxis: DateTimeAxis(
+                intervalType: DateTimeIntervalType.days,
+                dateFormat: DateFormat.E(), // Short day format (Mon, Tue, etc.)
+                interval: 1, // Show every day of the week
               ),
+              primaryYAxis: NumericAxis(
+                minimum: 0,
+                maximum: 100,
+              ),
+              tooltipBehavior: TooltipBehavior(enable: true),
+              legend: Legend(isVisible: true),
+              series: <CartesianSeries>[
+                LineSeries<ChartData, DateTime>(
+                  dataSource: data,
+                  xValueMapper: (ChartData data, _) => data.time,
+                  yValueMapper: (ChartData data, _) => data.value,
+                  color: Colors.black,
+                ),
+                LineSeries<ChartData, DateTime>(
+                  dataSource: minData,
+                  xValueMapper: (ChartData data, _) => data.time,
+                  yValueMapper: (ChartData data, _) => data.value,
+                  color: Colors.yellow,
+                ),
+                LineSeries<ChartData, DateTime>(
+                  dataSource: maxData,
+                  xValueMapper: (ChartData data, _) => data.time,
+                  yValueMapper: (ChartData data, _) => data.value,
+                  color: Colors.red,
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                _captureAndShowImage(context);
-              },
-              child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Proceed'),
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: () {
+              _captureAndShowImage(context);
+            },
+            child: _isLoading
+                ? CircularProgressIndicator(color: Colors.white)
+                : Text('Proceed'),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -200,7 +216,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       final Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      Navigator.of(context).pop(); // Pop DailyChart page
+      Navigator.of(context).pop(); // Pop WeeklyChart page
 
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -227,22 +243,24 @@ class ChartData {
   ChartData(this.time, this.value);
 }
 
-List<ChartData> generateRandomData() {
+List<ChartData> generateWeeklyRandomData() {
   final random = Random();
   final now = DateTime.now();
-  return List.generate(1440, (index) {
+  final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+  return List.generate(7 * 24, (index) {
     return ChartData(
-      now.add(Duration(minutes: index)),
+      startOfWeek.add(Duration(hours: index)),
       50 + random.nextDouble() * 3, // Random value between 50 and 53
     );
   });
 }
 
-List<ChartData> generateConstantData(double value) {
+List<ChartData> generateWeeklyConstantData(double value) {
   final now = DateTime.now();
-  return List.generate(1440, (index) {
+  final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+  return List.generate(7 * 24, (index) {
     return ChartData(
-      now.add(Duration(minutes: index)),
+      startOfWeek.add(Duration(hours: index)),
       value,
     );
   });
