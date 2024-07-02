@@ -16,6 +16,8 @@ class CO2 extends StatefulWidget {
 class _CO2State extends State<CO2> {
   int maxLimit = 0;
   int minLimit = 0;
+  Timer? _maxLimitTimer;
+  Timer? _minLimitTimer;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
   bool _isLoading = false;
@@ -77,6 +79,28 @@ class _CO2State extends State<CO2> {
         _updateData(post['type'], minLimit.toDouble(), maxLimit.toDouble());
       }
     });
+  }
+
+  void _startMaxLimitTimer(bool increment) {
+    _maxLimitTimer?.cancel();
+    _maxLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMaxLimit(maxLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _startMinLimitTimer(bool increment) {
+    _minLimitTimer?.cancel();
+    _minLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMinLimit(minLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _stopMaxLimitTimer() {
+    _maxLimitTimer?.cancel();
+  }
+
+  void _stopMinLimitTimer() {
+    _minLimitTimer?.cancel();
   }
 
   void updateMinLimit(double value) async {
@@ -146,11 +170,10 @@ class _CO2State extends State<CO2> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() - 1.0);
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -178,22 +201,20 @@ class _CO2State extends State<CO2> {
                       margin: EdgeInsets.all(10),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() + 1.0);
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() - 1.0);
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -221,11 +242,10 @@ class _CO2State extends State<CO2> {
                       margin: EdgeInsets.all(10),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() + 1.0);
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                 ],
               ),

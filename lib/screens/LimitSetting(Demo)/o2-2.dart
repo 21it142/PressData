@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/widgets/demo.dart';
@@ -13,6 +15,8 @@ class O22 extends StatefulWidget {
 class _O2_2State extends State<O22> {
   int maxLimit = 20;
   int minLimit = 0;
+  Timer? _maxLimitTimer;
+  Timer? _minLimitTimer;
   @override
   void initState() {
     loadData();
@@ -27,6 +31,28 @@ class _O2_2State extends State<O22> {
       maxLimit = prefs.getInt('O2_2_maxLimit') ?? 60;
       minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
     });
+  }
+
+  void _startMaxLimitTimer(bool increment) {
+    _maxLimitTimer?.cancel();
+    _maxLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMaxLimit(maxLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _startMinLimitTimer(bool increment) {
+    _minLimitTimer?.cancel();
+    _minLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMinLimit(minLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _stopMaxLimitTimer() {
+    _maxLimitTimer?.cancel();
+  }
+
+  void _stopMinLimitTimer() {
+    _minLimitTimer?.cancel();
   }
 
   void updateMaxLimit(double value) async {
@@ -97,13 +123,10 @@ class _O2_2State extends State<O22> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() - 1.0);
-                      // product.minLimit = (product.minLimit > 0) ? product.minLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMaxLimitTimer(false),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -125,26 +148,20 @@ class _O2_2State extends State<O22> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.minLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() + 1.0);
-                      // product.minLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMaxLimitTimer(true),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() - 1.0);
-                      // product.maxLimit = (product.maxLimit > 0) ? product.maxLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -166,13 +183,10 @@ class _O2_2State extends State<O22> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.maxLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() + 1.0);
-                      // product.maxLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(true),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),

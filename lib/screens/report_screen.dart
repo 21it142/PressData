@@ -36,35 +36,37 @@ class _ReportScreenState extends State<ReportScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Remark'),
-          content: TextField(
-            controller: _remarkController,
-            decoration: InputDecoration(hintText: "Enter your remark here"),
+        return SingleChildScrollView(
+          child: AlertDialog(
+            title: Text('Add Remark'),
+            content: TextField(
+              controller: _remarkController,
+              decoration: InputDecoration(hintText: "Enter your remark here"),
+            ),
+            actions: [
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                child: Text('Submit'),
+                onPressed: () {
+                  if (_selectedDailyDate != null) {
+                    Navigator.of(context).pop();
+                    generatePDF_Daily();
+                  } else if (_selectedWeeklyDateRange != null) {
+                    Navigator.of(context).pop();
+                    generatePDF_Weekly();
+                  } else if (_selectedMonthlyDate != null) {
+                    Navigator.of(context).pop();
+                    generatePDF_Monthly();
+                  }
+                },
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: Text('Submit'),
-              onPressed: () {
-                if (_selectedDailyDate != null) {
-                  Navigator.of(context).pop();
-                  generatePDF_Daily();
-                } else if (_selectedWeeklyDateRange != null) {
-                  Navigator.of(context).pop();
-                  generatePDF_Weekly();
-                } else if (_selectedMonthlyDate != null) {
-                  Navigator.of(context).pop();
-                  generatePDF_Monthly();
-                }
-              },
-            ),
-          ],
         );
       },
     );

@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,13 +9,14 @@ class AIRD extends StatefulWidget {
   const AIRD({super.key});
 
   @override
-  State<AIRD> createState() => _AIRDState();
+  State<AIRD> createState() => _CO2State();
 }
 
-class _AIRDState extends State<AIRD> {
-  int maxLimit = 0;
+class _CO2State extends State<AIRD> {
+  int maxLimit = 50;
   int minLimit = 0;
-
+  Timer? _maxLimitTimer;
+  Timer? _minLimitTimer;
   @override
   void initState() {
     loadData();
@@ -25,7 +28,7 @@ class _AIRDState extends State<AIRD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('AIR_maxLimit') ?? 40;
+      maxLimit = prefs.getInt('AIR_maxLimit') ?? 50;
       minLimit = prefs.getInt('AIR_minLimit') ?? 0;
     });
   }
@@ -46,9 +49,33 @@ class _AIRDState extends State<AIRD> {
     });
   }
 
+  void _startMaxLimitTimer(bool increment) {
+    _maxLimitTimer?.cancel();
+    _maxLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMaxLimit(maxLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _startMinLimitTimer(bool increment) {
+    _minLimitTimer?.cancel();
+    _minLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMinLimit(minLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _stopMaxLimitTimer() {
+    _maxLimitTimer?.cancel();
+  }
+
+  void _stopMinLimitTimer() {
+    _minLimitTimer?.cancel();
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
+    _stopMaxLimitTimer();
+    _stopMinLimitTimer();
     super.dispose();
   }
 
@@ -98,13 +125,10 @@ class _AIRDState extends State<AIRD> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() - 1.0);
-                      // product.minLimit = (product.minLimit > 0) ? product.minLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMaxLimitTimer(false),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -126,26 +150,20 @@ class _AIRDState extends State<AIRD> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.minLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() + 1.0);
-                      // product.minLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMaxLimitTimer(true),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() - 1.0);
-                      // product.maxLimit = (product.maxLimit > 0) ? product.maxLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -167,13 +185,10 @@ class _AIRDState extends State<AIRD> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.maxLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() + 1.0);
-                      // product.maxLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(true),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),

@@ -20,6 +20,15 @@ import 'package:intl/intl.dart';
 import '../screens/Limit Setting/CO2.dart';
 import '../screens/Limit Setting/VAC.dart';
 
+class AccumulatedData {
+  double sum;
+  int count;
+
+  AccumulatedData(this.sum, this.count);
+
+  double get average => sum / count;
+}
+
 class LineCharWid extends StatefulWidget {
   const LineCharWid({Key? key}) : super(key: key);
 
@@ -72,6 +81,7 @@ class _LineCharWidState extends State<LineCharWid> {
   int? TEMP_minLimit;
   int? HUMI_maxLimit;
   int? HUMI_minLimit;
+  Map<String, AccumulatedData> accumulatedData = {};
 
   List<LineSeries<ChartData, DateTime>> _getLineSeries() {
     Map<String, List<ChartData>> groupedData = {};
@@ -107,6 +117,23 @@ class _LineCharWidState extends State<LineCharWid> {
         .where((series) => series != null)
         .cast<LineSeries<ChartData, DateTime>>()
         .toList();
+  }
+
+  void storeAveragedData(String formattedDate) {
+    accumulatedData.forEach((type, accumulatedData) {
+      double averageValue = accumulatedData.average;
+      String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      String time = DateFormat('kk:mm:ss').format(DateTime.now());
+      String day = DateFormat('EEEE').format(DateTime.now());
+
+      // Store the data
+      print(
+          'Type: $type, Average: $averageValue, Date: $date, Time: $time, Day: $day');
+
+      // Reset accumulated data
+      accumulatedData.sum = 0;
+      accumulatedData.count = 0;
+    });
   }
 
   List<ChartData> chartData = [];
@@ -206,6 +233,17 @@ class _LineCharWidState extends State<LineCharWid> {
         MaterialPageRoute(builder: (context) => CO2()),
       );
     }
+  }
+
+  void limitError(BuildContext context, String paramName) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(milliseconds: 550),
+          content: Text('$paramName is not in range!'),
+        ),
+      );
+    });
   }
 
   late StreamController<void> _updateController;
@@ -1090,41 +1128,98 @@ class _LineCharWidState extends State<LineCharWid> {
     var url = Uri.parse('http://192.168.4.1/event');
     final response = await http.get(url);
 
-    final data = json.decode(response.body);
-
-    // Debugging: Print out the type and structure of the data
-    print('Type of data: ${data.runtimeType}');
-    print('Data structure: $data');
-
-    // Iterate over each map in the list and create PressData objects
-    for (var jsonData in data) {
-      PressData pressdata = PressData.fromJson(jsonData);
-      if (pressdata.type == 'temperature') {
-        _streamDatatemp.sink.add(pressdata);
-      } else if (pressdata.type == 'humidity') {
-        _streamDatahumi.sink.add(pressdata);
-      } else if (pressdata.type == 'o21') {
-        _streamDatao21.sink.add(pressdata);
-      } else if (pressdata.type == 'vac') {
-        _streamDatavac.sink.add(pressdata);
-      } else if (pressdata.type == 'n2o') {
-        _streamDatan2o.sink.add(pressdata);
-      } else if (pressdata.type == 'air') {
-        _streamDataair.sink.add(pressdata);
-      } else if (pressdata.type == 'co2') {
-        _streamDataco2.sink.add(pressdata);
-      } else if (pressdata.type == 'o22') {
-        _streamDatao22.sink.add(pressdata);
-      }
-      _streamData.sink.add(pressdata);
-    }
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      _updateData(data);
+
+      for (var jsonData in data) {
+        PressData pressData = PressData.fromJson(jsonData);
+        bool isOutOfRange = false;
+
+        if (!accumulatedData.containsKey(pressData.type)) {
+          accumulatedData[pressData.type] = AccumulatedData(0, 0);
+        }
+
+        accumulatedData[pressData.type]!.sum += pressData.value;
+        accumulatedData[pressData.type]!.count += 1;
+
+        switch (pressData.type) {
+          case 'temperature':
+            if (pressData.value > TEMP_maxLimit! ||
+                pressData.value < TEMP_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatatemp.sink.add(pressData);
+            break;
+          case 'humidity':
+            if (pressData.value > HUMI_maxLimit! ||
+                pressData.value < HUMI_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatahumi.sink.add(pressData);
+            break;
+          case 'o21':
+            if (pressData.value > O2_maxLimit! ||
+                pressData.value < O2_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatao21.sink.add(pressData);
+            break;
+          case 'vac':
+            if (pressData.value > VAC_maxLimit! ||
+                pressData.value < VAC_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatavac.sink.add(pressData);
+            break;
+          case 'n2o':
+            if (pressData.value > N2O_maxLimit! ||
+                pressData.value < N2O_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatan2o.sink.add(pressData);
+            break;
+          case 'air':
+            if (pressData.value > AIR_maxLimit! ||
+                pressData.value < AIR_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDataair.sink.add(pressData);
+            break;
+          case 'co2':
+            if (pressData.value > CO2_maxLimit! ||
+                pressData.value < CO2_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDataco2.sink.add(pressData);
+            break;
+          case 'o22':
+            if (pressData.value > O2_2_maxLimit! ||
+                pressData.value < O2_2_minLimit!) {
+              isOutOfRange = true;
+            }
+            _streamDatao22.sink.add(pressData);
+            break;
+          default:
+            _streamData.sink.add(pressData);
+        }
+
+        if (isOutOfRange) {
+          limitError(context, pressData.type);
+        }
+      }
     } else {
       print('Failed to load data');
     }
-    // Delay before fetching data again (optional)
+
     await Future.delayed(Duration(seconds: 1));
+
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
+
+    if (now.second == 0) {
+      storeAveragedData(formattedDate);
+    }
+
+    getdata();
   }
 }

@@ -16,6 +16,8 @@ class HUMI extends StatefulWidget {
 class _HUMIState extends State<HUMI> {
   int maxLimit = 0;
   int minLimit = 0;
+  Timer? _maxLimitTimer;
+  Timer? _minLimitTimer;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
 
@@ -28,6 +30,28 @@ class _HUMIState extends State<HUMI> {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _fetchData();
     });
+  }
+
+  void _startMaxLimitTimer(bool increment) {
+    _maxLimitTimer?.cancel();
+    _maxLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMaxLimit(maxLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _startMinLimitTimer(bool increment) {
+    _minLimitTimer?.cancel();
+    _minLimitTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      updateMinLimit(minLimit.toDouble() + (increment ? 1.0 : -1.0));
+    });
+  }
+
+  void _stopMaxLimitTimer() {
+    _maxLimitTimer?.cancel();
+  }
+
+  void _stopMinLimitTimer() {
+    _minLimitTimer?.cancel();
   }
 
   Future<void> _fetchData() async {
@@ -136,13 +160,10 @@ class _HUMIState extends State<HUMI> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() - 1.0);
-                      // product.minLimit = (product.minLimit > 0) ? product.minLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -164,26 +185,20 @@ class _HUMIState extends State<HUMI> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.minLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMaxLimit(maxLimit.toDouble() + 1.0);
-                      // product.minLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() - 1.0);
-                      // product.maxLimit = (product.maxLimit > 0) ? product.maxLimit - 1 : 0;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -205,13 +220,10 @@ class _HUMIState extends State<HUMI> {
                       margin: EdgeInsets.all(10),
                     ),
                   ), //${product.maxLimit}
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      updateMinLimit(minLimit.toDouble() + 1.0);
-                      // product.maxLimit++;
-                      // onChanged();
-                    },
+                  GestureDetector(
+                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapUp: (_) => _stopMinLimitTimer(),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),
