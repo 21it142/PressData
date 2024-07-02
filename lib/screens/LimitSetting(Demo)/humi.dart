@@ -25,7 +25,7 @@ class _HUMIState extends State<HUMID> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('HUMI_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('HUMI_maxLimit') ?? 80;
       minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
     });
   }

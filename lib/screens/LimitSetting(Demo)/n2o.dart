@@ -25,7 +25,7 @@ class _N2OState extends State<N2OD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('N2O_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('N2O_maxLimit') ?? 30;
       minLimit = prefs.getInt('N2O_minLimit') ?? 0;
     });
   }

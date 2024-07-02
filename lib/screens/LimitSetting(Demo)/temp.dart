@@ -25,7 +25,7 @@ class _TEMPState extends State<TEMPD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('TEMP_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('TEMP_maxLimit') ?? 70;
       minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
     });
   }

@@ -299,81 +299,108 @@ class _LineCharWidState extends State<LineCharWid> {
     ];
 
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
-          // Graph on the left
-          Expanded(
-            child: Container(
-              height: 350, // Adjust height here
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: isDataAvailable
-                    ? SfCartesianChart(
-                        primaryXAxis: DateTimeAxis(
-                          intervalType: DateTimeIntervalType.seconds,
-                          interval: 1, // 1-second interval
-                          dateFormat: DateFormat('mm:ss'),
-                          minimum: chartData.isNotEmpty
-                              ? DateTime.fromMillisecondsSinceEpoch(
-                                  chartData.first.x.toInt())
-                              : DateTime.now().subtract(Duration(seconds: 60)),
-                          maximum: DateTime.now(),
-                        ),
-                        primaryYAxis: NumericAxis(
-                          minimum: 0, // Set the minimum value of y-axis to 0
-                          maximum:
-                              100, // Set the maximum value of y-axis to 100
-                        ),
-                        legend: Legend(isVisible: true),
-                        series: _getLineSeries(),
-                      )
-                    : Center(
-                        child: CircularProgressIndicator(),
-                      ),
-              ),
-            ),
-          ),
-          // Parameters on the right
-
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+          Row(
             children: [
-              Row(
+              // Graph on the left
+              Expanded(
+                child: Container(
+                  height: 350, // Adjust height here
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: isDataAvailable
+                        ? SfCartesianChart(
+                            primaryXAxis: DateTimeAxis(
+                              intervalType: DateTimeIntervalType.seconds,
+                              interval: 1, // 1-second interval
+                              dateFormat: DateFormat('mm:ss'),
+                              minimum: chartData.isNotEmpty
+                                  ? DateTime.fromMillisecondsSinceEpoch(
+                                      chartData.first.x.toInt())
+                                  : DateTime.now()
+                                      .subtract(Duration(seconds: 60)),
+                              maximum: DateTime.now(),
+                            ),
+                            primaryYAxis: NumericAxis(
+                              interval: 20,
+                              minimum:
+                                  0, // Set the minimum value of y-axis to 0
+                              maximum:
+                                  100, // Set the maximum value of y-axis to 100
+                            ),
+                            legend: Legend(isVisible: true),
+                            series: _getLineSeries(),
+                          )
+                        : Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                  ),
+                ),
+              ),
+              // Parameters on the right
+
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(0),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[0],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                          stream: _streamDatatemp.stream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              PressData pressData = snapshot.data!;
-                              String value = pressData.value.toString();
-                              return Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(0),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[0],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                              stream: _streamDatatemp.stream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  PressData pressData = snapshot.data!;
+                                  String value = pressData.value.toString();
+                                  return Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Text(
-                                          value,
-                                          style: TextStyle(
-                                            color: parameterTextColor[0],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            if (value == '-333')
+                                              Text(
+                                                'NC',
+                                                style: TextStyle(
+                                                  color: parameterTextColor[0],
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            if (value != '-333')
+                                              Text(
+                                                value,
+                                                style: TextStyle(
+                                                  color: parameterTextColor[0],
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            const SizedBox(width: 15),
+                                            if (value != '-333')
+                                              Text(
+                                                parameterUnit[0],
+                                                style: TextStyle(
+                                                  color: parameterTextColor[0],
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                          ],
                                         ),
-                                        const SizedBox(width: 15),
                                         Text(
-                                          parameterUnit[0],
+                                          parameterNames[0],
                                           style: TextStyle(
                                             color: parameterTextColor[0],
                                             fontSize: 10,
@@ -382,484 +409,665 @@ class _LineCharWidState extends State<LineCharWid> {
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      parameterNames[0],
-                                      style: TextStyle(
-                                        color: parameterTextColor[0],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              return CircularProgressIndicator(
-                                color: parameterTextColor[0],
-                              );
-                            }
-                          },
+                                  );
+                                } else {
+                                  return CircularProgressIndicator(
+                                    color: parameterTextColor[0],
+                                  );
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(1),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[1],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDatahumi.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                // String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(1),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[1],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDatahumi.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    // String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[0],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[0],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              const SizedBox(width: 15),
+                                              Text(
+                                                parameterUnit[1],
+                                                style: TextStyle(
+                                                  color: parameterTextColor[1],
+                                                  fontSize: 7,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[1],
                                             style: TextStyle(
                                               color: parameterTextColor[1],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[1],
-                                            style: TextStyle(
-                                              color: parameterTextColor[1],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[1],
-                                        style: TextStyle(
-                                          color: parameterTextColor[1],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[1],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[1],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(2),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[2],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDatao21.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                // String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(2),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[2],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDatao21.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    // String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[2],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[2],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              const SizedBox(width: 15),
+                                              Text(
+                                                parameterUnit[2],
+                                                style: TextStyle(
+                                                  color: parameterTextColor[2],
+                                                  fontSize: 7,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[2],
                                             style: TextStyle(
                                               color: parameterTextColor[2],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[2],
-                                            style: TextStyle(
-                                              color: parameterTextColor[2],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[2],
-                                        style: TextStyle(
-                                          color: parameterTextColor[2],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[2],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[2],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(3),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[3],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDatavac.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                // String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(3),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[3],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDatavac.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    // String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[3],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[3],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              const SizedBox(width: 15),
+                                              if (value != '-333')
+                                                Text(
+                                                  parameterUnit[3],
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[3],
+                                                    fontSize: 7,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[3],
                                             style: TextStyle(
                                               color: parameterTextColor[3],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[3],
-                                            style: TextStyle(
-                                              color: parameterTextColor[3],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[3],
-                                        style: TextStyle(
-                                          color: parameterTextColor[3],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[3],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[3],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(4),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[4],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDatan2o.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                //  String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(4),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[4],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDatan2o.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    //  String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[4],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[4],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              const SizedBox(width: 15),
+                                              if (value != '-333')
+                                                Text(
+                                                  parameterUnit[4],
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[4],
+                                                    fontSize: 7,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[4],
                                             style: TextStyle(
                                               color: parameterTextColor[4],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[4],
-                                            style: TextStyle(
-                                              color: parameterTextColor[4],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[4],
-                                        style: TextStyle(
-                                          color: parameterTextColor[4],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[4],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[4],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(5),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[5],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDataair.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                //String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(5),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[5],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDataair.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    //String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[5],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[5],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              const SizedBox(width: 15),
+                                              if (value != '-333')
+                                                Text(
+                                                  parameterUnit[5],
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[5],
+                                                    fontSize: 7,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[5],
                                             style: TextStyle(
                                               color: parameterTextColor[5],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[5],
-                                            style: TextStyle(
-                                              color: parameterTextColor[5],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[5],
-                                        style: TextStyle(
-                                          color: parameterTextColor[5],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[5],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[5],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(6),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[6],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDataco2.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                //  String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(6),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[6],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDataco2.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    //  String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[6],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                Text(
+                                                  value,
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[6],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              if (value != '-333')
+                                                const SizedBox(width: 15),
+                                              Text(
+                                                parameterUnit[6],
+                                                style: TextStyle(
+                                                  color: parameterTextColor[6],
+                                                  fontSize: 7,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           Text(
-                                            value,
+                                            parameterNames[6],
                                             style: TextStyle(
                                               color: parameterTextColor[6],
-                                              fontSize: 32,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[6],
-                                            style: TextStyle(
-                                              color: parameterTextColor[6],
-                                              fontSize: 7,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                          // You can add additional widgets or logic based on type here
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[6],
-                                        style: TextStyle(
-                                          color: parameterTextColor[6],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      // You can add additional widgets or logic based on type here
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[6],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[6],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _navigateToDetailPage(7),
-                    child: Container(
-                      height: 80,
-                      width: 120,
-                      child: Card(
-                        color: parameterColors[7],
-                        elevation: 4.0,
-                        child: StreamBuilder<PressData>(
-                            stream: _streamDatao22.stream,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                PressData pressData = snapshot.data!;
-                                PressData data = pressData;
-                                // String type = data.type;
-                                String value = data.value.toString();
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                      GestureDetector(
+                        onTap: () => _navigateToDetailPage(7),
+                        child: Container(
+                          height: 80,
+                          width: 120,
+                          child: Card(
+                            color: parameterColors[7],
+                            elevation: 4.0,
+                            child: StreamBuilder<PressData>(
+                                stream: _streamDatao22.stream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    PressData pressData = snapshot.data!;
+                                    PressData data = pressData;
+                                    // String type = data.type;
+                                    String value = data.value.toString();
+                                    return Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
                                         children: [
-                                          Text(
-                                            value,
-                                            style: TextStyle(
-                                              color: parameterTextColor[7],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (value == '-333')
+                                                Text(
+                                                  'NC',
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[7],
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              Text(
+                                                value,
+                                                style: TextStyle(
+                                                  color: parameterTextColor[7],
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 15),
+                                              if (value != '-333')
+                                                Text(
+                                                  parameterUnit[7],
+                                                  style: TextStyle(
+                                                    color:
+                                                        parameterTextColor[7],
+                                                    fontSize: 7,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 15),
                                           Text(
-                                            parameterUnit[7],
+                                            parameterNames[7],
                                             style: TextStyle(
                                               color: parameterTextColor[7],
-                                              fontSize: 7,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[7],
-                                        style: TextStyle(
-                                          color: parameterTextColor[7],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator(
-                                  color: parameterTextColor[7],
-                                );
-                              }
-                            }),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator(
+                                      color: parameterTextColor[7],
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
             ],
+          ),
+          Align(
+            child: Container(
+              height: 20,
+              color: Colors.grey[200], // Background color of the bar
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Spacer(flex: 20),
+                  const Text(
+                    'SYSTEM IS RUNNING OK',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(
+                    flex: 12,
+                  ),
+                  Positioned(
+                    right: 130,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                              style: BorderStyle.solid, color: Colors.black87),
+                          borderRadius:
+                              BorderRadius.circular(5), // Square corners
+                        ),
+                        minimumSize:
+                            Size(90, 25), // Set minimum size to maintain height
+                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                      ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Setting1()),
+                        );
+                      },
+                      child: const Text(
+                        'Settings',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: Colors.grey,
+                              offset: Offset(2, 1.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12), // Add spacing between the buttons
+                  Positioned(
+                    right: 20,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                              style: BorderStyle.solid, color: Colors.black87),
+                          borderRadius:
+                              BorderRadius.circular(5), // Square corners
+                        ),
+                        minimumSize:
+                            Size(90, 25), // Set minimum size to maintain height
+                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                      ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Report',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: Colors.grey,
+                              offset: Offset(2, 1.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Spacer(),
+                ],
+              ),
+            ),
           ),
         ],
       ),

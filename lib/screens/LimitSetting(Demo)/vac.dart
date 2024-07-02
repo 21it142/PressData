@@ -11,7 +11,7 @@ class VACD extends StatefulWidget {
 }
 
 class _VACState extends State<VACD> {
-  int maxLimit = 40;
+  int maxLimit = 0;
   int minLimit = 0;
 
   @override
@@ -25,7 +25,7 @@ class _VACState extends State<VACD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('VAC_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('VAC_maxLimit') ?? 20;
       minLimit = prefs.getInt('VAC_minLimit') ?? 0;
     });
   }

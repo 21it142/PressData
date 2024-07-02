@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pressdata/screens/main_page.dart';
+
 import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,11 +7,11 @@ class AIRD extends StatefulWidget {
   const AIRD({super.key});
 
   @override
-  State<AIRD> createState() => _CO2State();
+  State<AIRD> createState() => _AIRDState();
 }
 
-class _CO2State extends State<AIRD> {
-  int maxLimit = 50;
+class _AIRDState extends State<AIRD> {
+  int maxLimit = 0;
   int minLimit = 0;
 
   @override
@@ -25,7 +25,7 @@ class _CO2State extends State<AIRD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('AIR_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('AIR_maxLimit') ?? 40;
       minLimit = prefs.getInt('AIR_minLimit') ?? 0;
     });
   }

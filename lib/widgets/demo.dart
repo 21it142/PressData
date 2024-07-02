@@ -11,6 +11,9 @@ import 'package:pressdata/screens/LimitSetting(Demo)/o2-1.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/o2-2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/temp.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/vac.dart';
+import 'package:pressdata/screens/main_page.dart';
+import 'package:pressdata/screens/report_screen.dart';
+import 'package:pressdata/screens/setting.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -348,21 +351,21 @@ class _DemoWidState extends State<DemoWid> {
   void _storeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
+      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 10;
       O2_minLimit = prefs.getInt('O2_minLimit') ?? 0;
-      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 0;
+      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 20;
       VAC_minLimit = prefs.getInt('VAC_minLimit') ?? 0;
-      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 0;
+      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 30;
       N2O_minLimit = prefs.getInt('N2O_minLimit') ?? 0;
-      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 0;
+      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 40;
       AIR_minLimit = prefs.getInt('AIR_minLimit') ?? 0;
-      CO2_maxLimit = prefs.getInt('CO2_maxLimit') ?? 0;
+      CO2_maxLimit = prefs.getInt('CO2_maxLimit') ?? 50;
       CO2_minLimit = prefs.getInt('CO2_minLimit') ?? 0;
-      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 0;
+      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 60;
       O2_2_minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
-      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 0;
+      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 70;
       TEMP_minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
-      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 0;
+      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 80;
       HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
     });
   }
@@ -609,6 +612,13 @@ class _DemoWidState extends State<DemoWid> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Dashboard()));
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
         title: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -616,19 +626,20 @@ class _DemoWidState extends State<DemoWid> {
             Center(
               child: RichText(
                 text: const TextSpan(
-                    text: 'Press ',
-                    style: TextStyle(color: Colors.blue, fontSize: 25),
-                    children: [
-                      TextSpan(
-                        text: 'Data ',
-                        style: TextStyle(color: Colors.red, fontSize: 25),
-                      ),
-                      TextSpan(
-                        text: 'Medical Gas Alram + Analyser ',
-                        style: TextStyle(
-                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 20),
-                      ),
-                    ]),
+                  text: 'Press ',
+                  style: TextStyle(color: Colors.blue, fontSize: 25),
+                  children: [
+                    TextSpan(
+                      text: 'Data ',
+                      style: TextStyle(color: Colors.red, fontSize: 25),
+                    ),
+                    TextSpan(
+                      text: 'Medical Gas Alarm + Analyser ',
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 0, 0, 0), fontSize: 20),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -636,196 +647,303 @@ class _DemoWidState extends State<DemoWid> {
         toolbarHeight: 40,
         backgroundColor: Color.fromRGBO(228, 100, 128, 100),
       ),
-      body: Row(
+      body: Column(
         children: [
-          // Graph on the left
           Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: SfCartesianChart(
-                tooltipBehavior: TooltipBehavior(enable: true),
-                legend: Legend(isVisible: true),
-                primaryXAxis: const NumericAxis(
-                  majorGridLines: MajorGridLines(width: 0),
-                  edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  interval: 3,
-                  title: AxisTitle(
-                      text: 'Reading for Press Data',
-                      textStyle: TextStyle(fontSize: 10)),
+            child: Row(
+              children: [
+                // Graph on the left
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: SfCartesianChart(
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                      legend: Legend(isVisible: true),
+                      primaryXAxis: const NumericAxis(
+                        majorGridLines: MajorGridLines(width: 0),
+                        edgeLabelPlacement: EdgeLabelPlacement.shift,
+                        interval: 3,
+                        title: AxisTitle(
+                          text: 'Reading for Press Data',
+                          textStyle: TextStyle(fontSize: 10),
+                        ),
+                      ),
+                      primaryYAxis: const NumericAxis(
+                        axisLine: AxisLine(width: 0),
+                        majorTickLines: MajorTickLines(size: 0),
+                        title: AxisTitle(text: 'Values'),
+                      ),
+                      series: <LineSeries<LiveData, int>>[
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController0 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.o2_1,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          name: "O2(1)",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController1 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.vac,
+                          color: Colors.yellow,
+                          name: "VAC",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController2 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.n2o,
+                          color: const Color.fromARGB(255, 0, 34, 145),
+                          name: "N2o",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController3 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.air,
+                          color: Color.fromARGB(114, 1, 2, 1),
+                          name: "AIR",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController4 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.co2,
+                          color: const Color.fromRGBO(62, 66, 70, 1),
+                          name: "co2",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController5 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.o2_2,
+                          color: Colors.white,
+                          name: "O2_2",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController6 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.temp,
+                          color: const Color.fromARGB(255, 255, 0, 0),
+                          name: "Temp",
+                        ),
+                        LineSeries<LiveData, int>(
+                          onRendererCreated:
+                              (ChartSeriesController controller) {
+                            _chartSeriesController7 = controller;
+                          },
+                          dataSource: chartData,
+                          xValueMapper: (LiveData press, _) => press.time,
+                          yValueMapper: (LiveData press, _) => press.humi,
+                          color: Colors.blue,
+                          name: "HUMI",
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                primaryYAxis: const NumericAxis(
-                  axisLine: AxisLine(width: 0),
-                  majorTickLines: MajorTickLines(size: 0),
-                  title: AxisTitle(text: 'Values'),
+                // Parameters on the right
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GridView.builder(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 3.0,
+                              crossAxisSpacing: 8.0,
+                              childAspectRatio: 1.55 / 1,
+                            ),
+                            itemCount: 8,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () => _navigateToDetailPage(index),
+                                child: Card(
+                                  color: parameters[index].color,
+                                  elevation: 4.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: parameters[index].color,
+                                      gradient: index == 3
+                                          ? const LinearGradient(
+                                              colors: [
+                                                Colors.black,
+                                                Colors.white
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.centerRight,
+                                            )
+                                          : null,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            ' ${parameters[index].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[index],
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            ' ${parameterUnit[index]}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[index],
+                                              fontSize: 7,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            parameterNames[index],
+                                            style: TextStyle(
+                                              color: parameterTextColor[index],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                series: <LineSeries<LiveData, int>>[
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController0 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.o2_1,
-                    //  markerSettings: const MarkerSettings(isVisible: true),
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    name: "O2(1)",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController1 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.vac,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.yellow,
-                    name: "VAC",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController2 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.n2o,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromARGB(255, 0, 34, 145),
-                    name: "N2o",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController3 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.air,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: Color.fromARGB(114, 1, 2, 1),
-                    name: "AIR",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController4 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.co2,
-                    //markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromRGBO(62, 66, 70, 1),
-                    name: "co2",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController5 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.o2_2,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.white,
-                    name: "O2_2",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController6 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.temp,
-                    // markerSettings: const MarkerSettings(isVisible: true),
-                    color: const Color.fromARGB(255, 255, 0, 0),
-                    name: "Temp",
-                  ),
-                  LineSeries<LiveData, int>(
-                    onRendererCreated: (ChartSeriesController controller) {
-                      _chartSeriesController7 = controller;
-                    },
-                    dataSource: chartData,
-                    xValueMapper: (LiveData press, _) => press.time,
-                    yValueMapper: (LiveData press, _) => press.humi,
-                    //  markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.blue,
-                    name: "HUMI",
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
-          // Parameters on the right
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
+          // Bar at the bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 30,
+              color: Colors.grey[200], // Background color of the bar
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 3.0,
-                        crossAxisSpacing: 8.0,
-                        childAspectRatio: 1.55 / 1,
+                  Spacer(flex: 20),
+                  const Text(
+                    'SYSTEM IS RUNNING OK',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(
+                    flex: 12,
+                  ),
+                  Positioned(
+                    right: 130,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                              style: BorderStyle.solid, color: Colors.black87),
+                          borderRadius:
+                              BorderRadius.circular(5), // Square corners
+                        ),
+                        minimumSize:
+                            Size(90, 25), // Set minimum size to maintain height
+                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
                       ),
-                      itemCount: 8,
-                      itemBuilder: (context, index) {
-                        //  String dataValue = '';
-                        // Access the data based on the index of the card
-
-                        return GestureDetector(
-                          onTap: () => _navigateToDetailPage(index),
-                          child: Card(
-                            color: parameters[index].color,
-                            elevation: 4.0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: parameters[index].color,
-                                gradient: index == 3
-                                    ? const LinearGradient(
-                                        colors: [Colors.black, Colors.white],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.centerRight,
-                                      )
-                                    : null,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      ' ${parameters[index].value}',
-                                      style: TextStyle(
-                                        color: parameterTextColor[index],
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      ' ${parameterUnit[index]}',
-                                      style: TextStyle(
-                                        color: parameterTextColor[index],
-                                        fontSize: 7,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      parameterNames[index],
-                                      style: TextStyle(
-                                        color: parameterTextColor[index],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Setting1()),
+                        );
+                      },
+                      child: const Text(
+                        'Settings',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: Colors.grey,
+                              offset: Offset(2, 1.5),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12), // Add spacing between the buttons
+                  Positioned(
+                    right: 20,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                              style: BorderStyle.solid, color: Colors.black87),
+                          borderRadius:
+                              BorderRadius.circular(5), // Square corners
+                        ),
+                        minimumSize:
+                            Size(90, 25), // Set minimum size to maintain height
+                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                      ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportScreen(),
                           ),
                         );
                       },
+                      child: const Text(
+                        'Report',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: Colors.grey,
+                              offset: Offset(2, 1.5),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
+                  Spacer(),
                 ],
               ),
             ),

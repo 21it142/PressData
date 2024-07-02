@@ -24,7 +24,7 @@ class _O2_2State extends State<O22> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('O2_2_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('O2_2_maxLimit') ?? 60;
       minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
     });
   }

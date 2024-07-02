@@ -25,7 +25,7 @@ class _CO2State extends State<CO2D> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('CO2_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('CO2_maxLimit') ?? 50;
       minLimit = prefs.getInt('CO2_minLimit') ?? 0;
     });
   }

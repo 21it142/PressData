@@ -24,7 +24,7 @@ class _O2State extends State<O21> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
+      maxLimit = prefs.getInt('O2_maxLimit') ?? 10;
       minLimit = prefs.getInt('O2_minLimit') ?? 0;
     });
   }
@@ -58,8 +58,7 @@ class _O2State extends State<O21> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => DemoWid()));
+              Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
