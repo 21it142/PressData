@@ -31,7 +31,7 @@ class _AIRState extends State<AIR> {
   }
 
   Future<void> _fetchData() async {
-    final data = await _dataService.fetchData();
+    final data = await _dataService.getData();
     setState(() {
       _postJson = data;
     });
@@ -157,12 +157,12 @@ class _AIRState extends State<AIR> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
+                    onTapDown: (_) => _startMaxLimitTimer(false),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
                     child: Icon(Icons.remove),
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.50,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     width: 150,
                     child: Card(
                       color: const Color.fromARGB(255, 198, 230, 255),
@@ -182,8 +182,8 @@ class _AIRState extends State<AIR> {
                     ),
                   ),
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
+                    onTapDown: (_) => _startMaxLimitTimer(true),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
                     child: Icon(Icons.add),
                   ),
                 ],
@@ -217,7 +217,7 @@ class _AIRState extends State<AIR> {
                     ),
                   ),
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
                     child: Icon(Icons.add),
                   ),

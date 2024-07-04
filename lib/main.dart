@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/screens/register.dart';
+import 'package:pressdata/screens/report_screenDemo.dart';
 import 'package:pressdata/screens/run.dart';
-import 'package:pressdata/widgets/demo.dart';
+
+//import 'package:pressdata/screens/run.dart';
+//import 'package:pressdata/widgets/demo.dart';
 //import 'package:pressdata/screens/report_screen.dart';
 //import 'package:pressdata/screens/setting.dart';
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
@@ -22,7 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: RegistrationScreen(),
+      home: ReportScreen(),
     );
   }
 }

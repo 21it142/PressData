@@ -57,7 +57,7 @@ class _VACState extends State<VAC> {
 
   Future<void> _fetchData() async {
     try {
-      final data = await _dataService.fetchData();
+      final data = await _dataService.getData();
       setState(() {
         _postJson = data;
       });
@@ -163,8 +163,8 @@ class _VACState extends State<VAC> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
+                    onTapDown: (_) => _startMaxLimitTimer(false),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
                     child: Icon(Icons.remove),
                   ),
                   Container(
@@ -188,8 +188,8 @@ class _VACState extends State<VAC> {
                     ),
                   ), //${product.minLimit}
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
+                    onTapDown: (_) => _startMaxLimitTimer(true),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
                     child: Icon(Icons.add),
                   ),
                 ],
@@ -223,7 +223,7 @@ class _VACState extends State<VAC> {
                     ),
                   ), //${product.maxLimit}
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
                     child: Icon(Icons.add),
                   ),

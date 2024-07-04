@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class LimitSetting {
@@ -7,14 +6,13 @@ class LimitSetting {
   final String url1 = 'http://192.168.4.1/MinMax2';
   final String postUrl = 'http://192.168.4.1/MinMax3';
 
-
-  static Future<http.Response> httpObject (String url) async  {
-   return  await http.get(Uri.parse(url));
-  } 
+  static Future<http.Response> httpObject(String url) async {
+    return await http.get(Uri.parse(url));
+  }
 
   Future<List<dynamic>> fetchData() async {
     try {
-      final response =   await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body) as List;
@@ -32,7 +30,7 @@ class LimitSetting {
 
   Future<List<dynamic>> getData() async {
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url1));
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body) as List;
         print('Fetched data: $jsonData'); // Log fetched data

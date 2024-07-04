@@ -43,7 +43,7 @@ class _O2_2State extends State<O2_2> {
 
     while (!success && retryCount < maxRetries) {
       try {
-        final data = await _dataService.fetchData();
+        final data = await _dataService.getData();
         setState(() {
           _postJson = data;
           _isLoading = false;

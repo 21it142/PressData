@@ -86,7 +86,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               style: TextStyle(color: Colors.black),
             ),
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.25,
+              width: MediaQuery.of(context).size.width * 0.20,
               height: 10,
             ),
             ElevatedButton(
@@ -108,9 +108,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
-            SizedBox(
-              width: 10,
-            ),
+            
           ],
         ),
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),

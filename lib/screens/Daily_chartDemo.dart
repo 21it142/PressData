@@ -3,50 +3,51 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:pressdata/screens/report_screen.dart';
+import 'package:pressdata/screens/report_screenDemo.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
-class MonthlyChart extends StatefulWidget {
+class DailyChart extends StatefulWidget {
   final List<String> selectedValues;
+  const DailyChart({super.key, required this.selectedValues});
 
-  const MonthlyChart({super.key, required this.selectedValues});
   @override
-  State<MonthlyChart> createState() => _MonthlyChartState();
+  State<DailyChart> createState() => _DailyChartState();
 }
 
-class _MonthlyChartState extends State<MonthlyChart> {
+class _DailyChartState extends State<DailyChart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monthly Report Line Chart'),
+        title: Text('Daily Report Line Chart'),
       ),
-      body: MonthlyChartScreen(
+      body: LineChartScreen(
         selectedValues: widget.selectedValues,
       ),
     );
   }
 }
 
-class MonthlyChartScreen extends StatefulWidget {
+class LineChartScreen extends StatefulWidget {
   final List<String> selectedValues;
-  const MonthlyChartScreen({super.key, required this.selectedValues});
+  const LineChartScreen({super.key, required this.selectedValues});
 
   @override
-  _MonthlyChartScreenState createState() => _MonthlyChartScreenState();
+  _LineChartScreenState createState() => _LineChartScreenState();
 }
 
-class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
+class _LineChartScreenState extends State<LineChartScreen> {
   final GlobalKey chartKey = GlobalKey();
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    final data = generateMonthlyRandomData();
-    final minData = generateMonthlyConstantData(47);
-    final maxData = generateMonthlyConstantData(60);
-    // Add selected value series
+    final data =
+        generateRandomData(); // Assume this generates data for O2 or CO2
+    final minData = generateConstantData(47);
+    final maxData = generateConstantData(60);
+
     List<CartesianSeries> seriesList = [];
 
     // Add selected value series
@@ -148,58 +149,41 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
         name: 'Max',
       ));
     }
-    return Column(
-      children: [
-        Expanded(
-          child: RepaintBoundary(
-            key: chartKey,
-            child: SfCartesianChart(
-              primaryXAxis: DateTimeAxis(
-                intervalType: DateTimeIntervalType.days,
-                dateFormat: DateFormat.d(), // Day format (1, 2, 3, etc.)
-                interval: 1, // Show every day of the month
+
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: RepaintBoundary(
+              key: chartKey,
+              child: SfCartesianChart(
+                primaryXAxis: DateTimeAxis(
+                  intervalType: DateTimeIntervalType.hours,
+                  dateFormat: DateFormat.Hm(),
+                ),
+                primaryYAxis: NumericAxis(
+                  minimum: 0,
+                  maximum: 100,
+                ),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                legend: Legend(isVisible: true),
+                series: seriesList,
               ),
-              primaryYAxis: NumericAxis(
-                minimum: 0,
-                maximum: 100,
-              ),
-              tooltipBehavior: TooltipBehavior(enable: true),
-              legend: Legend(isVisible: true),
-              series: <CartesianSeries>[
-                LineSeries<ChartData, DateTime>(
-                  dataSource: data,
-                  xValueMapper: (ChartData data, _) => data.time,
-                  yValueMapper: (ChartData data, _) => data.value,
-                  color: Colors.black,
-                ),
-                LineSeries<ChartData, DateTime>(
-                  dataSource: minData,
-                  xValueMapper: (ChartData data, _) => data.time,
-                  yValueMapper: (ChartData data, _) => data.value,
-                  color: Colors.yellow,
-                ),
-                LineSeries<ChartData, DateTime>(
-                  dataSource: maxData,
-                  xValueMapper: (ChartData data, _) => data.time,
-                  yValueMapper: (ChartData data, _) => data.value,
-                  color: Colors.red,
-                ),
-              ],
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: () {
-              _captureAndShowImage(context);
-            },
-            child: _isLoading
-                ? CircularProgressIndicator(color: Colors.white)
-                : Text('Proceed'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                _captureAndShowImage(context);
+              },
+              child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Proceed'),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -216,7 +200,7 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       final Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      Navigator.of(context).pop(); // Pop MonthlyChart page
+      Navigator.of(context).pop(); // Pop DailyChart page
 
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -243,26 +227,22 @@ class ChartData {
   ChartData(this.time, this.value);
 }
 
-List<ChartData> generateMonthlyRandomData() {
+List<ChartData> generateRandomData() {
   final random = Random();
   final now = DateTime.now();
-  final startOfMonth = DateTime(now.year, now.month, 1);
-  final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-  return List.generate(daysInMonth, (index) {
+  return List.generate(1440, (index) {
     return ChartData(
-      startOfMonth.add(Duration(days: index)),
+      now.add(Duration(minutes: index)),
       50 + random.nextDouble() * 3, // Random value between 50 and 53
     );
   });
 }
 
-List<ChartData> generateMonthlyConstantData(double value) {
+List<ChartData> generateConstantData(double value) {
   final now = DateTime.now();
-  final startOfMonth = DateTime(now.year, now.month, 1);
-  final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-  return List.generate(daysInMonth, (index) {
+  return List.generate(1440, (index) {
     return ChartData(
-      startOfMonth.add(Duration(days: index)),
+      now.add(Duration(minutes: index)),
       value,
     );
   });

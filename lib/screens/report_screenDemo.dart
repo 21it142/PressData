@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui' as ui;
+// import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -9,9 +9,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
-import 'package:pressdata/screens/Daily_chart.dart';
-import 'package:pressdata/screens/Monthly_chart.dart';
-import 'package:pressdata/screens/Weekly_chart.dart';
+import 'package:pressdata/screens/Daily_chartDemo.dart';
+import 'package:pressdata/screens/Monthly_chartDemo.dart';
+import 'package:pressdata/screens/Weekly_chartDemo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -603,28 +603,51 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  bool _isFixedWeekSelection = true;
+  // Replace with your actual selected items
+
   void _selectDateRange(BuildContext context) async {
-    DateTimeRange? selected = await showDateRangePicker(
+    DateTime? selectedDate = await showDatePicker(
       context: context,
+      initialDate: DateTime.now(),
       firstDate: DateTime.now().subtract(Duration(days: 90)),
       lastDate: DateTime.now(),
     );
 
-    if (selected != null) {
+    if (selectedDate != null) {
+      DateTime startOfWeek;
+      DateTime endOfWeek;
+
+      if (_isFixedWeekSelection) {
+        // Fixed week selection: Monday to Sunday
+        int daysFromMonday = (selectedDate.weekday - 1) % 7;
+        startOfWeek = selectedDate.subtract(Duration(days: daysFromMonday));
+        endOfWeek = startOfWeek.add(Duration(days: 6));
+      } else {
+        // Dynamic week selection: 7 days from the selected date
+        startOfWeek = selectedDate;
+        endOfWeek = selectedDate.add(Duration(days: 6));
+      }
+
       setState(() {
-        _selectedWeeklyDateRange = selected;
+        _selectedWeeklyDateRange =
+            DateTimeRange(start: startOfWeek, end: endOfWeek);
         selectedOption = 'Weekly';
         _selectedDailyDate = null;
         _selectedMonthlyDate = null;
       });
+
       _saveSelectedData();
 
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => WeeklyChart(
-                  selectedValues: _selectedItems,
-                )),
+          builder: (context) => WeeklyChart(
+            selectedValues: _selectedItems,
+            // startOfWeek: startOfWeek,
+            // endOfWeek: endOfWeek,
+          ),
+        ),
       );
     }
   }
@@ -853,15 +876,37 @@ class _ReportScreenState extends State<ReportScreen> {
                       onPressed: () => _selectDate(context),
                       child: Text('Daily'),
                     ),
+                  ],
+                ),
+                Column(
+                  children: [
                     if (_selectedDailyDate != null)
                       Text(
                         'Selected Date: ${DateFormat.yMMMd().format(_selectedDailyDate!)}',
                         style: TextStyle(color: Colors.black),
                       ),
-                  ],
-                ),
-                Column(
-                  children: [
+                    ToggleButtons(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text('Fixed Week (Mon-Sun)'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text('Dynamic Week (7 days)'),
+                        ),
+                      ],
+                      isSelected: [
+                        _isFixedWeekSelection,
+                        !_isFixedWeekSelection
+                      ],
+                      onPressed: (int index) {
+                        setState(() {
+                          _isFixedWeekSelection = index == 0;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedOption == 'Weekly'
@@ -869,13 +914,11 @@ class _ReportScreenState extends State<ReportScreen> {
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
                       onPressed: () => _selectDateRange(context),
-                      child: Text(
-                        'Weekly',
-                      ),
+                      child: Text('Select Weekly Date Range'),
                     ),
                     if (_selectedWeeklyDateRange != null)
                       Text(
-                        'Selected Date Range: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}',
+                        'Selected Week: ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.start)} - ${DateFormat.yMMMd().format(_selectedWeeklyDateRange!.end)}',
                         style: TextStyle(color: Colors.black),
                       ),
                   ],
@@ -900,57 +943,57 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
               ],
             ),
-            SizedBox(
-              height: 10,
-            ),
-            if (_selectedItems.isNotEmpty && (_selectedDailyDate != null))
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    side: BorderSide(color: Colors.black),
-                  ),
-                  minimumSize: Size(200, 40), // Set the button size
-                ),
-                onPressed: _showRemarkDialog,
-                child: Text(
-                  "Generate Daily Report",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-              ),
-            if (_selectedItems.isNotEmpty && _selectedWeeklyDateRange != null)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    side: BorderSide(color: Colors.black),
-                  ),
-                  minimumSize: Size(200, 40), // Set the button size
-                ),
-                onPressed: _showRemarkDialog,
-                child: Text(
-                  "Generate Weekly Report",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-              ),
-            if (_selectedItems.isNotEmpty && _selectedMonthlyDate != null)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    side: BorderSide(color: Colors.black),
-                  ),
-                  minimumSize: Size(200, 40), // Set the button size
-                ),
-                onPressed: _showRemarkDialog,
-                child: Text(
-                  "Generate Monthly Report",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-              ),
+            // SizedBox(
+            //   height: 10,
+            // ),
+            // if (_selectedItems.isNotEmpty && (_selectedDailyDate != null))
+            //   ElevatedButton(
+            //     style: ElevatedButton.styleFrom(
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(5),
+            //         side: BorderSide(color: Colors.black),
+            //       ),
+            //       minimumSize: Size(200, 40), // Set the button size
+            //     ),
+            //     onPressed: _showRemarkDialog,
+            //     child: Text(
+            //       "Generate Daily Report",
+            //       style: TextStyle(
+            //           fontWeight: FontWeight.bold, color: Colors.black),
+            //     ),
+            //   ),
+            // if (_selectedItems.isNotEmpty && _selectedWeeklyDateRange != null)
+            //   ElevatedButton(
+            //     style: ElevatedButton.styleFrom(
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(5),
+            //         side: BorderSide(color: Colors.black),
+            //       ),
+            //       minimumSize: Size(200, 40), // Set the button size
+            //     ),
+            //     onPressed: _showRemarkDialog,
+            //     child: Text(
+            //       "Generate Weekly Report",
+            //       style: TextStyle(
+            //           fontWeight: FontWeight.bold, color: Colors.black),
+            //     ),
+            //   ),
+            // if (_selectedItems.isNotEmpty && _selectedMonthlyDate != null)
+            //   ElevatedButton(
+            //     style: ElevatedButton.styleFrom(
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(5),
+            //         side: BorderSide(color: Colors.black),
+            //       ),
+            //       minimumSize: Size(200, 40), // Set the button size
+            //     ),
+            //     onPressed: _showRemarkDialog,
+            //     child: Text(
+            //       "Generate Monthly Report",
+            //       style: TextStyle(
+            //           fontWeight: FontWeight.bold, color: Colors.black),
+            //     ),
+            //   ),
           ],
         ),
       ),

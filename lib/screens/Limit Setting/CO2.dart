@@ -37,7 +37,7 @@ class _CO2State extends State<CO2> {
       _isLoading = true;
     });
     try {
-      final data = await _dataService.fetchData();
+      final data = await _dataService.getData();
       setState(() {
         _postJson = data;
         _isLoading = false;
@@ -171,9 +171,9 @@ class _CO2State extends State<CO2> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    onTapDown: (_) => _startMaxLimitTimer(false),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
+                    child: Icon(Icons.remove),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -202,8 +202,8 @@ class _CO2State extends State<CO2> {
                     ),
                   ),
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
-                    onTapUp: (_) => _stopMinLimitTimer(),
+                    onTapDown: (_) => _startMaxLimitTimer(true),
+                    onTapUp: (_) => _stopMaxLimitTimer(),
                     child: Icon(Icons.add),
                   ),
                 ],
@@ -243,9 +243,9 @@ class _CO2State extends State<CO2> {
                     ),
                   ),
                   GestureDetector(
-                    onTapDown: (_) => _startMinLimitTimer(false),
+                    onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(Icons.add),
                   ),
                 ],
               ),

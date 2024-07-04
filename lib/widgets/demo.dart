@@ -12,7 +12,7 @@ import 'package:pressdata/screens/LimitSetting(Demo)/o2-2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/temp.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/vac.dart';
 import 'package:pressdata/screens/main_page.dart';
-import 'package:pressdata/screens/report_screen.dart';
+import 'package:pressdata/screens/report_screenDemo.dart';
 import 'package:pressdata/screens/setting.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -768,425 +768,427 @@ class _DemoWidState extends State<DemoWid> {
                   ),
                 ),
                 // Parameters on the right
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(0),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[0],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[0].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[0],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(0),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[0],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[0].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[0],
+                                              fontSize: 31.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[0],
-                                          style: TextStyle(
-                                            color: parameterTextColor[0],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[0],
+                                            style: TextStyle(
+                                              color: parameterTextColor[0],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[0],
-                                      style: TextStyle(
-                                        color: parameterTextColor[0],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[0],
+                                        style: TextStyle(
+                                          color: parameterTextColor[0],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(1),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[1],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[1].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[1],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(1),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[1],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[1].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[1],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[1],
-                                          style: TextStyle(
-                                            color: parameterTextColor[1],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[1],
+                                            style: TextStyle(
+                                              color: parameterTextColor[1],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[1],
-                                      style: TextStyle(
-                                        color: parameterTextColor[1],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[1],
+                                        style: TextStyle(
+                                          color: parameterTextColor[1],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(2),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[2],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[2].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[2],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(2),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[2],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[2].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[2],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[2],
-                                          style: TextStyle(
-                                            color: parameterTextColor[2],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[2],
+                                            style: TextStyle(
+                                              color: parameterTextColor[2],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[2],
-                                      style: TextStyle(
-                                        color: parameterTextColor[2],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[2],
+                                        style: TextStyle(
+                                          color: parameterTextColor[2],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(3),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[3],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[3].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[3],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(3),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[3],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[3].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[3],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[3],
-                                          style: TextStyle(
-                                            color: parameterTextColor[3],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[3],
+                                            style: TextStyle(
+                                              color: parameterTextColor[3],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[3],
-                                      style: TextStyle(
-                                        color: parameterTextColor[3],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[3],
+                                        style: TextStyle(
+                                          color: parameterTextColor[3],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(4),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[4],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[4].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[4],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(4),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[4],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[4].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[4],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[4],
-                                          style: TextStyle(
-                                            color: parameterTextColor[4],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[4],
+                                            style: TextStyle(
+                                              color: parameterTextColor[4],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[4],
-                                      style: TextStyle(
-                                        color: parameterTextColor[4],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[4],
+                                        style: TextStyle(
+                                          color: parameterTextColor[4],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(5),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[5],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[5].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[5],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(5),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[5],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[5].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[5],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[5],
-                                          style: TextStyle(
-                                            color: parameterTextColor[5],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[5],
+                                            style: TextStyle(
+                                              color: parameterTextColor[5],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[5],
-                                      style: TextStyle(
-                                        color: parameterTextColor[5],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[5],
+                                        style: TextStyle(
+                                          color: parameterTextColor[5],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(6),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[6],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[6].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[6],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(6),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[6],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[6].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[6],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[6],
-                                          style: TextStyle(
-                                            color: parameterTextColor[6],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[6],
+                                            style: TextStyle(
+                                              color: parameterTextColor[6],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[6],
-                                      style: TextStyle(
-                                        color: parameterTextColor[6],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[6],
+                                        style: TextStyle(
+                                          color: parameterTextColor[6],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToDetailPage(7),
-                          child: Container(
-                            height: 80,
-                            width: 120,
-                            child: Card(
-                              color: parameterColors[7],
-                              elevation: 4.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          ' ${parameters[7].value}',
-                                          style: TextStyle(
-                                            color: parameterTextColor[7],
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () => _navigateToDetailPage(7),
+                            child: Container(
+                              height: MediaQuery.of(context).size.height * 0.21,
+                              width: 120,
+                              child: Card(
+                                color: parameterColors[7],
+                                elevation: 4.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            ' ${parameters[7].value}',
+                                            style: TextStyle(
+                                              color: parameterTextColor[7],
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          parameterUnit[7],
-                                          style: TextStyle(
-                                            color: parameterTextColor[7],
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                          const SizedBox(width: 15),
+                                          Text(
+                                            parameterUnit[7],
+                                            style: TextStyle(
+                                              color: parameterTextColor[7],
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      parameterNames[7],
-                                      style: TextStyle(
-                                        color: parameterTextColor[7],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        parameterNames[7],
+                                        style: TextStyle(
+                                          color: parameterTextColor[7],
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    )
-                  ],
+                        ],
+                      )
+                    ],
+                  ),
                 )
               ],
             ),
