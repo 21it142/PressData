@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/screens/register.dart';
-import 'package:pressdata/screens/report_screenDemo.dart';
-import 'package:pressdata/screens/run.dart';
+////import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/register.dart';
+//import 'package:pressdata/screens/report_screenDemo.dart';
+//import 'package:pressdata/screens/run.dart';
 
 //import 'package:pressdata/screens/run.dart';
 //import 'package:pressdata/widgets/demo.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ReportScreen(),
+      home: RegistrationScreen(),
     );
   }
 }

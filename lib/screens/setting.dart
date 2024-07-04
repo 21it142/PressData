@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 //import 'package:get/get.dart';
-import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/main_page.dart';
 
 class Setting1 extends StatefulWidget {
   Setting1({

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

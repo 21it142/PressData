@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:pressdata/screens/main_page.dart';
+//import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'httpLimit.dart';
@@ -20,6 +20,7 @@ class _O2_2State extends State<O2_2> {
   Timer? _minLimitTimer;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
+  // ignore: unused_field
   bool _isLoading = false;
   late Timer _timer;
 

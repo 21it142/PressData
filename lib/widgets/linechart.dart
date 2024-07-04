@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fl_chart/fl_chart.dart';
+//import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pressdata/models/model.dart';
@@ -89,8 +89,8 @@ class _LineCharWidState extends State<LineCharWid> {
     Map<String, List<ChartData>> groupedData = {};
 
     // Find the maximum y value to normalize the data
-    double maxY =
-        chartData.map((data) => data.y).reduce((a, b) => a > b ? a : b);
+    // double maxY =
+    //     chartData.map((data) => data.y).reduce((a, b) => a > b ? a : b);
 
     for (var data in chartData) {
       if (!groupedData.containsKey(data.type)) {
@@ -1314,7 +1314,7 @@ class _LineCharWidState extends State<LineCharWid> {
     // Debugging: Print out the type and structure of the data
     print('Type of data: ${data.runtimeType}');
     print('Data structure: $data');
-    bool isOutOfRange = false;
+    // bool isOutOfRange = false;
 
     // Iterate over each map in the list and create PressData objects
     for (var jsonData in data) {

@@ -19,6 +19,7 @@ class _AIRState extends State<AIR> {
   Timer? _minLimitTimer;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
+  // ignore: unused_field
   late Timer _timer;
   @override
   void initState() {
