@@ -86,7 +86,7 @@ class _VACState extends State<VAC> {
   void updateMaxLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      maxLimit = (value.clamp(50.0, 500.0) - 1.0).toInt() + 1;
       prefs.setInt('VAC_maxLimit', maxLimit);
 
       if (_postJson.isNotEmpty && _postJson.length > 2) {
@@ -99,7 +99,7 @@ class _VACState extends State<VAC> {
   void updateMinLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
+      minLimit = (value.clamp(50.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('VAC_minLimit', minLimit);
 
       if (_postJson.isNotEmpty && _postJson.length > 2) {
@@ -165,7 +165,10 @@ class _VACState extends State<VAC> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(false),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -190,7 +193,10 @@ class _VACState extends State<VAC> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(true),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),
@@ -200,7 +206,10 @@ class _VACState extends State<VAC> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -225,7 +234,10 @@ class _VACState extends State<VAC> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),

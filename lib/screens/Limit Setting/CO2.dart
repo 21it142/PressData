@@ -63,15 +63,15 @@ class _CO2State extends State<CO2> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('CO2_maxLimit') ?? 0;
-      minLimit = prefs.getInt('CO2_minLimit') ?? 0;
+      maxLimit = prefs.getInt('CO2_maxLimit') ?? maxLimit;
+      minLimit = prefs.getInt('CO2_minLimit') ?? minLimit;
     });
   }
 
   void updateMaxLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      maxLimit = (value.clamp(30.0, 75.0) - 1.0).toInt() + 1;
       prefs.setInt('CO2_maxLimit', maxLimit);
 
       // Check if _postJson is not empty and has at least 3 elements
@@ -107,7 +107,7 @@ class _CO2State extends State<CO2> {
   void updateMinLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
+      minLimit = (value.clamp(30.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('CO2_minLimit', minLimit);
 
       // Check if _postJson is not empty and has at least 3 elements
@@ -174,7 +174,10 @@ class _CO2State extends State<CO2> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(false),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -205,7 +208,10 @@ class _CO2State extends State<CO2> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(true),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),
@@ -215,7 +221,7 @@ class _CO2State extends State<CO2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(Icons.add, size: 50),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -246,9 +252,18 @@ class _CO2State extends State<CO2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
               ),
             ],
           ),

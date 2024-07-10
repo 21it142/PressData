@@ -48,6 +48,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     await prefs.setBool('isFirstRun', false);
   }
 
+  Future<void> _saveFormData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('name', _nameController.text);
+    await prefs.setString('hospitalCompany', _hospitalCompanyController.text);
+    await prefs.setString('city', _cityController.text);
+    await prefs.setString('contactNumber', _contactNumberController.text);
+    await prefs.setString('email', _emailController.text);
+  }
+
+  Future<void> _loadFormData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _nameController.text = prefs.getString('name') ?? '';
+    _hospitalCompanyController.text = prefs.getString('hospitalCompany') ?? '';
+    _cityController.text = prefs.getString('city') ?? '';
+    _contactNumberController.text = prefs.getString('contactNumber') ?? '';
+    _emailController.text = prefs.getString('email') ?? '';
+  }
+
   void _navigateToMainPage() {
     Navigator.pushReplacement(
       context,
@@ -108,7 +126,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
-            
           ],
         ),
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),
@@ -176,9 +193,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email address';
                     }
-                    // if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    //   return 'Please enter a valid email address';
-                    // }
                     return null;
                   },
                 ),
@@ -192,6 +206,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
                           await _setFirstRunComplete();
+                          await _saveFormData();
                           _navigateToMainPage();
                           // Perform form submission
                           ScaffoldMessenger.of(context).showSnackBar(

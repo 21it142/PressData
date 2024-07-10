@@ -123,26 +123,26 @@ class _DashboardState extends State<Dashboard>
                     style: TextStyle(
                         color: Color.fromRGBO(0, 25, 152, 1),
                         fontWeight: FontWeight.bold,
-                        fontSize: 25),
+                        fontSize: 20),
                     children: [
                       TextSpan(
                         text: 'Data ',
                         style: TextStyle(
                             color: Colors.red,
-                            fontSize: 25,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text: 'Medical Gas Alram + Analyser ',
                         style: TextStyle(
-                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 20),
+                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 15),
                       ),
                     ]),
               ),
             ),
           ],
         ),
-        toolbarHeight: 40,
+        toolbarHeight: 30,
         backgroundColor: Color.fromRGBO(228, 100, 128, 100),
       ),
       body: _isLoading

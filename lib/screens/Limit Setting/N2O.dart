@@ -77,15 +77,15 @@ class _N2OState extends State<N2O> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('N2O_maxLimit') ?? 0;
-      minLimit = prefs.getInt('N2O_minLimit') ?? 0;
+      maxLimit = prefs.getInt('N2O_maxLimit') ?? maxLimit;
+      minLimit = prefs.getInt('N2O_minLimit') ?? minLimit;
     });
   }
 
   void updateMaxLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      maxLimit = (value.clamp(30.0, 75.0) - 1.0).toInt() + 1;
       prefs.setInt('N2O_maxLimit', maxLimit);
 
       if (_postJson.isNotEmpty && _postJson.length > 2) {
@@ -98,7 +98,7 @@ class _N2OState extends State<N2O> {
   void updateMinLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
+      minLimit = (value.clamp(30.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('N2O_minLimit', minLimit);
 
       if (_postJson.isNotEmpty && _postJson.length > 2) {
@@ -164,7 +164,10 @@ class _N2OState extends State<N2O> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(false),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -189,7 +192,10 @@ class _N2OState extends State<N2O> {
                   GestureDetector(
                     onTapDown: (_) => _startMaxLimitTimer(true),
                     onTapUp: (_) => _stopMaxLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),
@@ -199,7 +205,7 @@ class _N2OState extends State<N2O> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(Icons.remove, size: 50),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -224,9 +230,18 @@ class _N2OState extends State<N2O> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(true),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
               ),
             ],
           ),

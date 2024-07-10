@@ -50,6 +50,8 @@ dependencies:
   table_calendar: ^3.1.2
   flutter_charts: ^0.5.2
   localstorage: ^5.0.0
+  flutter_live_data: ^2.2.5
+  jetpack: ^1.0.4
 
 dev_dependencies:
   flutter_test:
@@ -76,7 +78,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
   - assests/data.json
-  #   - images/a_dot_ham.jpeg
+  - assests/Wavevison-Logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

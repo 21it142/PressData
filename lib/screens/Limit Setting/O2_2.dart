@@ -107,7 +107,7 @@ class _O2_2State extends State<O2_2> {
   void updateMaxLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      maxLimit = (value.clamp(1.0, double.infinity) - 1.0).toInt() + 1;
+      maxLimit = (value.clamp(30.0, 75.0) - 1.0).toInt() + 1;
       prefs.setInt('O2_2_maxLimit', maxLimit);
       if (_postJson.isNotEmpty && _postJson.length > 2) {
         final post = _postJson[1];
@@ -119,7 +119,7 @@ class _O2_2State extends State<O2_2> {
   void updateMinLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      minLimit = (value.clamp(0.0, maxLimit.toDouble() - 1.0)).toInt();
+      minLimit = (value.clamp(30.0, maxLimit.toDouble() - 1.0)).toInt();
       prefs.setInt('O2_2_minLimit', minLimit);
       if (_postJson.isNotEmpty && _postJson.length > 2) {
         final post = _postJson[1];
@@ -182,7 +182,10 @@ class _O2_2State extends State<O2_2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -207,7 +210,10 @@ class _O2_2State extends State<O2_2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),
@@ -217,7 +223,10 @@ class _O2_2State extends State<O2_2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.remove),
+                    child: Icon(
+                      Icons.remove,
+                      size: 50,
+                    ),
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.25,
@@ -242,7 +251,10 @@ class _O2_2State extends State<O2_2> {
                   GestureDetector(
                     onTapDown: (_) => _startMinLimitTimer(false),
                     onTapUp: (_) => _stopMinLimitTimer(),
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      size: 50,
+                    ),
                   ),
                 ],
               ),

@@ -440,12 +440,12 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10);
           if (newvalue > O2_maxLimit! || newvalue < O2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //     duration: const Duration(milliseconds: 550),
+              //     content: Text('${param.name} is not in range!'),
+              //   ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -455,12 +455,12 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 11;
           if (newvalue > VAC_maxLimit! || newvalue < VAC_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //     duration: const Duration(milliseconds: 550),
+              //     content: Text('${param.name} is not in range!'),
+              //   ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -470,11 +470,11 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 21;
           if (newvalue > N2O_maxLimit! || newvalue < N2O_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //     content: Text('${param.name} is not in range!'),
+              //   ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -485,12 +485,12 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 31;
           if (newvalue > AIR_maxLimit! || newvalue < AIR_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //     duration: const Duration(milliseconds: 550),
+              //     content: Text('${param.name} is not in range!'),
+              //   ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -518,13 +518,13 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 51;
           if (newvalue > O2_2_maxLimit! || newvalue < O2_2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: Colors.red,
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   // SnackBar(
+              //   //   backgroundColor: Colors.red,
+              //   //   duration: const Duration(milliseconds: 550),
+              //   //   content: Text('${param.name} is not in range!'),
+              //   // ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -534,12 +534,12 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 61;
           if (newvalue > TEMP_maxLimit! || newvalue < TEMP_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  duration: const Duration(milliseconds: 550),
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   // SnackBar(
+              //   //   duration: const Duration(milliseconds: 550),
+              //   //   content: Text('${param.name} is not in range!'),
+              //   // ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -550,11 +550,11 @@ class _DemoWidState extends State<DemoWid> {
           int newvalue = Random().nextInt(10) + 71;
           if (newvalue > HUMI_maxLimit! || newvalue < HUMI_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${param.name} is not in range!'),
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   // SnackBar(
+              //   //   content: Text('${param.name} is not in range!'),
+              //   // ),
+              // );
             });
             return ParameterData(param.name, Colors.red, newvalue);
           } else {
@@ -653,120 +653,142 @@ class _DemoWidState extends State<DemoWid> {
             child: Row(
               children: [
                 // Graph on the left
+
                 Expanded(
                   flex: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: SfCartesianChart(
-                      tooltipBehavior: TooltipBehavior(enable: true),
-                      legend: Legend(isVisible: true),
-                      primaryXAxis: const NumericAxis(
-                        majorGridLines: MajorGridLines(width: 0),
-                        edgeLabelPlacement: EdgeLabelPlacement.shift,
-                        interval: 1,
-                        title: AxisTitle(
-                          text: 'Reading for Press Data',
-                          textStyle: TextStyle(fontSize: 10),
+                    child: Stack(
+                      children: [
+                        SfCartesianChart(
+                          tooltipBehavior: TooltipBehavior(enable: true),
+                          legend: Legend(isVisible: true),
+                          primaryXAxis: const NumericAxis(
+                            majorGridLines: MajorGridLines(width: 0),
+                            edgeLabelPlacement: EdgeLabelPlacement.shift,
+                            interval: 1,
+                            title: AxisTitle(
+                              text: 'Reading for Press Data',
+                              textStyle: TextStyle(fontSize: 10),
+                            ),
+                          ),
+                          primaryYAxis: const NumericAxis(
+                            axisLine: AxisLine(width: 0),
+                            majorTickLines: MajorTickLines(size: 0),
+                            title: AxisTitle(text: 'Values'),
+                          ),
+                          series: <LineSeries<LiveData, int>>[
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController0 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.o2_1,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              name: "O2(1)",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController1 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.vac,
+                              color: Colors.yellow,
+                              name: "VAC",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController2 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.n2o,
+                              color: const Color.fromARGB(255, 0, 34, 145),
+                              name: "N2o",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController3 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.air,
+                              color: Color.fromARGB(114, 1, 2, 1),
+                              name: "AIR",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController4 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.co2,
+                              color: const Color.fromRGBO(62, 66, 70, 1),
+                              name: "co2",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController5 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.o2_2,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                              name: "O2_2",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController6 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.temp,
+                              color: const Color.fromARGB(255, 255, 0, 0),
+                              name: "Temp",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController7 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.humi,
+                              color: Colors.blue,
+                              name: "HUMI",
+                            ),
+                          ],
                         ),
-                      ),
-                      primaryYAxis: const NumericAxis(
-                        axisLine: AxisLine(width: 0),
-                        majorTickLines: MajorTickLines(size: 0),
-                        title: AxisTitle(text: 'Values'),
-                      ),
-                      series: <LineSeries<LiveData, int>>[
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController0 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.o2_1,
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          name: "O2(1)",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController1 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.vac,
-                          color: Colors.yellow,
-                          name: "VAC",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController2 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.n2o,
-                          color: const Color.fromARGB(255, 0, 34, 145),
-                          name: "N2o",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController3 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.air,
-                          color: Color.fromARGB(114, 1, 2, 1),
-                          name: "AIR",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController4 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.co2,
-                          color: const Color.fromRGBO(62, 66, 70, 1),
-                          name: "co2",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController5 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.o2_2,
-                          color: Colors.white,
-                          name: "O2_2",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController6 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.temp,
-                          color: const Color.fromARGB(255, 255, 0, 0),
-                          name: "Temp",
-                        ),
-                        LineSeries<LiveData, int>(
-                          onRendererCreated:
-                              (ChartSeriesController controller) {
-                            _chartSeriesController7 = controller;
-                          },
-                          dataSource: chartData,
-                          xValueMapper: (LiveData press, _) => press.time,
-                          yValueMapper: (LiveData press, _) => press.humi,
-                          color: Colors.blue,
-                          name: "HUMI",
+                        Center(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Opacity(
+                              opacity: 0.2,
+                              child: Text(
+                                'DEMO',
+                                style: TextStyle(
+                                  fontSize: 150,
+                                  color: Colors.black.withOpacity(0.5),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
+
                 // Parameters on the right
                 SingleChildScrollView(
                   child: Column(
@@ -1036,44 +1058,90 @@ class _DemoWidState extends State<DemoWid> {
                             child: Container(
                               height: MediaQuery.of(context).size.height * 0.21,
                               width: 120,
-                              child: Card(
-                                color: parameterColors[5],
-                                elevation: 4.0,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Card(
+                                  elevation: 4.0,
+                                  child: Stack(
                                     children: [
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            ' ${parameters[5].value}',
-                                            style: TextStyle(
-                                              color: parameterTextColor[5],
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
+                                          // First half: Black
+                                          Expanded(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(2.0),
+                                              child: Container(
+                                                color: Colors.black,
+                                              ),
                                             ),
                                           ),
-                                          const SizedBox(width: 15),
-                                          Text(
-                                            parameterUnit[5],
-                                            style: TextStyle(
-                                              color: parameterTextColor[5],
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                          // Second half: White
+                                          Expanded(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(2.0),
+                                              child: Container(
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        parameterNames[5],
-                                        style: TextStyle(
-                                          color: parameterTextColor[5],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          return Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      ' ${parameters[5].value}',
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .white, // Text color for black background
+                                                        fontSize: 32,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 15),
+                                                    Text(
+                                                      parameterUnit[5],
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .black, // Text color for white background
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                // Adjust text color based on background
+                                                Text(
+                                                  parameterNames[5],
+                                                  style: TextStyle(
+                                                    color: (constraints
+                                                                    .maxWidth /
+                                                                2 >
+                                                            60)
+                                                        ? Colors
+                                                            .white // If text is in the black half
+                                                        : Colors
+                                                            .black, // If text is in the white half
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
@@ -1211,83 +1279,81 @@ class _DemoWidState extends State<DemoWid> {
                   const Spacer(
                     flex: 12,
                   ),
-                  Positioned(
-                    right: 130,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 12.0),
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                              style: BorderStyle.solid, color: Colors.black87),
-                          borderRadius:
-                              BorderRadius.circular(5), // Square corners
-                        ),
-                        minimumSize:
-                            Size(90, 25), // Set minimum size to maintain height
-                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            style: BorderStyle.solid, color: Colors.black87),
+                        borderRadius:
+                            BorderRadius.circular(5), // Square corners
                       ),
-                      onPressed: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Setting1()),
-                        );
-                      },
-                      child: const Text(
-                        'Settings',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          shadows: [
-                            Shadow(
-                              blurRadius: 4,
-                              color: Colors.grey,
-                              offset: Offset(2, 1.5),
-                            ),
-                          ],
-                        ),
-                      ),
+                      minimumSize:
+                          Size(90, 25), // Set minimum size to maintain height
+                      backgroundColor: Color.fromARGB(255, 192, 191, 191),
                     ),
-                  ),
-                  SizedBox(width: 12), // Add spacing between the buttons
-                  Positioned(
-                    right: 20,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 12.0),
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                              style: BorderStyle.solid, color: Colors.black87),
-                          borderRadius:
-                              BorderRadius.circular(5), // Square corners
-                        ),
-                        minimumSize:
-                            Size(90, 25), // Set minimum size to maintain height
-                        backgroundColor: Color.fromARGB(255, 192, 191, 191),
-                      ),
-                      onPressed: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ReportScreen(),
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Setting1()),
+                      );
+                    },
+                    child: const Text(
+                      'Settings',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        shadows: [
+                          Shadow(
+                            blurRadius: 4,
+                            color: Colors.grey,
+                            offset: Offset(2, 1.5),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        'Report',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          shadows: [
-                            Shadow(
-                              blurRadius: 4,
-                              color: Colors.grey,
-                              offset: Offset(2, 1.5),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
+
+                  SizedBox(width: 12), // Add spacing between the buttons
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                            style: BorderStyle.solid, color: Colors.black87),
+                        borderRadius:
+                            BorderRadius.circular(5), // Square corners
+                      ),
+                      minimumSize:
+                          Size(90, 25), // Set minimum size to maintain height
+                      backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                    ),
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Report',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        shadows: [
+                          Shadow(
+                            blurRadius: 4,
+                            color: Colors.grey,
+                            offset: Offset(2, 1.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   Spacer(),
                 ],
               ),

@@ -74,6 +74,18 @@ class _ReportScreenState extends State<ReportScreen> {
 
   void generatePDF_Daily() async {
     final pdf = pw.Document();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Retrieve stored data
+    String storedName = prefs.getString('name') ?? 'No name';
+    print("->>>>>>>>>>>>>>>>>${prefs.getString('name')}");
+    String storedHospitalCompany =
+        prefs.getString('hospitalCompany') ?? 'No hospital/company';
+    String storedCity = prefs.getString('city') ?? 'No city';
+    String storedContactNumber =
+        prefs.getString('contactNumber') ?? 'No contact number';
+    String storedEmail = prefs.getString('email') ?? 'No email';
+
     String remark = _remarkController.text;
     final titleStyle = pw.TextStyle(
       fontSize: 14,
@@ -122,23 +134,28 @@ class _ReportScreenState extends State<ReportScreen> {
                     ),
                   ],
                 ),
-                //pw.Divider(),
                 pw.SizedBox(height: 8),
-                // pw.Text(dynamicHeading, style: pw.TextStyle(fontSize: 20)),
                 pw.SizedBox(height: 8),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Row(
                       children: [
-                        pw.Text('Hospital name: General Hospital, Vadodara',
-                            style: regularStyle),
+                        pw.Text('Name: $storedName', style: regularStyle),
                         pw.SizedBox(width: 16),
-                        pw.Text('Location: OT-2 (Neuro)', style: regularStyle),
+                        pw.Text('Hospital/Company: $storedHospitalCompany',
+                            style: regularStyle),
                       ],
                     ),
-                    pw.Text('PressData unit Sr no: PDA12345678',
-                        style: regularStyle),
+                    pw.Row(
+                      children: [
+                        pw.Text('City: $storedCity', style: regularStyle),
+                        pw.SizedBox(width: 16),
+                        pw.Text('Contact Number: $storedContactNumber',
+                            style: regularStyle),
+                      ],
+                    ),
+                    pw.Text('Email: $storedEmail', style: regularStyle),
                   ],
                 ),
                 pw.Divider(),
@@ -426,15 +443,28 @@ class _ReportScreenState extends State<ReportScreen> {
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
-          return pw.Stack(children: [
-            pw.Container(
-              margin: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              padding: pw.EdgeInsets.all(8),
-              decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColors.black),
-                borderRadius: pw.BorderRadius.circular(5),
+          return pw.Container(
+            margin: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            padding: pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
+              borderRadius: pw.BorderRadius.circular(5),
+            ),
+            child: pw.Stack(children: [
+              pw.Opacity(
+                opacity: 0.1,
+                child: pw.Center(
+                  child: pw.Text(
+                    'DEMO',
+                    style: pw.TextStyle(
+                      fontSize: 100,
+                      color: PdfColors.grey,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
-              child: pw.Column(
+              pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Row(
@@ -542,8 +572,8 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
                 ],
               ),
-            ),
-          ]);
+            ]),
+          );
         },
       ),
     );
