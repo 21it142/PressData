@@ -55,8 +55,8 @@ class _O2State extends State<O2> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('O2_maxLimit') ?? 0;
-      minLimit = prefs.getInt('O2_minLimit') ?? 0;
+      maxLimit = prefs.getInt('O2_maxLimit') ?? maxLimit;
+      minLimit = prefs.getInt('O2_minLimit') ?? minLimit;
     });
   }
 
@@ -238,6 +238,12 @@ class _O2State extends State<O2> {
                     ),
                   ),
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
               ),
             ],
           ),

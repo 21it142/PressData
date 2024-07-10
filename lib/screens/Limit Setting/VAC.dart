@@ -78,8 +78,8 @@ class _VACState extends State<VAC> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('VAC_maxLimit') ?? 0;
-      minLimit = prefs.getInt('VAC_minLimit') ?? 0;
+      maxLimit = prefs.getInt('VAC_maxLimit') ?? maxLimit;
+      minLimit = prefs.getInt('VAC_minLimit') ?? minLimit;
     });
   }
 
@@ -240,6 +240,12 @@ class _VACState extends State<VAC> {
                     ),
                   ),
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
               ),
             ],
           ),

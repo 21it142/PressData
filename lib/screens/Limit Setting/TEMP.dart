@@ -56,8 +56,8 @@ class _TEMPState extends State<TEMP> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('TEMP_maxLimit') ?? 0;
-      minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
+      maxLimit = prefs.getInt('TEMP_maxLimit') ?? maxLimit;
+      minLimit = prefs.getInt('TEMP_minLimit') ?? minLimit;
     });
   }
 
@@ -240,6 +240,12 @@ class _TEMPState extends State<TEMP> {
                     ),
                   ),
                 ],
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("OK"),
               ),
             ],
           ),
