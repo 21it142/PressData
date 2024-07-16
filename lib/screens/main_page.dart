@@ -22,7 +22,7 @@ class _DashboardState extends State<Dashboard>
     with SingleTickerProviderStateMixin {
   String? _wifiName;
   bool _isLoading = true;
-  String _targetWifiName = "Press_data";
+  String _targetWifiName = "Press_data1";
   final LineCharWid _lineChartWid = LineCharWid();
 
   late AnimationController _animationController;

@@ -107,25 +107,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               width: MediaQuery.of(context).size.width * 0.20,
               height: 10,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DemoWid(),
-                  ),
-                );
-              },
-              child: Text(
-                'Demo Mode',
-                style: TextStyle(fontSize: 15),
-              ),
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => DemoWid(),
+            //       ),
+            //     );
+            //   },
+            //   child: Text(
+            //     'Demo Mode',
+            //     style: TextStyle(fontSize: 15),
+            //   ),
+            //   style: ElevatedButton.styleFrom(
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(5),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
         backgroundColor: Color.fromRGBO(231, 223, 223, 100),

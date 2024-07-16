@@ -14,6 +14,7 @@ class HUMI extends StatefulWidget {
 }
 
 class _HUMIState extends State<HUMI> {
+  int value = 1;
   int maxLimit = 0;
   int minLimit = 0;
   Timer? _maxLimitTimer;
@@ -121,6 +122,7 @@ class _HUMIState extends State<HUMI> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
+            iconSize: 50,
             onPressed: () {
               Navigator.pop(context);
             },
@@ -233,11 +235,19 @@ class _HUMIState extends State<HUMI> {
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
+              SizedBox(
+                height: 70,
+                width: 100,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final value = 1;
+                    Navigator.pop(context, value);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(fontSize: 25),
+                  ),
+                ),
               ),
             ],
           ),

@@ -117,7 +117,8 @@ class _ReportScreenState extends State<ReportScreen> {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Header(
-                      child: pw.Text('PressData® Report - $selectedGasesHeader',
+                      child: pw.Text(
+                          'PressData® Demo Report - $selectedGasesHeader',
                           style: titleStyle),
                     ),
                   ],
@@ -279,7 +280,8 @@ class _ReportScreenState extends State<ReportScreen> {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Header(
-                      child: pw.Text('PressData® Report - $selectedGasesHeader',
+                      child: pw.Text(
+                          'PressData® Demo Report - $selectedGasesHeader',
                           style: titleStyle),
                     ),
                   ],
@@ -443,7 +445,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     children: [
                       pw.Header(
                         child: pw.Text(
-                            'PressData® Report - $selectedGasesHeader',
+                            'PressData® Demo Report - $selectedGasesHeader',
                             style: titleStyle),
                       ),
                     ],

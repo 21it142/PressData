@@ -121,6 +121,7 @@ class _O2State extends State<O2> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
+            iconSize: 50,
             onPressed: () {
               Navigator.pop(context);
             },
@@ -239,11 +240,19 @@ class _O2State extends State<O2> {
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
+              SizedBox(
+                height: 70,
+                width: 100,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final value = 1;
+                    Navigator.pop(context, value);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(fontSize: 25),
+                  ),
+                ),
               ),
             ],
           ),

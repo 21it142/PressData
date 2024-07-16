@@ -123,6 +123,7 @@ class _AIRState extends State<AIR> {
             Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back_outlined),
+          iconSize: 50,
         ),
         title: Center(
           child: Column(
@@ -236,11 +237,19 @@ class _AIRState extends State<AIR> {
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("OK"),
+              SizedBox(
+                height: 70,
+                width: 100,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final value = 1;
+                    Navigator.pop(context, value);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(fontSize: 25),
+                  ),
+                ),
               ),
             ],
           ),

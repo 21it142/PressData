@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 //import 'package:get/get.dart';
 //import 'package:pressdata/screens/main_page.dart';
 
+import 'package:flutter/foundation.dart';
+
 class Setting1 extends StatefulWidget {
   Setting1({
     super.key,
@@ -20,6 +22,8 @@ class Product {
 
 class _Setting1State extends State<Setting1> {
   bool isMuted = false;
+
+  var muteProvider;
 
   void toggleMute() {
     setState(() {
@@ -142,14 +146,13 @@ class _Setting1State extends State<Setting1> {
               ),
             ),
           ),
-          IconButton(
-            icon: isMuted ? Icon(Icons.volume_off) : Icon(Icons.volume_up),
-            iconSize: 48,
-            onPressed: () {
-              toggleMute();
-              // Perform mute/unmute actions here
-            },
-          ),
+          // SwitchListTile(
+          //   title: Text('Mute/Unmute'),
+          //   value: muteProvider.isMuted,
+          //   onChanged: (bool value) {
+          //     muteProvider.toggleMute();
+          //   },
+          // ),
         ],
       ),
     );
@@ -186,7 +189,7 @@ class _Setting1State extends State<Setting1> {
                   size: 35,
                 ),
                 onPressed: () {
-                  _incrementPort(index);
+                  toggleMute();
                 },
               ),
             ],

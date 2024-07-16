@@ -1,10 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
+//import 'package:path/path.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
 //import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_beep/flutter_beep.dart';
 import 'package:jetpack/jetpack.dart';
+import 'package:pressdata/data/db.dart';
+//import 'package:pressdata/data/entity/press_data_entity.dart';
 
 import 'package:pressdata/models/model.dart';
 import 'package:pressdata/screens/Limit%20Setting/AIR.dart';
@@ -17,80 +25,56 @@ import 'package:http/http.dart' as http;
 import 'package:pressdata/screens/ReportScreen.dart';
 import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/screens/setting.dart';
-// import 'package:pressdata/screens/report_screenDemo.dart';
-// import 'package:pressdata/screens/setting.dart';
-// import 'package:pressdata/widgets/bar.dart';
-// import 'package:pressdata/widgets/demo.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:syncfusion_flutter_charts/charts.dart';
-//import 'package:syncfusion_flutter_charts/charts.dart';
+
 import 'package:intl/intl.dart';
 
 import '../screens/Limit Setting/CO2.dart';
 import '../screens/Limit Setting/VAC.dart';
-
-class AccumulatedData {
-  double sum;
-  int count;
-
-  AccumulatedData(this.sum, this.count);
-
-  double get average => sum / count;
-}
 
 class LineCharWid extends StatefulWidget {
   const LineCharWid({Key? key}) : super(key: key);
 
   @override
   State<LineCharWid> createState() => _LineCharWidState();
-
-  captureChartImage() {}
-}
-
-class ParameterData {
-  final String name;
-  final Color color;
-  int value;
-
-  ParameterData(this.name, this.color, this.value);
 }
 
 class ChartData {
-  ChartData(this.x, this.y, this.type);
+  ChartData(this.x, this.y, this.type, this.deviceNo);
 
   final double x;
   final double y;
   final String type;
+  dynamic deviceNo;
 }
 
 class _LineCharWidState extends State<LineCharWid> {
-  final StreamController<String> _messageController =
-      StreamController<String>();
+  final db = PressDataDb();
+  final _tempDataStreamController = StreamController<int>.broadcast();
+  int _elapsedTime = 0;
   Timer? _timer;
-  int _messageIndex = 0;
-  final List<String> _messages = [
-    "Message 1",
-    "Message 2",
-    "Message 3",
-    "Message 4",
-    "Message 5",
-    "Message 6",
-    "Message 7",
-    "Message 8",
-  ];
   final MutableLiveData<String> messageerror =
       MutableLiveData("SYSTEM IS RUNNING OK");
-
+  int value = 0;
   List<PressData> pressdata = [];
   StreamController<PressData> _streamData = StreamController();
-  StreamController<PressData> _streamDatatemp = StreamController();
-  StreamController<PressData> _streamDatahumi = StreamController();
-  StreamController<PressData> _streamDatao21 = StreamController();
-  StreamController<PressData> _streamDatavac = StreamController();
-  StreamController<PressData> _streamDatan2o = StreamController();
-  StreamController<PressData> _streamDataair = StreamController();
-  StreamController<PressData> _streamDataco2 = StreamController();
-  StreamController<PressData> _streamDatao22 = StreamController();
+  StreamController<int> _storetemp = StreamController();
+  StreamController<int> _streamDatatemp = StreamController();
+  StreamController<int> _streamDatahumi = StreamController();
+  StreamController<int> _streamDatao21 = StreamController();
+  StreamController<int> _streamDatavac = StreamController();
+  StreamController<int> _streamDatan2o = StreamController();
+  StreamController<int> _streamDataair = StreamController();
+  StreamController<int> _streamDataco2 = StreamController();
+  StreamController<int> _streamDatao22 = StreamController();
+  StreamController<String> _streamDataerror =
+      StreamController<String>.broadcast();
+  List<String> _message = [];
+  int _currentIndex = 0;
+  String message = "SYSTEM IS RUNNING OK";
   int? O2_maxLimit;
   int? O2_minLimit;
   int? VAC_maxLimit;
@@ -154,43 +138,30 @@ class _LineCharWidState extends State<LineCharWid> {
     }).toList();
   }
 
-  Map<String, AccumulatedData> accumulatedData = {};
-
-  Future<void> storeAveragedData(String formattedDate) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, double> averagedData = {};
-
-    accumulatedData.forEach((type, data) {
-      averagedData[type] = data.sum / data.count;
-    });
-
-    String jsonAveragedData = jsonEncode(averagedData);
-    await prefs.setString(formattedDate, jsonAveragedData);
-
-    // Clear accumulated data for the next minute
-    accumulatedData.clear();
+  void _startBeep(BuildContext context) {
+    FlutterBeep.beep();
   }
 
   void _storeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 10;
-      O2_minLimit = prefs.getInt('O2_minLimit') ?? 0;
-      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 20;
-      VAC_minLimit = prefs.getInt('VAC_minLimit') ?? 0;
-      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 30;
-      N2O_minLimit = prefs.getInt('N2O_minLimit') ?? 0;
-      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 40;
-      AIR_minLimit = prefs.getInt('AIR_minLimit') ?? 0;
+      O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 50;
+      O2_minLimit = prefs.getInt('O2_minLimit') ?? 30;
+      VAC_maxLimit = prefs.getInt('VAC_maxLimit') ?? 150;
+      VAC_minLimit = prefs.getInt('VAC_minLimit') ?? 30;
+      N2O_maxLimit = prefs.getInt('N2O_maxLimit') ?? 60;
+      N2O_minLimit = prefs.getInt('N2O_minLimit') ?? 40;
+      AIR_maxLimit = prefs.getInt('AIR_maxLimit') ?? 70;
+      AIR_minLimit = prefs.getInt('AIR_minLimit') ?? 40;
       CO2_maxLimit = prefs.getInt('CO2_maxLimit') ?? 50;
-      CO2_minLimit = prefs.getInt('CO2_minLimit') ?? 0;
-      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 60;
-      O2_2_minLimit = prefs.getInt('O2_2_minLimit') ?? 0;
-      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 70;
-      TEMP_minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
-      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 80;
-      HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
-      print(O2_2_maxLimit);
+      CO2_minLimit = prefs.getInt('CO2_minLimit') ?? 40;
+      O2_2_maxLimit = prefs.getInt('O2_2_maxLimit') ?? 39;
+      O2_2_minLimit = prefs.getInt('O2_2_minLimit') ?? 35;
+      TEMP_maxLimit = prefs.getInt('TEMP_maxLimit') ?? 32;
+      TEMP_minLimit = prefs.getInt('TEMP_minLimit') ?? 20;
+      HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 50;
+      HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 30;
+      //   print(O2_2_maxLimit);
     });
   }
 
@@ -231,8 +202,12 @@ class _LineCharWidState extends State<LineCharWid> {
     double x = DateTime.now().millisecondsSinceEpoch.toDouble();
     print('Received Data: $data');
     List<ChartData> newData = [];
+
     for (var entry in data) {
-      newData.add(ChartData(x, entry['value'].toDouble(), entry['type']));
+      if (entry['type'] != 'deviceNo') {
+        newData.add(
+            ChartData(x, entry['value'].toDouble(), entry['type'], entry['']));
+      }
     }
 
     print('New Data: $newData');
@@ -260,47 +235,72 @@ class _LineCharWidState extends State<LineCharWid> {
         } as void Function(List<ConnectivityResult> event)?);
   }
 
-  void _navigateToDetailPage(int index) {
+  void _navigateToDetailPage(int index) async {
+    final BuildContext context = this.context;
     if (index == 0) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => TEMP()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 1) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HUMI()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 2) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => O2()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 3) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => VAC()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 4) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => N2O()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 5) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => AIR()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 6) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => CO2()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     } else if (index == 7) {
-      Navigator.push(
+      final value = Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => O2_2()),
       );
+      if (value == 1) {
+        _storeData();
+      }
     }
   }
 
@@ -310,17 +310,36 @@ class _LineCharWidState extends State<LineCharWid> {
   @override
   void initState() {
     super.initState();
-    _storeData();
-    _timer = Timer.periodic(Duration(seconds: 3), (timer) {
-      _messageController.add(_messages[_messageIndex]);
-      _messageIndex = (_messageIndex + 1) % _messages.length;
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      _storeData();
+    });
+    // startFetchingData();
+    _message.clear();
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer timer) {
+      setState(() {
+        if (_currentIndex > _message.length + 9) {
+          _currentIndex = 0;
+        }
+
+        if (_message.isNotEmpty) {
+          _currentIndex = (_currentIndex + 1) % _message.length;
+        }
+      });
     });
     Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         // Trigger the cleanup and update the chart
+
         _getLineSeries();
       });
+
+      Stream.periodic(Duration(seconds: 2), (_) {
+        _streamDataerror;
+      });
     });
+    // Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   hello();
+    // });
     Timer.periodic(const Duration(seconds: 1), (timer) {
       _updateController.add(null);
     });
@@ -332,7 +351,8 @@ class _LineCharWidState extends State<LineCharWid> {
   @override
   void dispose() {
     _updateController.close(); // Close the stream controller
-    _streamSubscription.cancel(); // Cancel the subscription
+    _streamSubscription.cancel();
+    _streamDataerror.close(); // Cancel the subscription
     _streamDatatemp.close();
     _streamDataair.close();
     _streamDatao21.close();
@@ -341,8 +361,9 @@ class _LineCharWidState extends State<LineCharWid> {
     _streamDatavac.close();
     _streamDataco2.close();
     _streamDatan2o.close();
+    _tempDataStreamController.close();
     _streamData.close();
-
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -371,6 +392,7 @@ class _LineCharWidState extends State<LineCharWid> {
       const Color.fromARGB(255, 0, 0, 0),
     ];
 
+    int count = 0;
     List parameterUnit = [
       "°C",
       "%",
@@ -411,7 +433,7 @@ class _LineCharWidState extends State<LineCharWid> {
                                   //majorGridLines: MajorGridLines(width: 1),
                                   edgeLabelPlacement: EdgeLabelPlacement.shift,
                                   interval: 10, // 1-second interval
-                                  dateFormat: DateFormat('mm:ss'),
+                                  dateFormat: DateFormat('hh:mm:ss'),
                                   minimum: chartData.isNotEmpty
                                       ? DateTime.fromMillisecondsSinceEpoch(
                                           chartData.first.x.toInt())
@@ -452,12 +474,12 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[0],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                               stream: _streamDatatemp.stream,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
-                                  PressData pressData = snapshot.data!;
-                                  String value = pressData.value.toString();
+                                  int pressData = snapshot.data!;
+                                  String value = pressData.toString();
                                   return Padding(
                                     padding: const EdgeInsets.all(2.0),
                                     child: Column(
@@ -527,14 +549,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[1],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDatahumi.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     // String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -606,14 +628,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[2],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDatao21.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     // String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -681,14 +703,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[3],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDatavac.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     // String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -762,14 +784,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[4],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDatan2o.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     //  String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -839,14 +861,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[5],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDataair.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     //String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -920,14 +942,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[6],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDataco2.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     //  String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -997,14 +1019,14 @@ class _LineCharWidState extends State<LineCharWid> {
                           child: Card(
                             color: parameterColors[7],
                             elevation: 4.0,
-                            child: StreamBuilder<PressData>(
+                            child: StreamBuilder<int>(
                                 stream: _streamDatao22.stream,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
-                                    PressData pressData = snapshot.data!;
-                                    PressData data = pressData;
+                                    int pressData = snapshot.data!;
+                                    int data = pressData;
                                     // String type = data.type;
-                                    String value = data.value.toString();
+                                    String value = data.toString();
                                     return Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: Column(
@@ -1023,25 +1045,25 @@ class _LineCharWidState extends State<LineCharWid> {
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                              Text(
-                                                value,
-                                                style: TextStyle(
-                                                  color: parameterTextColor[7],
-                                                  fontSize: 32,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
                                               const SizedBox(width: 15),
                                               if (value != '-333')
                                                 Text(
-                                                  parameterUnit[7],
+                                                  value,
                                                   style: TextStyle(
                                                     color:
                                                         parameterTextColor[7],
-                                                    fontSize: 7,
+                                                    fontSize: 32,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
+                                              Text(
+                                                parameterUnit[7],
+                                                style: TextStyle(
+                                                  color: parameterTextColor[7],
+                                                  fontSize: 7,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ],
                                           ),
                                           Text(
@@ -1072,201 +1094,290 @@ class _LineCharWidState extends State<LineCharWid> {
           ),
         ),
         Align(
-          child: Container(
-            height: 30,
-            color: Colors.grey[200], // Background color of the bar
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Spacer(flex: 20),
+          child: StreamBuilder<String>(
+              stream: _streamDataerror.stream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  print(_currentIndex);
+                  if (!_message.contains(snapshot.data.toString())) {
+                    _message.add(snapshot.data.toString());
+                  }
 
-                LiveDataBuilder<String>(
-                    liveData: messageerror,
-                    builder: (BuildContext context, String message) => Text(
+                  message = _message.isNotEmpty
+                      ? _message[_currentIndex]
+                      : "SYSTEM IS RUNNING OK";
+                  // if (message != "SYSTEM IS RUNNING OK") {
+                  //   _startBeep(context);
+                  // } else {
+                  //   _stopBeep();
+                  // }
+                  return Container(
+                    height: 30,
+                    color: message == "SYSTEM IS RUNNING OK"
+                        ? Colors.grey[200]
+                        : Colors.red, // Background color of the bar
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Spacer(flex: 20),
+                        Text(
                           message,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
-                        )),
-
-                const Spacer(flex: 12),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12.0),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                          style: BorderStyle.solid, color: Colors.black87),
-                      borderRadius: BorderRadius.circular(5), // Square corners
-                    ),
-                    minimumSize:
-                        Size(90, 25), // Set minimum size to maintain height
-                    backgroundColor: Color.fromARGB(255, 192, 191, 191),
-                  ),
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Setting1()),
-                    );
-                  },
-                  child: const Text(
-                    'Settings',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: Colors.grey,
-                          offset: Offset(2, 1.5),
                         ),
+                        Spacer(flex: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 12.0),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                  style: BorderStyle.solid,
+                                  color: Colors.black87),
+                              borderRadius:
+                                  BorderRadius.circular(5), // Square corners
+                            ),
+                            minimumSize: Size(
+                                90, 25), // Set minimum size to maintain height
+                            backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                          ),
+                          onPressed: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Setting1()),
+                            );
+                          },
+                          child: const Text(
+                            'Settings',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 4,
+                                  color: Colors.grey,
+                                  offset: Offset(2, 1.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12), // Add spacing between the buttons
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 12.0),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                  style: BorderStyle.solid,
+                                  color: Colors.black87),
+                              borderRadius:
+                                  BorderRadius.circular(5), // Square corners
+                            ),
+                            minimumSize: Size(
+                                90, 25), // Set minimum size to maintain height
+                            backgroundColor: Color.fromARGB(255, 192, 191, 191),
+                          ),
+                          onPressed: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ReportScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Report',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 4,
+                                  color: Colors.grey,
+                                  offset: Offset(2, 1.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Spacer(),
                       ],
                     ),
-                  ),
-                ),
-                SizedBox(width: 12), // Add spacing between the buttons
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12.0),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                          style: BorderStyle.solid, color: Colors.black87),
-                      borderRadius: BorderRadius.circular(5), // Square corners
-                    ),
-                    minimumSize:
-                        Size(90, 25), // Set minimum size to maintain height
-                    backgroundColor: Color.fromARGB(255, 192, 191, 191),
-                  ),
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReportScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Report',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: Colors.grey,
-                          offset: Offset(2, 1.5),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Spacer(),
-              ],
-            ),
-          ),
+                  );
+                } else {
+                  return Text("SYSTEM IS RUNNING OK");
+                }
+              }),
         ),
       ]),
     );
   }
+
+  void copy_database() {
+    print('heloooooooooooooooo->>>>>>>>>>>>>>>${db.getAllPressData()}');
+  }
+// Future<void> storeAverageData() async {
+//     print("hiiii");
+//     if (purityList.isNotEmpty &&
+//         flowRateList.isNotEmpty &&
+//         pressureList.isNotEmpty &&
+//         temperatureList.isNotEmpty) {
+//       double averagePurity =
+//           purityList.reduce((a, b) => a + b) / purityList.length;
+//       double averageFlowRate =
+//           flowRateList.reduce((a, b) => a + b) / flowRateList.length;
+//       double averagePressure =
+//           pressureList.reduce((a, b) => a + b) / pressureList.length;
+//       double averageTemperature =
+//           temperatureList.reduce((a, b) => a + b) / temperatureList.length;
+
+//       String? serialNo =
+//           _serialNo; // You need to fetch the actual serial number
+//       DateTime dateTime = DateTime.now();
+
+//       final entity = OxyDatabaseCompanion(
+//         purity: drift.Value(averagePurity),
+//         flow: drift.Value(averageFlowRate),
+//         pressure: drift.Value(averagePressure),
+//         temp: drift.Value(averageTemperature),
+//         serialNo: drift.Value(serialNo!),
+//         recordedAt: drift.Value(dateTime),
+//       );
+//       print(
+//           'Print before store:  Purity: ${averagePurity}, Flow Rate: ${averageFlowRate}, Pressure: ${averagePressure}, Temperature: ${averageTemperature}, Serial No: ${serialNo!}, DateTime: ${dateTime}');
+//       await _db.insertOxyData(entity);
+//       await printStoredData();
+
+//       // Clear the lists after storing data
+//       purityList.clear();
+//       flowRateList.clear();
+//       pressureList.clear();
+//       temperatureList.clear();
+//     }
+//   }
+  int temp = 0, vac = 0, humi = 0, co2 = 0, o22 = 0, o21 = 0, air = 0, n2o = 0;
 
   Future<void> getdata() async {
     var url = Uri.parse('http://192.168.4.1/event');
     final response = await http.get(url);
 
     final data = json.decode(response.body);
-
-    // Debugging: Print out the type and structure of the data
-    print('Type of data: ${data.runtimeType}');
-    print('Data structure: $data');
-
-    // Iterate over each map in the list and create PressData objects
+    DateTime dateTime = DateTime.now();
     for (var jsonData in data) {
       PressData pressdata = PressData.fromJson(jsonData);
-      if (!accumulatedData.containsKey(pressdata.type)) {
-        accumulatedData[pressdata.type] = AccumulatedData(0, 0);
-      }
-
-      accumulatedData[pressdata.type]!.sum += pressdata.value;
-      accumulatedData[pressdata.type]!.count += 1;
-      print("accumulatedData.length->>>>>>>${accumulatedData.length}");
       switch (pressdata.type) {
         case 'temperature':
-          _streamDatatemp.sink.add(pressdata);
+          temp = pressdata.value;
+          _streamDatatemp.sink.add(pressdata.value);
+          //    _storetemp.sink.add(pressdata.value);
+          print("Temp Limit:${TEMP_maxLimit}");
           if (pressdata.value > TEMP_maxLimit) {
-            messageerror.value = "Temp is Above High Setting";
+            print("I am IN inside temp::");
+            _streamDataerror.sink.add("Temp is Above High Setting");
+            //   messageerror.value = "Temp is Above High Setting";
           }
           if (pressdata.value < TEMP_minLimit!) {
-            messageerror.value = "Temp is below Low Setting";
+            _streamDataerror.sink.add("Temp is Below Low Setting");
+            //  messageerror.value = "Temp is below Low Setting";
           }
           break;
         case 'humidity':
-          _streamDatahumi.sink.add(pressdata);
+          print("humi Limit:${HUMI_maxLimit}");
+          _streamDatahumi.sink.add(pressdata.value);
+          humi = pressdata.value;
           if (pressdata.value > HUMI_maxLimit) {
             //outOfRangeMessagesHumi = "HUMI is Above High Setting";
-            messageerror.value = "Humi is Above High Setting";
+            _streamDataerror.sink.add("HUMI is Above High Setting");
+            // messageerror.value = "Humi is Above High Setting";
           }
           if (pressdata.value < HUMI_minLimit!) {
             //outOfRangeMessagesHumi = "HUMI is below Low Setting";
-            messageerror.value = "Humi is Below Low Setting";
+            _streamDataerror.sink.add("HUMI is Below Low Setting");
           }
           break;
         case 'o21':
-          _streamDatao21.sink.add(pressdata);
+          print("O2  1 Limit:${O2_maxLimit}");
+          _streamDatao21.sink.add(pressdata.value);
+          o21 = pressdata.value;
           if (pressdata.value > O2_maxLimit) {
-            messageerror.value = "O2 (1) is Above High Setting";
+            //  messageerror.value = "O2 (1) is Above High Setting";
+            _streamDataerror.sink.add("O2 (1) is Above High Setting");
           }
           if (pressdata.value < O2_minLimit!) {
             // outOfRangeMessageso2 = "O2 (1) is below Low Setting";
-            messageerror.value = "O2 (1) is Below Low Setting";
+            // messageerror.value = "O2 (1) is Below Low Setting";
+            Future.delayed(Duration(seconds: 1), () {
+              _streamDataerror.sink.add("O2 (1) is  Below Low Setting");
+            });
           }
           break;
 
         case 'vac':
-          _streamDatavac.sink.add(pressdata);
+          _streamDatavac.sink.add(pressdata.value);
+          print("VAC VALUE${VAC_maxLimit}");
+          vac = pressdata.value;
           if (pressdata.value > VAC_maxLimit) {
-            messageerror.value = "VAC is Above HighSetting";
+            // messageerror.value = "VAC is Above HighSetting";
+            _streamDataerror.sink.add("VAC is Above High Setting");
           }
           if (pressdata.value < VAC_minLimit!) {
             // outOfRangeMessagesvac = " VAC is below Low Setting";
-            messageerror.value = "VAC is below Low Setting";
+            // messageerror.value = "VAC is below Low Setting";
+            _streamDataerror.sink.add("VAC is Below Low Setting");
           }
           break;
         case 'n2o':
-          _streamDatan2o.sink.add(pressdata);
+          print("N2o v$N2O_maxLimit");
+          _streamDatan2o.sink.add(pressdata.value);
+          n2o = pressdata.value;
           if (pressdata.value > N2O_maxLimit) {
-            messageerror.value = "N2O is Above HighSetting";
+            // messageerror.value = "N2O is Above HighSetting";
+            _streamDataerror.sink.add("N2O is Above High Setting");
           }
           if (pressdata.value < N2O_minLimit!) {
-            messageerror.value = "N2O is Below Low Setting";
+            // messageerror.value = "N2O is Below Low Setting";
+            _streamDataerror.sink.add("N2O is Below Low Setting");
           }
           break;
         case 'air':
-          _streamDataair.sink.add(pressdata);
+          air = pressdata.value;
+          _streamDataair.sink.add(pressdata.value);
           if (pressdata.value > AIR_maxLimit) {
-            messageerror.value = "AIR is Above High Setting";
+            //messageerror.value = "AIR is Above High Setting";
+            _streamDataerror.sink.add("AIR is Above High Setting");
           }
           if (pressdata.value < AIR_minLimit!) {
-            messageerror.value = "AIR is Below Low Setting";
+            // messageerror.value = "AIR is Below Low Setting";
+
+            _streamDataerror.sink.add("AIR is Below Low Setting");
           }
           break;
         case 'co2':
-          _streamDataco2.sink.add(pressdata);
+          co2 = pressdata.value;
+          _streamDataco2.sink.add(pressdata.value);
           if (pressdata.value > CO2_maxLimit) {
-            messageerror.value = "CO2 is Above High Setting";
+            //  messageerror.value = "CO2 is Above High Setting";
+            _streamDataerror.sink.add("CO2 is Above High Setting");
           }
           if (pressdata.value < CO2_minLimit!) {
-            messageerror.value = "CO2 is Below Low Setting";
+            //  messageerror.value = "CO2 is Below Low Setting";
+            _streamDataerror.sink.add("CO2 is Below Low Setting");
           }
           break;
         case 'o22':
-          _streamDatao22.sink.add(pressdata);
+          o22 = pressdata.value;
+          _streamDatao22.sink.add(pressdata.value);
           if (pressdata.value > O2_2_maxLimit) {
-            messageerror.value = "O2 (2) is Above High Setting";
+            //  messageerror.value = "O2 (2) is Above High Setting";
+            _streamDataerror.sink.add("O2 (2) is Above High Setting");
           }
           if (pressdata.value < O2_2_minLimit!) {
-            messageerror.value = "O2 (2) is Below low Setting";
+            // messageerror.value = "O2 (2) is Below low Setting";
+            _streamDataerror.sink.add("O2 (2) is Below Low Setting");
           }
           break;
         default:
@@ -1282,16 +1393,20 @@ class _LineCharWidState extends State<LineCharWid> {
       await Future.delayed(Duration(seconds: 1));
     }
 
-    // if (temp_range &&
-    //     humi_range &&
-    //     o21_range &&
-    //     n2o_range &&
-    //     vac_range &&
-    //     air_range &&
-    //     co2_range &&
-    //     o22_range) {
-    //   systemMessage = "SYSTEM IS RUNNING OK";
-    //   _messageTimer?.cancel();
-    // }
+    final entity = PressDataTableCompanion(
+      temperature: drift.Value(temp),
+      humidity: drift.Value(humi),
+      o2: drift.Value(o21),
+      vac: drift.Value(vac),
+      n2o: drift.Value(n2o),
+      airPressure: drift.Value(air),
+      co2: drift.Value(co2),
+      o22: drift.Value(o22),
+      recordedAt: drift.Value(dateTime),
+    );
+    copy_database();
+    print("entity->>>>>>>>>>>>>>>>>>>>>$entity");
+    await db.getAllPressData().toString();
+    await db.insertPressData(entity);
   }
 }

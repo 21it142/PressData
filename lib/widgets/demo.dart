@@ -614,8 +614,7 @@ class _DemoWidState extends State<DemoWid> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Dashboard()));
+            Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back),
         ),

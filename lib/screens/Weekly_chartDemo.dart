@@ -15,6 +15,7 @@ class WeeklyChart extends StatefulWidget {
   State<WeeklyChart> createState() => _WeeklyChartState();
 }
 
+
 class _WeeklyChartState extends State<WeeklyChart> {
   @override
   Widget build(BuildContext context) {
