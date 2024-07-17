@@ -10,5 +10,6 @@ class PressDataTable extends Table {
   IntColumn get airPressure => integer().named('airPressure')();
   IntColumn get co2 => integer().named('co2')();
   IntColumn get o22 => integer().named('o22')();
+  TextColumn get DeviceNo => text().named('DeviceNo')();
   DateTimeColumn get recordedAt => dateTime().nullable()();
 }

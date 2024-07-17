@@ -61,6 +61,12 @@ class $PressDataTableTable extends PressDataTable
   late final GeneratedColumn<int> o22 = GeneratedColumn<int>(
       'o22', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _DeviceNoMeta =
+      const VerificationMeta('DeviceNo');
+  @override
+  late final GeneratedColumn<String> DeviceNo = GeneratedColumn<String>(
+      'DeviceNo', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _recordedAtMeta =
       const VerificationMeta('recordedAt');
   @override
@@ -78,6 +84,7 @@ class $PressDataTableTable extends PressDataTable
         airPressure,
         co2,
         o22,
+        DeviceNo,
         recordedAt
       ];
   @override
@@ -144,6 +151,12 @@ class $PressDataTableTable extends PressDataTable
     } else if (isInserting) {
       context.missing(_o22Meta);
     }
+    if (data.containsKey('DeviceNo')) {
+      context.handle(_DeviceNoMeta,
+          DeviceNo.isAcceptableOrUnknown(data['DeviceNo']!, _DeviceNoMeta));
+    } else if (isInserting) {
+      context.missing(_DeviceNoMeta);
+    }
     if (data.containsKey('recorded_at')) {
       context.handle(
           _recordedAtMeta,
@@ -177,6 +190,8 @@ class $PressDataTableTable extends PressDataTable
           .read(DriftSqlType.int, data['${effectivePrefix}co2'])!,
       o22: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}o22'])!,
+      DeviceNo: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}DeviceNo'])!,
       recordedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}recorded_at']),
     );
@@ -199,6 +214,7 @@ class PressDataTableData extends DataClass
   final int airPressure;
   final int co2;
   final int o22;
+  final String DeviceNo;
   final DateTime? recordedAt;
   const PressDataTableData(
       {required this.id,
@@ -210,6 +226,7 @@ class PressDataTableData extends DataClass
       required this.airPressure,
       required this.co2,
       required this.o22,
+      required this.DeviceNo,
       this.recordedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -223,6 +240,7 @@ class PressDataTableData extends DataClass
     map['airPressure'] = Variable<int>(airPressure);
     map['co2'] = Variable<int>(co2);
     map['o22'] = Variable<int>(o22);
+    map['DeviceNo'] = Variable<String>(DeviceNo);
     if (!nullToAbsent || recordedAt != null) {
       map['recorded_at'] = Variable<DateTime>(recordedAt);
     }
@@ -240,6 +258,7 @@ class PressDataTableData extends DataClass
       airPressure: Value(airPressure),
       co2: Value(co2),
       o22: Value(o22),
+      DeviceNo: Value(DeviceNo),
       recordedAt: recordedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(recordedAt),
@@ -259,6 +278,7 @@ class PressDataTableData extends DataClass
       airPressure: serializer.fromJson<int>(json['airPressure']),
       co2: serializer.fromJson<int>(json['co2']),
       o22: serializer.fromJson<int>(json['o22']),
+      DeviceNo: serializer.fromJson<String>(json['DeviceNo']),
       recordedAt: serializer.fromJson<DateTime?>(json['recordedAt']),
     );
   }
@@ -275,6 +295,7 @@ class PressDataTableData extends DataClass
       'airPressure': serializer.toJson<int>(airPressure),
       'co2': serializer.toJson<int>(co2),
       'o22': serializer.toJson<int>(o22),
+      'DeviceNo': serializer.toJson<String>(DeviceNo),
       'recordedAt': serializer.toJson<DateTime?>(recordedAt),
     };
   }
@@ -289,6 +310,7 @@ class PressDataTableData extends DataClass
           int? airPressure,
           int? co2,
           int? o22,
+          String? DeviceNo,
           Value<DateTime?> recordedAt = const Value.absent()}) =>
       PressDataTableData(
         id: id ?? this.id,
@@ -300,6 +322,7 @@ class PressDataTableData extends DataClass
         airPressure: airPressure ?? this.airPressure,
         co2: co2 ?? this.co2,
         o22: o22 ?? this.o22,
+        DeviceNo: DeviceNo ?? this.DeviceNo,
         recordedAt: recordedAt.present ? recordedAt.value : this.recordedAt,
       );
   PressDataTableData copyWithCompanion(PressDataTableCompanion data) {
@@ -315,6 +338,7 @@ class PressDataTableData extends DataClass
           data.airPressure.present ? data.airPressure.value : this.airPressure,
       co2: data.co2.present ? data.co2.value : this.co2,
       o22: data.o22.present ? data.o22.value : this.o22,
+      DeviceNo: data.DeviceNo.present ? data.DeviceNo.value : this.DeviceNo,
       recordedAt:
           data.recordedAt.present ? data.recordedAt.value : this.recordedAt,
     );
@@ -332,6 +356,7 @@ class PressDataTableData extends DataClass
           ..write('airPressure: $airPressure, ')
           ..write('co2: $co2, ')
           ..write('o22: $o22, ')
+          ..write('DeviceNo: $DeviceNo, ')
           ..write('recordedAt: $recordedAt')
           ..write(')'))
         .toString();
@@ -339,7 +364,7 @@ class PressDataTableData extends DataClass
 
   @override
   int get hashCode => Object.hash(id, temperature, humidity, o2, vac, n2o,
-      airPressure, co2, o22, recordedAt);
+      airPressure, co2, o22, DeviceNo, recordedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -353,6 +378,7 @@ class PressDataTableData extends DataClass
           other.airPressure == this.airPressure &&
           other.co2 == this.co2 &&
           other.o22 == this.o22 &&
+          other.DeviceNo == this.DeviceNo &&
           other.recordedAt == this.recordedAt);
 }
 
@@ -366,6 +392,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
   final Value<int> airPressure;
   final Value<int> co2;
   final Value<int> o22;
+  final Value<String> DeviceNo;
   final Value<DateTime?> recordedAt;
   const PressDataTableCompanion({
     this.id = const Value.absent(),
@@ -377,6 +404,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
     this.airPressure = const Value.absent(),
     this.co2 = const Value.absent(),
     this.o22 = const Value.absent(),
+    this.DeviceNo = const Value.absent(),
     this.recordedAt = const Value.absent(),
   });
   PressDataTableCompanion.insert({
@@ -389,6 +417,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
     required int airPressure,
     required int co2,
     required int o22,
+    required String DeviceNo,
     this.recordedAt = const Value.absent(),
   })  : temperature = Value(temperature),
         humidity = Value(humidity),
@@ -397,7 +426,8 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
         n2o = Value(n2o),
         airPressure = Value(airPressure),
         co2 = Value(co2),
-        o22 = Value(o22);
+        o22 = Value(o22),
+        DeviceNo = Value(DeviceNo);
   static Insertable<PressDataTableData> custom({
     Expression<int>? id,
     Expression<int>? temperature,
@@ -408,6 +438,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
     Expression<int>? airPressure,
     Expression<int>? co2,
     Expression<int>? o22,
+    Expression<String>? DeviceNo,
     Expression<DateTime>? recordedAt,
   }) {
     return RawValuesInsertable({
@@ -420,6 +451,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
       if (airPressure != null) 'airPressure': airPressure,
       if (co2 != null) 'co2': co2,
       if (o22 != null) 'o22': o22,
+      if (DeviceNo != null) 'DeviceNo': DeviceNo,
       if (recordedAt != null) 'recorded_at': recordedAt,
     });
   }
@@ -434,6 +466,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
       Value<int>? airPressure,
       Value<int>? co2,
       Value<int>? o22,
+      Value<String>? DeviceNo,
       Value<DateTime?>? recordedAt}) {
     return PressDataTableCompanion(
       id: id ?? this.id,
@@ -445,6 +478,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
       airPressure: airPressure ?? this.airPressure,
       co2: co2 ?? this.co2,
       o22: o22 ?? this.o22,
+      DeviceNo: DeviceNo ?? this.DeviceNo,
       recordedAt: recordedAt ?? this.recordedAt,
     );
   }
@@ -479,6 +513,9 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
     if (o22.present) {
       map['o22'] = Variable<int>(o22.value);
     }
+    if (DeviceNo.present) {
+      map['DeviceNo'] = Variable<String>(DeviceNo.value);
+    }
     if (recordedAt.present) {
       map['recorded_at'] = Variable<DateTime>(recordedAt.value);
     }
@@ -497,6 +534,7 @@ class PressDataTableCompanion extends UpdateCompanion<PressDataTableData> {
           ..write('airPressure: $airPressure, ')
           ..write('co2: $co2, ')
           ..write('o22: $o22, ')
+          ..write('DeviceNo: $DeviceNo, ')
           ..write('recordedAt: $recordedAt')
           ..write(')'))
         .toString();
@@ -525,6 +563,7 @@ typedef $$PressDataTableTableCreateCompanionBuilder = PressDataTableCompanion
   required int airPressure,
   required int co2,
   required int o22,
+  required String DeviceNo,
   Value<DateTime?> recordedAt,
 });
 typedef $$PressDataTableTableUpdateCompanionBuilder = PressDataTableCompanion
@@ -538,6 +577,7 @@ typedef $$PressDataTableTableUpdateCompanionBuilder = PressDataTableCompanion
   Value<int> airPressure,
   Value<int> co2,
   Value<int> o22,
+  Value<String> DeviceNo,
   Value<DateTime?> recordedAt,
 });
 
@@ -568,6 +608,7 @@ class $$PressDataTableTableTableManager extends RootTableManager<
             Value<int> airPressure = const Value.absent(),
             Value<int> co2 = const Value.absent(),
             Value<int> o22 = const Value.absent(),
+            Value<String> DeviceNo = const Value.absent(),
             Value<DateTime?> recordedAt = const Value.absent(),
           }) =>
               PressDataTableCompanion(
@@ -580,6 +621,7 @@ class $$PressDataTableTableTableManager extends RootTableManager<
             airPressure: airPressure,
             co2: co2,
             o22: o22,
+            DeviceNo: DeviceNo,
             recordedAt: recordedAt,
           ),
           createCompanionCallback: ({
@@ -592,6 +634,7 @@ class $$PressDataTableTableTableManager extends RootTableManager<
             required int airPressure,
             required int co2,
             required int o22,
+            required String DeviceNo,
             Value<DateTime?> recordedAt = const Value.absent(),
           }) =>
               PressDataTableCompanion.insert(
@@ -604,6 +647,7 @@ class $$PressDataTableTableTableManager extends RootTableManager<
             airPressure: airPressure,
             co2: co2,
             o22: o22,
+            DeviceNo: DeviceNo,
             recordedAt: recordedAt,
           ),
         ));
@@ -654,6 +698,11 @@ class $$PressDataTableTableFilterComposer
 
   ColumnFilters<int> get o22 => $state.composableBuilder(
       column: $state.table.o22,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get DeviceNo => $state.composableBuilder(
+      column: $state.table.DeviceNo,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -708,6 +757,11 @@ class $$PressDataTableTableOrderingComposer
 
   ColumnOrderings<int> get o22 => $state.composableBuilder(
       column: $state.table.o22,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get DeviceNo => $state.composableBuilder(
+      column: $state.table.DeviceNo,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

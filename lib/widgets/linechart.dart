@@ -1259,7 +1259,9 @@ class _LineCharWidState extends State<LineCharWid> {
 //       temperatureList.clear();
 //     }
 //   }
+  int count = 0;
   int temp = 0, vac = 0, humi = 0, co2 = 0, o22 = 0, o21 = 0, air = 0, n2o = 0;
+  String deviceNo = '';
 
   Future<void> getdata() async {
     var url = Uri.parse('http://192.168.4.1/event');
@@ -1380,6 +1382,9 @@ class _LineCharWidState extends State<LineCharWid> {
             _streamDataerror.sink.add("O2 (2) is Below Low Setting");
           }
           break;
+        case 'deviceNo':
+          deviceNo = pressdata.value;
+          break;
         default:
           messageerror.value = " SYSTEM IS RUNNING OK ";
           break;
@@ -1394,6 +1399,7 @@ class _LineCharWidState extends State<LineCharWid> {
     }
 
     final entity = PressDataTableCompanion(
+      id: drift.Value(++count),
       temperature: drift.Value(temp),
       humidity: drift.Value(humi),
       o2: drift.Value(o21),
@@ -1402,6 +1408,7 @@ class _LineCharWidState extends State<LineCharWid> {
       airPressure: drift.Value(air),
       co2: drift.Value(co2),
       o22: drift.Value(o22),
+      DeviceNo: drift.Value(deviceNo),
       recordedAt: drift.Value(dateTime),
     );
     copy_database();
