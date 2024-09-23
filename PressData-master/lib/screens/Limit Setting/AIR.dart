@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:pressdata/screens/Limit%20Setting/httpLimit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 class AIR extends StatefulWidget {
   final int min_air;
   final int max_air;
@@ -17,7 +17,7 @@ class _AIRState extends State<AIR> {
   Timer? _maxLimitTimer;
   Timer? _minLimitTimer;
   final LimitSetting _dataService = LimitSetting();
-  List<dynamic> _postJson = [];
+
   late Timer _timer;
   late int max = widget.max_air;
   late int min = widget.min_air;
@@ -73,7 +73,7 @@ class _AIRState extends State<AIR> {
   // }
 
   void updateMaxLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+   // final SharedPreferences prefs = await SharedPreferences.getInstance();
     final newValue = (value.clamp(min.toDouble() + 1, 75.0)).toInt();
     setState(() {
       max = newValue;
@@ -111,7 +111,7 @@ class _AIRState extends State<AIR> {
   }
 
   void updateMinLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    //final SharedPreferences prefs = await SharedPreferences.getInstance();
     final newValue = (value.clamp(30.0, max.toDouble() - 1)).toInt();
 
     setState(() {

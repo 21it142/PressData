@@ -24,7 +24,7 @@ class _CO2State extends State<CO2> {
   late int min = widget.minco2;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
-  bool _isLoading = false;
+ // bool _isLoading = false;
   late Timer _timer;
 
   @override
@@ -68,7 +68,7 @@ class _CO2State extends State<CO2> {
   // }
 
   void updateMaxLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+   // final SharedPreferences prefs = await SharedPreferences.getInstance();
     final newValue = (value.clamp(min.toDouble() + 1, 75.0)).toInt();
     setState(() {
       max = newValue;

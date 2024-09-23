@@ -10,7 +10,7 @@ import 'package:pressdata/data/db.dart';
 
 import 'package:pressdata/screens/Daily_chart.dart';
 import 'package:pressdata/screens/Monthly_chart.dart';
-import 'package:pressdata/screens/Monthly_chartDemo.dart';
+
 import 'package:pressdata/screens/Weekly_chart.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -191,8 +191,14 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
               title: Text('Select Device and Location'),
               content: SizedBox(
                   width: double.maxFinite,
-                  child: Center(
-                    child: Text("No Data Found"),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/NoData.png',
+                        height: 200,
+                      ),
+                      Text("No Data Found"),
+                    ],
                   )),
             );
           },
@@ -277,8 +283,15 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
               title: Text('Select Device and Location'),
               content: SizedBox(
                   width: double.maxFinite,
-                  child: Center(
-                    child: Text("No Data Found"),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        'assets/NoData.png',
+                        height: 200,
+                      ),
+                      Text("No Data Found"),
+                    ],
                   )),
             );
           },
@@ -362,8 +375,15 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
               title: Text('Select Device and Location'),
               content: SizedBox(
                   width: double.maxFinite,
-                  child: Center(
-                    child: Text("No Data Found"),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/NoData.png',
+                        height: 200,
+                      ),
+                      Text("No Data Found"),
+                    ],
                   )),
             );
           },

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 //import 'package:pressdata/screens/main_page.dart';
-import 'package:pressdata/widgets/demo.dart';
+//import 'package:pressdata/widgets/demo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VACD extends StatefulWidget {
@@ -32,27 +32,31 @@ class _VACState extends State<VACD> {
     _timer?.cancel(); // Ensure no existing timer is running
     _interval = Duration(milliseconds: 500); // Start with the slowest interval
     _incrementStep = 1; // Start with a small increment step
+    int elapsedMilliseconds = 0; // Track how long the button has been pressed
 
     _timer = Timer.periodic(_interval, (timer) {
+      elapsedMilliseconds += _interval.inMilliseconds; // Increment elapsed time
+
       updateMaxLimit(isIncrement
           ? (maxLimit + _incrementStep).toDouble()
           : (maxLimit - _incrementStep).toDouble());
 
       // Gradually increase speed with a controlled acceleration curve
-      if (timer.tick % 5 == 0) {
+      if (elapsedMilliseconds >= 1000) {
+        // After 1 second, start accelerating
         if (_interval.inMilliseconds > 100) {
-          // Accelerate slowly at first by reducing the interval in larger steps
           _interval =
-              Duration(milliseconds: (_interval.inMilliseconds * 0.85).round());
+              Duration(milliseconds: (_interval.inMilliseconds * 0.9).round());
         } else if (_interval.inMilliseconds > 50) {
-          // Fine-tune the speed increase when close to peak
           _interval =
               Duration(milliseconds: (_interval.inMilliseconds * 0.95).round());
         }
 
-        // Increase the increment step based on how fast the interval is
+        // Increase increment step proportionally as the interval shortens
         if (_interval.inMilliseconds <= 200) {
-          _incrementStep += 1;
+          _incrementStep = 2; // Increase faster after the speed picks up
+        } else if (_interval.inMilliseconds <= 100) {
+          _incrementStep = 3; // Maximum speed increment
         }
 
         // Restart the timer with the updated interval and step
