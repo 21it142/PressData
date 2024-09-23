@@ -614,6 +614,24 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
     });
   }
 
+  void _showSelectParameterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select Parameter'),
+        content: Text('Please select a parameter before proceeding.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     final List<String> items = [
       'O2(1)',
@@ -649,6 +667,7 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
             height: 4.0,
           ),
         ),
+      toolbarHeight: 50,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -716,7 +735,13 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectDate(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectDate(context);
+                        }
+                      },
                       child: Text('Daily'),
                     ),
                   ],
@@ -734,7 +759,13 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectDateRange(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectDateRange(context);
+                        }
+                      },
                       child: Text('Weekly'),
                     ),
                     if (_selectedWeeklyDateRange != null)
@@ -752,7 +783,13 @@ class _ReportScreenPastState extends State<ReportScreenPast> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectMonth(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectMonth(context);
+                        }
+                      },
                       child: Text('Monthly'),
                     ),
                     if (_selectedMonthlyDate != null)

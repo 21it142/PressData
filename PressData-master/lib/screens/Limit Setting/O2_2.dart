@@ -128,15 +128,41 @@ class _O2_2State extends State<O2_2> {
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "O₂(2) Alaram Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "PSI",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'O2(2) ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(PSI)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),

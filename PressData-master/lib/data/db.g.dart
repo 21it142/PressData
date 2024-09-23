@@ -1587,6 +1587,11 @@ class $ErrorTableTable extends ErrorTable
   late final GeneratedColumn<int> maxValue = GeneratedColumn<int>(
       'max_value', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<int> value = GeneratedColumn<int>(
+      'value', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _recordedAtMeta =
       const VerificationMeta('recordedAt');
   @override
@@ -1594,8 +1599,16 @@ class $ErrorTableTable extends ErrorTable
       'recorded_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, DeviceNo, parameter, logValue, minValue, maxValue, recordedAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        DeviceNo,
+        parameter,
+        logValue,
+        minValue,
+        maxValue,
+        value,
+        recordedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1639,6 +1652,12 @@ class $ErrorTableTable extends ErrorTable
     } else if (isInserting) {
       context.missing(_maxValueMeta);
     }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
     if (data.containsKey('recorded_at')) {
       context.handle(
           _recordedAtMeta,
@@ -1666,6 +1685,8 @@ class $ErrorTableTable extends ErrorTable
           .read(DriftSqlType.int, data['${effectivePrefix}min_value'])!,
       maxValue: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}max_value'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}value'])!,
       recordedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}recorded_at']),
     );
@@ -1684,6 +1705,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
   final String logValue;
   final int minValue;
   final int maxValue;
+  final int value;
   final DateTime? recordedAt;
   const ErrorTableData(
       {required this.id,
@@ -1692,6 +1714,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
       required this.logValue,
       required this.minValue,
       required this.maxValue,
+      required this.value,
       this.recordedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1702,6 +1725,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
     map['log_value'] = Variable<String>(logValue);
     map['min_value'] = Variable<int>(minValue);
     map['max_value'] = Variable<int>(maxValue);
+    map['value'] = Variable<int>(value);
     if (!nullToAbsent || recordedAt != null) {
       map['recorded_at'] = Variable<DateTime>(recordedAt);
     }
@@ -1716,6 +1740,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
       logValue: Value(logValue),
       minValue: Value(minValue),
       maxValue: Value(maxValue),
+      value: Value(value),
       recordedAt: recordedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(recordedAt),
@@ -1732,6 +1757,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
       logValue: serializer.fromJson<String>(json['logValue']),
       minValue: serializer.fromJson<int>(json['minValue']),
       maxValue: serializer.fromJson<int>(json['maxValue']),
+      value: serializer.fromJson<int>(json['value']),
       recordedAt: serializer.fromJson<DateTime?>(json['recordedAt']),
     );
   }
@@ -1745,6 +1771,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
       'logValue': serializer.toJson<String>(logValue),
       'minValue': serializer.toJson<int>(minValue),
       'maxValue': serializer.toJson<int>(maxValue),
+      'value': serializer.toJson<int>(value),
       'recordedAt': serializer.toJson<DateTime?>(recordedAt),
     };
   }
@@ -1756,6 +1783,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
           String? logValue,
           int? minValue,
           int? maxValue,
+          int? value,
           Value<DateTime?> recordedAt = const Value.absent()}) =>
       ErrorTableData(
         id: id ?? this.id,
@@ -1764,6 +1792,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
         logValue: logValue ?? this.logValue,
         minValue: minValue ?? this.minValue,
         maxValue: maxValue ?? this.maxValue,
+        value: value ?? this.value,
         recordedAt: recordedAt.present ? recordedAt.value : this.recordedAt,
       );
   ErrorTableData copyWithCompanion(ErrorTableCompanion data) {
@@ -1774,6 +1803,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
       logValue: data.logValue.present ? data.logValue.value : this.logValue,
       minValue: data.minValue.present ? data.minValue.value : this.minValue,
       maxValue: data.maxValue.present ? data.maxValue.value : this.maxValue,
+      value: data.value.present ? data.value.value : this.value,
       recordedAt:
           data.recordedAt.present ? data.recordedAt.value : this.recordedAt,
     );
@@ -1788,6 +1818,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
           ..write('logValue: $logValue, ')
           ..write('minValue: $minValue, ')
           ..write('maxValue: $maxValue, ')
+          ..write('value: $value, ')
           ..write('recordedAt: $recordedAt')
           ..write(')'))
         .toString();
@@ -1795,7 +1826,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
 
   @override
   int get hashCode => Object.hash(
-      id, DeviceNo, parameter, logValue, minValue, maxValue, recordedAt);
+      id, DeviceNo, parameter, logValue, minValue, maxValue, value, recordedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1806,6 +1837,7 @@ class ErrorTableData extends DataClass implements Insertable<ErrorTableData> {
           other.logValue == this.logValue &&
           other.minValue == this.minValue &&
           other.maxValue == this.maxValue &&
+          other.value == this.value &&
           other.recordedAt == this.recordedAt);
 }
 
@@ -1816,6 +1848,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
   final Value<String> logValue;
   final Value<int> minValue;
   final Value<int> maxValue;
+  final Value<int> value;
   final Value<DateTime?> recordedAt;
   const ErrorTableCompanion({
     this.id = const Value.absent(),
@@ -1824,6 +1857,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
     this.logValue = const Value.absent(),
     this.minValue = const Value.absent(),
     this.maxValue = const Value.absent(),
+    this.value = const Value.absent(),
     this.recordedAt = const Value.absent(),
   });
   ErrorTableCompanion.insert({
@@ -1833,12 +1867,14 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
     required String logValue,
     required int minValue,
     required int maxValue,
+    required int value,
     this.recordedAt = const Value.absent(),
   })  : DeviceNo = Value(DeviceNo),
         parameter = Value(parameter),
         logValue = Value(logValue),
         minValue = Value(minValue),
-        maxValue = Value(maxValue);
+        maxValue = Value(maxValue),
+        value = Value(value);
   static Insertable<ErrorTableData> custom({
     Expression<int>? id,
     Expression<String>? DeviceNo,
@@ -1846,6 +1882,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
     Expression<String>? logValue,
     Expression<int>? minValue,
     Expression<int>? maxValue,
+    Expression<int>? value,
     Expression<DateTime>? recordedAt,
   }) {
     return RawValuesInsertable({
@@ -1855,6 +1892,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
       if (logValue != null) 'log_value': logValue,
       if (minValue != null) 'min_value': minValue,
       if (maxValue != null) 'max_value': maxValue,
+      if (value != null) 'value': value,
       if (recordedAt != null) 'recorded_at': recordedAt,
     });
   }
@@ -1866,6 +1904,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
       Value<String>? logValue,
       Value<int>? minValue,
       Value<int>? maxValue,
+      Value<int>? value,
       Value<DateTime?>? recordedAt}) {
     return ErrorTableCompanion(
       id: id ?? this.id,
@@ -1874,6 +1913,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
       logValue: logValue ?? this.logValue,
       minValue: minValue ?? this.minValue,
       maxValue: maxValue ?? this.maxValue,
+      value: value ?? this.value,
       recordedAt: recordedAt ?? this.recordedAt,
     );
   }
@@ -1899,6 +1939,9 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
     if (maxValue.present) {
       map['max_value'] = Variable<int>(maxValue.value);
     }
+    if (value.present) {
+      map['value'] = Variable<int>(value.value);
+    }
     if (recordedAt.present) {
       map['recorded_at'] = Variable<DateTime>(recordedAt.value);
     }
@@ -1914,6 +1957,7 @@ class ErrorTableCompanion extends UpdateCompanion<ErrorTableData> {
           ..write('logValue: $logValue, ')
           ..write('minValue: $minValue, ')
           ..write('maxValue: $maxValue, ')
+          ..write('value: $value, ')
           ..write('recordedAt: $recordedAt')
           ..write(')'))
         .toString();
@@ -2559,6 +2603,7 @@ typedef $$ErrorTableTableCreateCompanionBuilder = ErrorTableCompanion Function({
   required String logValue,
   required int minValue,
   required int maxValue,
+  required int value,
   Value<DateTime?> recordedAt,
 });
 typedef $$ErrorTableTableUpdateCompanionBuilder = ErrorTableCompanion Function({
@@ -2568,6 +2613,7 @@ typedef $$ErrorTableTableUpdateCompanionBuilder = ErrorTableCompanion Function({
   Value<String> logValue,
   Value<int> minValue,
   Value<int> maxValue,
+  Value<int> value,
   Value<DateTime?> recordedAt,
 });
 
@@ -2594,6 +2640,7 @@ class $$ErrorTableTableTableManager extends RootTableManager<
             Value<String> logValue = const Value.absent(),
             Value<int> minValue = const Value.absent(),
             Value<int> maxValue = const Value.absent(),
+            Value<int> value = const Value.absent(),
             Value<DateTime?> recordedAt = const Value.absent(),
           }) =>
               ErrorTableCompanion(
@@ -2603,6 +2650,7 @@ class $$ErrorTableTableTableManager extends RootTableManager<
             logValue: logValue,
             minValue: minValue,
             maxValue: maxValue,
+            value: value,
             recordedAt: recordedAt,
           ),
           createCompanionCallback: ({
@@ -2612,6 +2660,7 @@ class $$ErrorTableTableTableManager extends RootTableManager<
             required String logValue,
             required int minValue,
             required int maxValue,
+            required int value,
             Value<DateTime?> recordedAt = const Value.absent(),
           }) =>
               ErrorTableCompanion.insert(
@@ -2621,6 +2670,7 @@ class $$ErrorTableTableTableManager extends RootTableManager<
             logValue: logValue,
             minValue: minValue,
             maxValue: maxValue,
+            value: value,
             recordedAt: recordedAt,
           ),
         ));
@@ -2656,6 +2706,11 @@ class $$ErrorTableTableFilterComposer
 
   ColumnFilters<int> get maxValue => $state.composableBuilder(
       column: $state.table.maxValue,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get value => $state.composableBuilder(
+      column: $state.table.value,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -2695,6 +2750,11 @@ class $$ErrorTableTableOrderingComposer
 
   ColumnOrderings<int> get maxValue => $state.composableBuilder(
       column: $state.table.maxValue,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get value => $state.composableBuilder(
+      column: $state.table.value,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
     // });
 
     return MaterialApp(
+      
         debugShowCheckedModeBanner: false,
         navigatorObservers: [_routeObserver],
         home: SplashScreen());

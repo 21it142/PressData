@@ -29,8 +29,8 @@ class _N2OState extends State<N2OD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('N2O_maxLimit') ?? 30;
-      minLimit = prefs.getInt('N2O_minLimit') ?? 0;
+      maxLimit = prefs.getInt('N2O_maxLimit') ?? 65;
+      minLimit = prefs.getInt('N2O_minLimit') ?? 40;
     });
   }
 
@@ -60,15 +60,12 @@ class _N2OState extends State<N2OD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(minLimit.toDouble() + 1, 75.0)).toInt();
-      prefs.setInt('N2O_maxLimit', maxLimit);
     });
   }
 
   void updateMinLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(30, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('N2O_minLimit', minLimit);
     });
   }
 
@@ -84,21 +81,47 @@ class _N2OState extends State<N2OD> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            iconSize: 50,
+            iconSize: 25,
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "N₂O Limit Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "PSI",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'N2O ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(PSI)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -111,6 +134,7 @@ class _N2OState extends State<N2OD> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(
@@ -212,7 +236,11 @@ class _N2OState extends State<N2OD> {
                 height: 70,
                 width: 100,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setInt('N2O_maxLimit', maxLimit);
+                    prefs.setInt('N2O_minLimit', minLimit);
                     Navigator.pop(context);
                   },
                   child: Text(

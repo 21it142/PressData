@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pressdata/screens/main_page.dart';
 
@@ -18,13 +17,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _contactNumberController =
-      TextEditingController();
+      TextEditingController(text: '+91'); // Default code added here
   final TextEditingController _emailController = TextEditingController();
-
-  bool get _isSubmitButtonEnabled {
-    return _nameController.text.isNotEmpty &&
-        _hospitalCompanyController.text.isNotEmpty;
-  }
 
   @override
   void initState() {
@@ -33,18 +27,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _checkFirstRun() async {
-    print("hellooooooooooooo");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isFirstRun = prefs.getBool('isFirstRun') ?? true;
-    print(isFirstRun);
-
     if (!isFirstRun) {
       _navigateToMainPage();
     }
   }
 
   Future<void> _setFirstRunComplete() async {
-    print("hellooooooooooooo");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstRun', false);
   }
@@ -93,16 +83,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.3,
-              height: 10,
             ),
             const Text(
               'User Detail',
               style:
                   TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.20,
-              height: 10,
             ),
           ],
         ),
@@ -119,12 +104,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 _buildTextField(
                   controller: _nameController,
                   label: 'Name of the user',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
+                  isRequired: true,
                 ),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.02,
@@ -132,12 +112,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 _buildTextField(
                   controller: _hospitalCompanyController,
                   label: 'Hospital/Company',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your hospital or company';
-                    }
-                    return null;
-                  },
+                  isRequired: true,
                 ),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.02,
@@ -173,11 +148,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         await _setFirstRunComplete();
                         await _saveFormData();
                         _navigateToMainPage();
-                        // Perform form submission
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Form Sbmitted")),
-                        );
                       }
                     },
                     child: Text('Submit'),
@@ -194,16 +164,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    bool isRequired = false,
     TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
   }) {
     return Container(
-      height: 40,
+      height: 50, // Fixed height to avoid size change on error
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           labelText: label,
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           enabledBorder: OutlineInputBorder(
@@ -211,21 +181,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             borderSide: BorderSide(color: Colors.grey, width: 0.0),
           ),
           border: OutlineInputBorder(),
-          suffixIcon: validator != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    '*',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                )
-              : null,
+          errorStyle: TextStyle(height: 0), // Hide the default error message
         ),
-        validator: validator,
+        validator: isRequired
+            ? (value) {
+                if (value == null || value.isEmpty) {
+                  _showSnackbar('Please enter $label');
+                  return '';
+                }
+                return null;
+              }
+            : null,
         onChanged: (_) {
           setState(() {});
         },
       ),
+    );
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }

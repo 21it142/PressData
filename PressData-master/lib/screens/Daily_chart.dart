@@ -1,22 +1,25 @@
 import 'dart:async';
 import 'dart:io';
+
 // import 'package:url_launcher/url_launcher.dart';
 //import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 // import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:flutter/material.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
+
 import 'dart:ui' as ui;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pressdata/data/db.dart';
 
 import 'package:pressdata/widgets/caculatepressure_minmax.dart';
@@ -25,6 +28,7 @@ import 'package:pressdata/widgets/getlogs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+
 // Import your database file
 
 class DailyChart extends StatefulWidget {
@@ -126,6 +130,17 @@ class _LineChartScreenState extends State<LineChartScreen> {
     );
   }
 
+  Future<bool> _requestStoragePermission() async {
+    PermissionStatus status = await Permission.storage.status;
+
+    if (status.isDenied || status.isPermanentlyDenied) {
+      status = await Permission.storage.request();
+    }
+
+    return status.isGranted;
+  }
+
+  final dateFormatter = DateFormat('dd-MM-yyyy HH:mm:ss');
   void generatePDF_Daily() async {
     if (!mounted) return;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -190,8 +205,37 @@ class _LineChartScreenState extends State<LineChartScreen> {
               mainAxisAlignment: pw.MainAxisAlignment.center,
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text('PressData® Report - $selectedGasesHeader',
-                    style: titleStyle),
+                pw.RichText(
+                  text: pw.TextSpan(
+                    text: 'Press', // Text before "Data"
+                    style: titleStyle, // Your predefined title style
+                    children: [
+                      pw.TextSpan(
+                        text: 'Data', // Main text with the registered symbol
+                        style: titleStyle,
+                        children: [
+                          pw.WidgetSpan(
+                            child: pw.Transform(
+                              transform: Matrix4.translationValues(2, 4,
+                                  0), // Correctly position the symbol above "Data"
+                              child: pw.Text(
+                                '®',
+                                style: titleStyle.copyWith(
+                                    fontSize:
+                                        10), // Adjust font size for the trademark symbol
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.TextSpan(
+                        text:
+                            ' Report - $selectedGasesHeader', // Continuation of the text after "Data"
+                        style: titleStyle,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             pw.SizedBox(height: 4),
@@ -278,8 +322,9 @@ class _LineChartScreenState extends State<LineChartScreen> {
                   maxPressure[index].toString(),
                   minPressure[index].toString(),
                   avgPressure[index].toString(),
-                  maxPressureTime[index].toIso8601String(),
-                  minPressureTime[index].toIso8601String(),
+                  dateFormatter
+                      .format(maxPressureTime[index]), // Formatted max time
+                  dateFormatter.format(minPressureTime[index]),
                 ];
               }),
               cellStyle: regularStyle,
@@ -320,6 +365,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
                 pw.Table.fromTextArray(
                   headers: [
                     'Parameters',
+                    'Value',
                     'Max Value',
                     'Min Value',
                     'Log',
@@ -329,10 +375,11 @@ class _LineChartScreenState extends State<LineChartScreen> {
                     int i = start + index;
                     return [
                       parameters_log[i],
+                      values_fetched[i].toString(),
                       maxvalue[i].toString(),
                       minvalue[i].toString(),
                       logs[i].toString(),
-                      Time[i].toIso8601String(),
+                      dateFormatter.format(Time[index]),
                     ];
                   }),
                   cellStyle: regularStyle,
@@ -380,26 +427,101 @@ class _LineChartScreenState extends State<LineChartScreen> {
         },
       ),
     );
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
 
-    final documentsDirstore =
-        Directory('/storage/emulated/0/Download/PressData/Daily');
-    final documentsDir = await getExternalStorageDirectory();
-    if (!documentsDirstore.existsSync()) {
-      documentsDirstore.createSync(recursive: true);
+    int sdkVersion = androidInfo.version.sdkInt;
+    String versionRelease = androidInfo.version.release;
+
+    print('Android SDK: $sdkVersion');
+    print('Android Version: $versionRelease');
+    print("Sdk version:$sdkVersion");
+    if (sdkVersion <= 29) {
+      if (await _requestStoragePermission()) {
+        // Android 10 or below - permission granted, generate and save report
+        final directory = Directory('/storage/emulated/0/Download');
+        if (!directory.existsSync()) {
+          directory.createSync(recursive: true);
+        }
+
+        String timestamp =
+            DateTime.now().toString().replaceAll(RegExp(r'[:.]'), '_');
+        final filePath = '${directory.path}/ReportDaily_${timestamp}.pdf';
+        final file = File(filePath);
+
+        final pdfBytes =
+            await pdf.save(); // Assuming you have the pdf data ready
+        await file.writeAsBytes(pdfBytes);
+
+        OpenFile.open(filePath);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('PDF saved to Downloads: $filePath')),
+        );
+      }
+    } else if (sdkVersion > 29 || sdkVersion == 0) {
+      print("Heloooooooooooooooooooooooooooooooo inside > 29 ");
+      // Android 11 and above
+      final documentsDirstore =
+          Directory('/storage/emulated/0/Download/PressData/Daily');
+      final documentsDir =
+          await getExternalStorageDirectory(); // Get external storage directory
+      if (!documentsDirstore.existsSync()) {
+        documentsDirstore.createSync(
+            recursive: true); // Create directory if it doesn't exist
+      }
+
+      String timestamp = DateFormat('yyyyMMdd_HHmmss')
+          .format(DateTime.now()); // Format timestamp
+      final pdfpath = '/ReportDaily_$timestamp.pdf';
+      final filePath = '${documentsDir?.path}$pdfpath';
+      final filepathStore = '${documentsDirstore.path}$pdfpath';
+
+      final file =
+          File(filePath); // Create file for the external storage directory
+      final filestore =
+          File(filepathStore); // Create file for the 'PressData' directory
+
+      final pdfBytes = await pdf.save(); // Save PDF bytes
+      await file.writeAsBytes(pdfBytes); // Write to external storage directory
+      await filestore.writeAsBytes(pdfBytes); // Write to 'PressData' directory
+
+      OpenFile.open(filePath); // Open the file
+
+      _clearSelectedData(); // Clear any selected data after saving
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF saved to $filePath')),
+      );
+    } else {
+      // Permission denied - generate report but not save it
+      final pdfBytes = await pdf.save();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Permission denied. Report generated but not saved.')),
+      );
     }
-    String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final pdfpath = '/ReportDaily${widget.serial}_$timestamp.pdf';
-    final filePath = '${documentsDir?.path}${pdfpath}';
-    final filepathStore = '${documentsDirstore.path}${pdfpath}';
-    final file = File(filePath);
-    final filestore = File(filepathStore);
-    final pdfBytes = await pdf.save();
-    await file.writeAsBytes(pdfBytes);
-    await filestore.writeAsBytes(pdfBytes);
+    // final documentsDirstore =
+    //     Directory('/storage/emulated/0/Download/PressData/Daily');
+    // final documentsDir = await getExternalStorageDirectory();
+    // if (!documentsDirstore.existsSync()) {
+    //   documentsDirstore.createSync(recursive: true);
+    // }
+    // String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    // final pdfpath = '/ReportDaily${widget.serial}_$timestamp.pdf';
+    // final filePath = '${documentsDir?.path}${pdfpath}';
+    // final filepathStore = '${documentsDirstore.path}${pdfpath}';
+    // final file = File(filePath);
+    // final filestore = File(filepathStore);
+    // final pdfBytes = await pdf.save();
+    // await file.writeAsBytes(pdfBytes);
+    // await filestore.writeAsBytes(pdfBytes);
 
-    OpenFile.open(filePath);
+    // OpenFile.open(filePath);
 
-    _clearSelectedData();
+    // _clearSelectedData();
   }
 
   String? selectedOption;
@@ -419,9 +541,14 @@ class _LineChartScreenState extends State<LineChartScreen> {
   List<int> minvalue = [];
   List<DateTime> Time = [];
   List<int> maxvalue = [];
+  List<int> values_fetched = [];
   List<String> parameters_log = [];
   List<String> logs = [];
   List<Prssurevalues> min_max_avg = [];
+  int androidVersion = 0;
+  int sdkVersion = 0;
+  String versionRelease = "";
+
   @override
   void initState() {
     super.initState();
@@ -586,10 +713,14 @@ class _LineChartScreenState extends State<LineChartScreen> {
       minPressureTime = stats.minPressureTime;
       avgPressure = stats.avgPressure;
       print("heloooo->>>>>before log");
+      print("Get logs for temp: ${widget.selectedValues}");
+
       Logs stat = getlogs(error_data, widget.selectedValues);
+      //print("logs temp : wrfwdbrgfvwe ${logs.first}");
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       Time = stat.time;
       print("heloooooooooooo->>>>AFter log");
@@ -611,6 +742,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       chartData = [];
       mindata = [];
       maxdata = [];
+
       List<ChartData> allChartData = [];
 
       // Iterate through each parameter and add the data
@@ -690,6 +822,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       Time = stat.time;
       // calculatePressureStats(data, widget.selectedValues);
@@ -855,7 +988,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
     return seriesList;
   }
 
-  void _startTimer() {
+  void _startTimer() async {
     Timer(Duration(seconds: 5), () {
       setState(() {
         _showButton = true;

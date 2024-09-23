@@ -28,8 +28,8 @@ class _HUMIState extends State<HUMID> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('HUMI_maxLimit') ?? 80;
-      minLimit = prefs.getInt('HUMI_minLimit') ?? 0;
+      maxLimit = prefs.getInt('HUMI_maxLimit') ?? 70;
+      minLimit = prefs.getInt('HUMI_minLimit') ?? 40;
     });
   }
 
@@ -37,15 +37,12 @@ class _HUMIState extends State<HUMID> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(minLimit.toDouble() + 1, 90.0)).toInt();
-      prefs.setInt('HUMI_maxLimit', maxLimit);
     });
   }
 
   void updateMinLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(10, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('HUMI_minLimit', minLimit);
     });
   }
 
@@ -83,21 +80,47 @@ class _HUMIState extends State<HUMID> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            iconSize: 50,
+            iconSize: 25,
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "HUMI Limit Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "%",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'HUMI ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(%)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -110,6 +133,7 @@ class _HUMIState extends State<HUMID> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(
@@ -210,7 +234,11 @@ class _HUMIState extends State<HUMID> {
                 height: 70,
                 width: 100,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setInt('HUMI_minLimit', minLimit);
+                    prefs.setInt('HUMI_maxLimit', maxLimit);
                     Navigator.pop(context);
                   },
                   child: Text(

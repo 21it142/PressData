@@ -156,7 +156,7 @@ class _ReportScreenState extends State<ReportScreen> {
       print(
           "qewrtyuikujmynhbgvfcdfvgbhnjmk,mujnyhbgvfcdfbghnyjukjmnhb$_selectedDailyDate");
       // Navigate to DailyCart page
-      pngBytes = await Navigator.push(
+      Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => DailyChartDemo(
@@ -194,7 +194,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
       _saveSelectedData();
 
-      pngBytes = await Navigator.push(
+      Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => WeeklyChart(
@@ -238,7 +238,7 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedWeeklyDateRange = null;
       });
       _saveSelectedData();
-      pngBytes = await Navigator.push(
+      Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => MonthlyChart(
@@ -334,6 +334,24 @@ class _ReportScreenState extends State<ReportScreen> {
     });
   }
 
+  void _showSelectParameterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select Parameter'),
+        content: Text('Please select a parameter before proceeding.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 145, 248, 248),
@@ -357,10 +375,12 @@ class _ReportScreenState extends State<ReportScreen> {
             height: 4.0,
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Wrap(
@@ -422,7 +442,13 @@ class _ReportScreenState extends State<ReportScreen> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectDate(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectDate(context);
+                        }
+                      },
                       child: Text('Daily'),
                     ),
                   ],
@@ -440,7 +466,13 @@ class _ReportScreenState extends State<ReportScreen> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectDateRange(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectDateRange(context);
+                        }
+                      },
                       child: Text('Weekly'),
                     ),
                     if (_selectedWeeklyDateRange != null)
@@ -458,7 +490,13 @@ class _ReportScreenState extends State<ReportScreen> {
                             ? Colors.green
                             : const Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: () => _selectMonth(context),
+                      onPressed: () {
+                        if (_selectedItems.isEmpty) {
+                          _showSelectParameterDialog(context);
+                        } else {
+                          _selectMonth(context);
+                        }
+                      },
                       child: Text('Monthly'),
                     ),
                     if (_selectedMonthlyDate != null)

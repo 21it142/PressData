@@ -86,24 +86,26 @@ class _VACState extends State<VACD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('VAC_maxLimit') ?? 20;
-      minLimit = prefs.getInt('VAC_minLimit') ?? 0;
+      maxLimit = prefs.getInt('VAC_maxLimit') ?? 300;
+      minLimit = prefs.getInt('VAC_minLimit') ?? 100;
     });
   }
 
   void updateMaxLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(minLimit.toDouble() + 1, 500.0)).toInt();
-      prefs.setInt('VAC_maxLimit', maxLimit);
     });
   }
 
   void updateMinLimit(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      minLimit = (value.clamp(50, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('VAC_minLimit', minLimit);
+      // Ensure maxLimit is greater than 31 to avoid clamping errors
+      if (maxLimit > 50) {
+        minLimit = (value.clamp(50, maxLimit.toDouble() - 1.0)).toInt();
+      } else {
+        minLimit = 50; // Or handle it in a way that suits your use case
+      }
     });
   }
 
@@ -119,21 +121,47 @@ class _VACState extends State<VACD> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            iconSize: 50,
+            iconSize: 25,
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "VAC Limit Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "mmHg",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'VAC ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(mmHg)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -146,6 +174,7 @@ class _VACState extends State<VACD> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(
@@ -246,7 +275,12 @@ class _VACState extends State<VACD> {
                 height: 70,
                 width: 100,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setInt('VAC_minLimit', minLimit);
+                    prefs.setInt('VAC_maxLimit', maxLimit);
+
                     Navigator.pop(context);
                   },
                   child: Text(

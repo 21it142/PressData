@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/air.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/co2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/humi.dart';
@@ -11,9 +13,8 @@ import 'package:pressdata/screens/LimitSetting(Demo)/o2-1.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/o2-2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/temp.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/vac.dart';
-// import 'package:pressdata/screens/main_page.dart';
 import 'package:pressdata/screens/report_screenDemo.dart';
-import 'package:pressdata/screens/setting.dart';
+// import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -31,13 +32,6 @@ class LiveData {
   final num humi;
 }
 
-class DemoWid extends StatefulWidget {
-  const DemoWid({Key? key}) : super(key: key);
-
-  @override
-  State<DemoWid> createState() => _DemoWidState();
-}
-
 class ParameterData {
   final String name;
   final Color color;
@@ -46,7 +40,15 @@ class ParameterData {
   ParameterData(this.name, this.color, this.value);
 }
 
-class _DemoWidState extends State<DemoWid> {
+class DemoWid extends StatefulWidget {
+  const DemoWid({Key? key}) : super(key: key);
+
+  @override
+  State<DemoWid> createState() => _DemoWidState();
+}
+
+class _DemoWidState extends State<DemoWid> with RouteAware {
+  final O21 _o21widget = const O21();
   late List<LiveData> chartData;
   late ChartSeriesController _chartSeriesController0;
   late ChartSeriesController _chartSeriesController1;
@@ -73,24 +75,63 @@ class _DemoWidState extends State<DemoWid> {
   int? HUMI_maxLimit;
   int? HUMI_minLimit;
   String date = '';
+  bool isMuted1 = false;
+  String o2_1_error = '';
+  String o2_2_error = '';
+  String n2o_error = '';
+  String air_error = '';
+  String vac_error = '';
+  String co2_error = '';
+  String temp_error = '';
+  String humi_error = '';
+  bool _showButton = false;
+  final ValueNotifier<String?> errorNotifier = ValueNotifier<String?>(null);
+  List<String> errors = [];
+  Timer? _errorTimer;
+  int _currentErrorIndex = 0;
+  final AudioPlayer bgAudio = AudioPlayer();
   List<LiveData> getChartData() {
     List<LiveData> data = [];
     for (int i = 0; i < 60; i++) {
       data.add(
         LiveData(
           i,
-          Random().nextInt(10) + 1,
-          Random().nextInt(10) + 11,
-          Random().nextInt(10) + 21,
           Random().nextInt(10) + 31,
+          Random().nextInt(10) + 211,
           Random().nextInt(10) + 41,
           Random().nextInt(10) + 51,
           Random().nextInt(10) + 61,
           Random().nextInt(10) + 71,
+          Random().nextInt(10) + 1,
+          Random().nextInt(10) + 21,
         ),
       );
     }
     return data;
+  }
+
+  void _startErrorCycle() {
+    print("Starting error cycle");
+
+    // Ensure any previous timer is cancelled before starting a new one
+    if (_errorTimer != null && _errorTimer!.isActive) {
+      print("Existing timer found and cancelled.");
+      _errorTimer!.cancel();
+    }
+
+    _currentErrorIndex = 0; // Reset the index to start from the first error
+    print("currrent Index:$_currentErrorIndex");
+    _errorTimer = Timer.periodic(Duration(seconds: 5), (timer) {
+      if (errors.isEmpty) {
+        print("No errors left to display.");
+        errorNotifier.value = "SYSTEM IS RUNNING OK";
+        timer.cancel();
+      } else {
+        print("Displaying error: ${errors[_currentErrorIndex]}");
+        errorNotifier.value = errors[_currentErrorIndex];
+        _currentErrorIndex = (_currentErrorIndex + 1) % errors.length;
+      }
+    });
   }
 
   List<Color> _getGradientColors() {
@@ -99,18 +140,45 @@ class _DemoWidState extends State<DemoWid> {
 
   List<ParameterData> parameters = [
     ParameterData(
-        "TEMP", const Color.fromARGB(255, 255, 0, 0), Random().nextInt(100)),
-    ParameterData("HUMI", Colors.blue, Random().nextInt(100)),
-    ParameterData("O2(1)", Colors.white, Random().nextInt(100)),
-    ParameterData("VAC", Colors.yellow, Random().nextInt(100)),
+      "TEMP",
+      const Color.fromARGB(255, 255, 0, 0),
+      Random().nextInt(10) + 1,
+    ),
     ParameterData(
-        "N2O", const Color.fromARGB(255, 0, 34, 145), Random().nextInt(100)),
+      "HUMI",
+      Colors.blue,
+      Random().nextInt(10) + 21,
+    ),
     ParameterData(
-        "AIR", const Color.fromARGB(255, 198, 230, 255), Random().nextInt(100)),
+      "O2(1)",
+      Colors.white,
+      Random().nextInt(10) + 31,
+    ),
     ParameterData(
-        "CO2", const Color.fromRGBO(62, 66, 70, 1), Random().nextInt(100)),
-    ParameterData("O2(2)", const Color.fromARGB(255, 255, 255, 255),
-        Random().nextInt(100)),
+      "VAC",
+      Colors.yellow,
+      Random().nextInt(10) + 211,
+    ),
+    ParameterData(
+      "N2O",
+      const Color.fromARGB(255, 0, 34, 145),
+      Random().nextInt(10) + 41,
+    ),
+    ParameterData(
+      "AIR",
+      const Color.fromARGB(255, 198, 230, 255),
+      Random().nextInt(10) + 51,
+    ),
+    ParameterData(
+      "CO2",
+      const Color.fromRGBO(62, 66, 70, 1),
+      Random().nextInt(10) + 61,
+    ),
+    ParameterData(
+      "O2(2)",
+      const Color.fromARGB(255, 255, 255, 255),
+      Random().nextInt(10) + 71,
+    ),
   ];
 
   List parameterNames = [
@@ -140,13 +208,13 @@ class _DemoWidState extends State<DemoWid> {
   );
 
   final List<Color> parameterColors = [
-    const Color.fromARGB(255, 195, 0, 0),
+    const Color.fromARGB(255, 202, 63, 4),
     Colors.blue,
     Colors.white,
     Colors.yellow,
     const Color.fromARGB(255, 0, 34, 145),
     const Color.fromARGB(255, 198, 230, 255),
-    const Color.fromRGBO(62, 66, 70, 1),
+    Colors.grey,
     const Color.fromARGB(255, 255, 255, 255),
   ];
   final List<Color> parameterTextColor = [
@@ -159,6 +227,21 @@ class _DemoWidState extends State<DemoWid> {
     const Color.fromARGB(255, 255, 255, 255),
     const Color.fromARGB(255, 0, 0, 0),
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print("Hellohello hello he lloo dfwrve");
+    //_storeData();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when this route is resumed after another route has been popped off
+    super.didPopNext();
+    _storeData();
+  }
+
   void _storeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -179,9 +262,30 @@ class _DemoWidState extends State<DemoWid> {
       HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 70;
       HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 15;
     });
+    // print("O2(1): $O2_minLimit");
+    // print("O2(1) value ${parameters[2].value}");
+    // if (parameters[2].value > O2_maxLimit!) {
+    //   print("helllooooooooooooooo");
+    //   errors.add("O2(1) is Above High Limit");
+    // }
+    // if (parameters[2].value < O2_minLimit!) {
+    //   print("helllooooooooooooooo");
+    //   errors.add("O2(1) is Below Low Limit");
+    // }
+    // print("Errors detected: ${errors.join(', ')}");
+
+    // // Start error cycle if there are errors
+    // if (errors.isNotEmpty && (_errorTimer == null || !_errorTimer!.isActive)) {
+    //   _startErrorCycle();
+    // } else if (errors.isEmpty && _errorTimer != null && _errorTimer!.isActive) {
+    //   // Stop the timer if there are no errors
+    //   print("Stopping error cycle as there are no errors.");
+    //   _errorTimer!.cancel();
+    //   errorNotifier.value = "SYSTEM IS RUNNING OK";
+    // }
   }
 
-  void _navigateToDetailPage(int index) {
+  void _navigateToDetailPage(int index) async {
     if (index == 0) {
       Navigator.push(
         context,
@@ -208,10 +312,12 @@ class _DemoWidState extends State<DemoWid> {
         MaterialPageRoute(builder: (context) => N2OD()),
       );
     } else if (index == 5) {
-      Navigator.push(
+      List<int> result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => AIRD()),
       );
+
+      //  print("Received data: ${result[0]}, ${result[1]}");
     } else if (index == 6) {
       Navigator.push(
         context,
@@ -222,11 +328,52 @@ class _DemoWidState extends State<DemoWid> {
         context,
         MaterialPageRoute(builder: (context) => O22()),
       );
+    } else if (index == 8) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ReportScreen()),
+      );
     }
   }
 
   late StreamController<void> _updateController;
   late StreamSubscription<void> _streamSubscription;
+  Future<void> loadMuteState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isMuted1 = prefs.getBool('isMuted1') ?? false;
+    });
+  }
+
+  Future<void> saveMuteState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isMuted1', value);
+  }
+
+  void playBackgroundMusic() {
+    bgAudio.play(
+      AssetSource('beep.mp3'),
+      volume: isMuted1 ? 0.0 : 1.0,
+    );
+  }
+
+  void stopBackgroundMusic() {
+    print("Stopinng background sound");
+    bgAudio.stop();
+  }
+
+  void toggleMute() {
+    setState(() {
+      isMuted1 = !isMuted1;
+      saveMuteState(isMuted1);
+
+      if (isMuted1) {
+        bgAudio.setVolume(0.0);
+      } else {
+        playBackgroundMusic();
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -235,12 +382,13 @@ class _DemoWidState extends State<DemoWid> {
     chartData = getChartData();
     Timer.periodic(Duration(seconds: 1), _updateDataSource);
     _updateController = StreamController<void>.broadcast();
-    _storeData();
+
     _streamSubscription = _updateController.stream.listen((_) {
       _updateData();
     });
     date = DateFormat('dd-MM-yyyy  HH:mm').format(DateTime.now());
     Timer.periodic(const Duration(seconds: 1), (timer) {
+      _storeData();
       _updateController.add(null);
       date = DateFormat('dd-MM-yyyy  HH:mm').format(DateTime.now());
     });
@@ -250,7 +398,7 @@ class _DemoWidState extends State<DemoWid> {
     setState(() {
       parameters = parameters.map((param) {
         if (param.name == "O2(1)") {
-          int newvalue = Random().nextInt(10);
+          int newvalue = Random().nextInt(10) + 31;
           if (newvalue > O2_maxLimit! || newvalue < O2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -265,7 +413,7 @@ class _DemoWidState extends State<DemoWid> {
             return ParameterData(param.name, Colors.white, newvalue);
           }
         } else if (param.name == "VAC") {
-          int newvalue = Random().nextInt(10) + 11;
+          int newvalue = Random().nextInt(10) + 211;
           if (newvalue > VAC_maxLimit! || newvalue < VAC_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -280,7 +428,7 @@ class _DemoWidState extends State<DemoWid> {
             return ParameterData(param.name, Colors.yellow, newvalue);
           }
         } else if (param.name == "N2O") {
-          int newvalue = Random().nextInt(10) + 21;
+          int newvalue = Random().nextInt(10) + 41;
           if (newvalue > N2O_maxLimit! || newvalue < N2O_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -295,7 +443,7 @@ class _DemoWidState extends State<DemoWid> {
                 param.name, const Color.fromARGB(255, 0, 34, 145), newvalue);
           }
         } else if (param.name == "AIR") {
-          int newvalue = Random().nextInt(10) + 31;
+          int newvalue = Random().nextInt(10) + 51;
           if (newvalue > AIR_maxLimit! || newvalue < AIR_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -311,7 +459,7 @@ class _DemoWidState extends State<DemoWid> {
                 param.name, const Color.fromARGB(255, 198, 230, 255), newvalue);
           }
         } else if (param.name == "CO2") {
-          int newvalue = Random().nextInt(10) + 41;
+          int newvalue = Random().nextInt(10) + 61;
           if (newvalue > CO2_maxLimit! || newvalue < CO2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -328,7 +476,7 @@ class _DemoWidState extends State<DemoWid> {
                 param.name, const Color.fromRGBO(62, 66, 70, 1), newvalue);
           }
         } else if (param.name == "O2(2)") {
-          int newvalue = Random().nextInt(10) + 51;
+          int newvalue = Random().nextInt(10) + 71;
           if (newvalue > O2_2_maxLimit! || newvalue < O2_2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -344,7 +492,7 @@ class _DemoWidState extends State<DemoWid> {
             return ParameterData(param.name, Colors.white, newvalue);
           }
         } else if (param.name == "TEMP") {
-          int newvalue = Random().nextInt(10) + 61;
+          int newvalue = Random().nextInt(10) + 1;
           if (newvalue > TEMP_maxLimit! || newvalue < TEMP_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -360,7 +508,7 @@ class _DemoWidState extends State<DemoWid> {
                 param.name, const Color.fromARGB(255, 195, 0, 0), newvalue);
           }
         } else {
-          int newvalue = Random().nextInt(10) + 71;
+          int newvalue = Random().nextInt(10) + 21;
           if (newvalue > HUMI_maxLimit! || newvalue < HUMI_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -382,14 +530,14 @@ class _DemoWidState extends State<DemoWid> {
   void _updateDataSource(Timer timer) {
     chartData.add(LiveData(
       time++,
-      Random().nextInt(10) + 1,
-      Random().nextInt(10) + 11,
-      Random().nextInt(10) + 21,
       Random().nextInt(10) + 31,
+      Random().nextInt(10) + 211,
       Random().nextInt(10) + 41,
       Random().nextInt(10) + 51,
       Random().nextInt(10) + 61,
       Random().nextInt(10) + 71,
+      Random().nextInt(10) + 1,
+      Random().nextInt(10) + 21,
     ));
 
     // Remove the oldest data point
@@ -427,6 +575,7 @@ class _DemoWidState extends State<DemoWid> {
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     String parammeterAir = parameters[5].value.toString();
+    print("AIR maximum and AIR minimum: ${AIR_maxLimit}, ${AIR_minLimit}");
     return Scaffold(
       appBar: AppBar(
         leading: Row(
@@ -456,32 +605,55 @@ class _DemoWidState extends State<DemoWid> {
                   fontSize: 15),
             ),
             Center(
-              child: RichText(
-                text: const TextSpan(
-                  text: 'Press',
-                  style: TextStyle(
-                    color: Color.fromRGBO(0, 25, 152, 1),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Data\u00AE ', // Adding the trademark symbol here
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: const TextSpan(
+                      text: 'Press',
                       style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 20,
+                        color: Color.fromRGBO(0, 25, 152, 1),
                         fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
+                      children: [
+                        TextSpan(
+                          text: 'Data', // Adding the trademark symbol here
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: 'Medical Gas Alarm + Analyser ',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        fontSize: 15,
+                  ),
+                  Text(
+                    '®', // Registered trademark symbol
+                    style: TextStyle(
+                      color: Colors.red, // Red color
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        height: 2,
                       ),
-                    ),
-                  ],
-                ),
+                      Text(
+                        ' Medical Gas Alarm + Analyser ',
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             Text(
@@ -512,6 +684,17 @@ class _DemoWidState extends State<DemoWid> {
                         SfCartesianChart(
                           tooltipBehavior: TooltipBehavior(enable: true),
                           legend: Legend(isVisible: true),
+                          axes: <ChartAxis>[
+                            NumericAxis(
+                              labelStyle: TextStyle(
+                                  color: Color.fromARGB(132, 0, 0, 0)),
+                              name: 'hello123456789',
+                              opposedPosition: false,
+                              interval: 150,
+                              minimum: 0,
+                              maximum: 750,
+                            ),
+                          ],
                           primaryXAxis: NumericAxis(
                             majorGridLines: MajorGridLines(width: 0),
                             edgeLabelPlacement: EdgeLabelPlacement.shift,
@@ -532,6 +715,7 @@ class _DemoWidState extends State<DemoWid> {
                             },
                           ),
                           primaryYAxis: NumericAxis(
+                            name: 'Hello',
                             axisLine: AxisLine(width: 0),
                             majorTickLines: MajorTickLines(size: 0),
                             // title: AxisTitle(text: 'V'),
@@ -551,24 +735,13 @@ class _DemoWidState extends State<DemoWid> {
                             LineSeries<LiveData, int>(
                               onRendererCreated:
                                   (ChartSeriesController controller) {
-                                _chartSeriesController1 = controller;
-                              },
-                              dataSource: chartData,
-                              xValueMapper: (LiveData press, _) => press.time,
-                              yValueMapper: (LiveData press, _) => press.vac,
-                              color: Colors.yellow,
-                              name: "VAC",
-                            ),
-                            LineSeries<LiveData, int>(
-                              onRendererCreated:
-                                  (ChartSeriesController controller) {
                                 _chartSeriesController2 = controller;
                               },
                               dataSource: chartData,
                               xValueMapper: (LiveData press, _) => press.time,
                               yValueMapper: (LiveData press, _) => press.n2o,
                               color: const Color.fromARGB(255, 0, 34, 145),
-                              name: "N2o",
+                              name: "N2O",
                             ),
                             LineSeries<LiveData, int>(
                               onRendererCreated:
@@ -578,7 +751,7 @@ class _DemoWidState extends State<DemoWid> {
                               dataSource: chartData,
                               xValueMapper: (LiveData press, _) => press.time,
                               yValueMapper: (LiveData press, _) => press.air,
-                              color: Color.fromARGB(114, 1, 2, 1),
+                              color: Color.fromARGB(255, 17, 255, 148),
                               name: "AIR",
                             ),
                             LineSeries<LiveData, int>(
@@ -590,7 +763,7 @@ class _DemoWidState extends State<DemoWid> {
                               xValueMapper: (LiveData press, _) => press.time,
                               yValueMapper: (LiveData press, _) => press.co2,
                               color: const Color.fromRGBO(62, 66, 70, 1),
-                              name: "co2",
+                              name: "CO2",
                             ),
                             LineSeries<LiveData, int>(
                               onRendererCreated:
@@ -601,7 +774,19 @@ class _DemoWidState extends State<DemoWid> {
                               xValueMapper: (LiveData press, _) => press.time,
                               yValueMapper: (LiveData press, _) => press.o2_2,
                               color: const Color.fromARGB(255, 0, 0, 0),
-                              name: "O2_2",
+                              name: "O2(2)",
+                            ),
+                            LineSeries<LiveData, int>(
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController1 = controller;
+                              },
+                              dataSource: chartData,
+                              xValueMapper: (LiveData press, _) => press.time,
+                              yValueMapper: (LiveData press, _) => press.vac,
+                              yAxisName: 'hello123456789',
+                              color: Colors.yellow,
+                              name: "VAC",
                             ),
                             LineSeries<LiveData, int>(
                               onRendererCreated:
@@ -612,7 +797,7 @@ class _DemoWidState extends State<DemoWid> {
                               xValueMapper: (LiveData press, _) => press.time,
                               yValueMapper: (LiveData press, _) => press.temp,
                               color: const Color.fromARGB(255, 255, 0, 0),
-                              name: "Temp",
+                              name: "TEMP",
                             ),
                             LineSeries<LiveData, int>(
                               onRendererCreated:
@@ -671,6 +856,9 @@ class _DemoWidState extends State<DemoWid> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
+                                          SizedBox(
+                                            width: 10,
+                                          ),
                                           Text(
                                             ' ${parameters[2].value}',
                                             style: TextStyle(
@@ -679,7 +867,7 @@ class _DemoWidState extends State<DemoWid> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(width: 20),
+                                          const SizedBox(width: 15),
                                           Text(
                                             parameterUnit[2],
                                             style: TextStyle(
@@ -757,91 +945,107 @@ class _DemoWidState extends State<DemoWid> {
                         ],
                       ),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           GestureDetector(
-                            onTap: () => _navigateToDetailPage(5),
-                            child: Container(
-                              height: MediaQuery.of(context).size.height * 0.19,
-                              width: 120,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: _getGradientColors(),
-                                  stops: [0.5, 0.5], // Half black, half white
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
+                              onTap: () => _navigateToDetailPage(5),
+                              child: Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.19,
+                                width: 110,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: _getGradientColors(),
+                                    stops: [0.5, 0.5], // Half black, half white
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                      14.0), // Adjust the radius if needed
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black
+                                          .withOpacity(0.3), // Shadow color
+                                      spreadRadius:
+                                          1, // How much the shadow will spread
+                                      blurRadius:
+                                          6, // The blur effect of the shadow
+                                      offset: Offset(0,
+                                          3), // Offset: (horizontal, vertical)
+                                    ),
+                                  ],
                                 ),
-                                borderRadius: BorderRadius.circular(
-                                    14.0), // Adjust the radius if needed
-                              ),
-                              child: Stack(
-                                children: [
-                                  Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          if (parameters[5].value < 10)
-                                            Text(
-                                              ' ${parammeterAir}',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                child: Stack(
+                                  children: [
+                                    Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 33,
                                             ),
-                                          if (parameters[5].value > 10)
-                                            Text(
-                                              ' ${parammeterAir[0]}',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.bold,
+                                            if (parameters[5].value < 10)
+                                              Text(
+                                                '${parammeterAir}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
-                                          if (parameters[5].value > 10)
+                                            if (parameters[5].value > 10)
+                                              Text(
+                                                '${parammeterAir[0]}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            if (parameters[5].value > 10)
+                                              Text(
+                                                '${parammeterAir[1]}',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            SizedBox(width: 10),
                                             Text(
-                                              ' ${parammeterAir[1]}',
+                                              parameterUnit[5],
                                               style: TextStyle(
                                                 color: Colors.black,
-                                                fontSize: 32,
+                                                fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            parameterUnit[5],
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 70,
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 70,
-                                          ),
-                                          Text(
-                                            parameterNames[5],
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                            Text(
+                                              parameterNames[5],
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )),
+                          SizedBox(
+                            width: 7,
                           ),
                           GestureDetector(
                             onTap: () => _navigateToDetailPage(6),
@@ -914,6 +1118,9 @@ class _DemoWidState extends State<DemoWid> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
+                                          SizedBox(
+                                            width: 10,
+                                          ),
                                           Text(
                                             ' ${parameters[7].value}',
                                             style: TextStyle(
@@ -922,7 +1129,7 @@ class _DemoWidState extends State<DemoWid> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(width: 15),
+                                          const SizedBox(width: 12),
                                           Text(
                                             parameterUnit[7],
                                             style: TextStyle(
@@ -962,7 +1169,7 @@ class _DemoWidState extends State<DemoWid> {
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                            MainAxisAlignment.spaceAround,
                                         children: [
                                           Text(
                                             ' ${parameters[3].value}',
@@ -972,7 +1179,6 @@ class _DemoWidState extends State<DemoWid> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(width: 15),
                                           Text(
                                             parameterUnit[3],
                                             style: TextStyle(
@@ -1018,6 +1224,9 @@ class _DemoWidState extends State<DemoWid> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
+                                          SizedBox(
+                                            width: 12,
+                                          ),
                                           Text(
                                             ' ${parameters[0].value}',
                                             style: TextStyle(
@@ -1031,7 +1240,7 @@ class _DemoWidState extends State<DemoWid> {
                                             parameterUnit[0],
                                             style: TextStyle(
                                               color: parameterTextColor[0],
-                                              fontSize: 10,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -1081,7 +1290,7 @@ class _DemoWidState extends State<DemoWid> {
                                             parameterUnit[1],
                                             style: TextStyle(
                                               color: parameterTextColor[1],
-                                              fontSize: 10,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -1109,102 +1318,147 @@ class _DemoWidState extends State<DemoWid> {
               ],
             ),
           ),
-          // Bar at the bottom
           Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 30,
-              color: Colors.green, // Background color of the bar
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Spacer(flex: 20),
-                  const Text(
-                    'SYSTEM IS RUNNING OK',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(
-                    flex: 12,
-                  ),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                            style: BorderStyle.solid, color: Colors.black87),
-                        borderRadius:
-                            BorderRadius.circular(5), // Square corners
-                      ),
-                      minimumSize:
-                          Size(90, 25), // Set minimum size to maintain height
-                      backgroundColor: Color.fromARGB(255, 192, 191, 191),
-                    ),
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Setting1()),
-                      );
-                    },
-                    child: const Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4,
-                            color: Colors.grey,
-                            offset: Offset(2, 1.5),
+            child: ValueListenableBuilder<String?>(
+              valueListenable: errorNotifier,
+              builder: (context, errorMessage, child) {
+                if (errorMessage != "SYSTEM IS RUNNING OK") {
+                  // Play beep sound if not muted
+                  if (!isMuted1 && errorMessage != null) {
+                    print("Heloooooooooooooooooooo");
+                    // if (errorMessage == null) {
+                    //   print("Heloooooooooooooooooooo");
+                    //   print("Error Message:${errorMessage}");
+                    //   print("helooooooooooooooo inside the else if");
+                    //   stopBackgroundMusic();
+                    // }
+                    playBackgroundMusic();
+                  }
+                  // else if (errors.isNotEmpty) {
+                  //   print("Error Message:${errorMessage}");
+                  //   print("helooooooooooooooo inside the else if");
+                  //   stopBackgroundMusic();
+                  // }
+                } else {
+                  // Stop beep sound if no error
+                  stopBackgroundMusic();
+                }
+                return Container(
+                  height: 30,
+                  color: errorMessage != null
+                      ? (errorMessage.contains("High")
+                          ? Colors.red
+                          : (errorMessage.contains("low")
+                              ? Color.fromRGBO(255, 158, 0, 50)
+                              : (errorMessage.contains("Available")
+                                  ? Colors.yellow
+                                  : Colors.green)))
+                      : Colors.green, // Background color of the bar
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 12.0),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              style: BorderStyle.solid,
+                              color: Colors.black87,
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(5), // Square corners
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(width: 12), // Add spacing between the buttons
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                            style: BorderStyle.solid, color: Colors.black87),
-                        borderRadius:
-                            BorderRadius.circular(5), // Square corners
-                      ),
-                      minimumSize:
-                          Size(90, 25), // Set minimum size to maintain height
-                      backgroundColor: Color.fromARGB(255, 192, 191, 191),
-                    ),
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReportScreen(),
+                          minimumSize: Size(
+                              100, 25), // Set minimum size to maintain height
+                          backgroundColor: isMuted1
+                              ? const Color.fromARGB(
+                                  255, 192, 191, 191) // Color when muted
+                              : const Color.fromARGB(
+                                  255, 192, 191, 191), // Default color
                         ),
-                      );
-                    },
-                    child: const Text(
-                      'Report',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4,
-                            color: Colors.grey,
-                            offset: Offset(2, 1.5),
+                        onPressed: toggleMute,
+                        child: Text(
+                          isMuted1 ? 'Unmute' : 'Mute',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isMuted1
+                                ? const Color.fromARGB(
+                                    255, 0, 0, 0) // Text color when muted
+                                : const Color.fromARGB(
+                                    255, 0, 0, 0), // Default text color
+                            shadows: [
+                              Shadow(
+                                blurRadius: 4,
+                                color: Colors.grey,
+                                offset: Offset(2, 1.5),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Spacer(flex: 10),
+                      Text(
+                        errorMessage ?? "SYSTEM IS RUNNING OK",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Spacer(flex: 10),
+                      SizedBox(width: 10),
+                      if (_showButton ==
+                          false) // Add spacing between the buttons
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 12.0),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                style: BorderStyle.solid,
+                                color: Colors.black87,
+                              ),
+                              borderRadius:
+                                  BorderRadius.circular(5), // Square corners
+                            ),
+                            minimumSize: Size(
+                                100, 25), // Set minimum size to maintain height
+                            backgroundColor:
+                                const Color.fromARGB(255, 192, 191, 191),
+                          ),
+                          onPressed: () async {
+                            _navigateToDetailPage(8);
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.insert_chart,
+                                color: Colors.black,
+                              ),
+                              const Text(
+                                'Reports',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Color.fromARGB(255, 0, 0, 0),
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 4,
+                                      color: Colors.grey,
+                                      offset: Offset(2, 1.5),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      SizedBox(
+                        width: 5,
+                      )
+                    ],
                   ),
-
-                  Spacer(),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],

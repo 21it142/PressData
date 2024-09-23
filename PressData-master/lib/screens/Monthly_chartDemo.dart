@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pressdata/screens/report_screenDemo.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -118,6 +117,7 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
     return nextMonth.subtract(const Duration(seconds: 1));
   }
 
+  final dateFormatter = DateFormat('dd-MM-yyyy HH:mm:ss');
   void generatePDF_Monthly() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final logoBytes = await rootBundle.load('assets/Wavevison-Logo.png');
@@ -209,8 +209,38 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
                       mainAxisAlignment: pw.MainAxisAlignment.center,
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       children: [
-                        pw.Text('PressData® Report - $selectedGasesHeader',
-                            style: titleStyle),
+                        pw.RichText(
+                          text: pw.TextSpan(
+                            text: 'Press', // Text before "Data"
+                            style: titleStyle, // Your predefined title style
+                            children: [
+                              pw.TextSpan(
+                                text:
+                                    'Data', // Main text with the registered symbol
+                                style: titleStyle,
+                                children: [
+                                  pw.WidgetSpan(
+                                    child: pw.Transform(
+                                      transform: Matrix4.translationValues(2, 4,
+                                          0), // Correctly position the symbol above "Data"
+                                      child: pw.Text(
+                                        '®',
+                                        style: titleStyle.copyWith(
+                                            fontSize:
+                                                10), // Adjust font size for the trademark symbol
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              pw.TextSpan(
+                                text:
+                                    ' Report - $selectedGasesHeader', // Continuation of the text after "Data"
+                                style: titleStyle,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     pw.SizedBox(height: 4),
@@ -276,8 +306,9 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
                           maxPressure[index].toString(),
                           minPressure[index].toString(),
                           avgPressure[index].toString(),
-                          maxPressureTime[index].toIso8601String(),
-                          minPressureTime[index].toIso8601String(),
+                          dateFormatter.format(
+                              maxPressureTime[index]), // Formatted max time
+                          dateFormatter.format(minPressureTime[index]),
                         ];
                       }),
                       cellStyle: regularStyle,
@@ -331,7 +362,7 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
                       maxvalue[i].toString(),
                       minvalue[i].toString(),
                       logs[i].toString(),
-                      time[i].toIso8601String(),
+                      dateFormatter.format(time[index]),
                     ];
                   }),
                   cellStyle: regularStyle,
@@ -613,6 +644,7 @@ class _MonthlyChartScreenState extends State<MonthlyChartScreen> {
       pngBytes = byteData!.buffer.asUint8List();
 
       // Pop MonthlyChart page
+      Navigator.of(context).pop();
       generatePDF_Monthly();
       // Navigator.pop(context, pngBytes);
     } catch (e) {

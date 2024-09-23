@@ -78,8 +78,10 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
                 child: Text('Submit'),
                 onPressed: () {
                   if (widget.selectedDate != null) {
+                    // _zoomPanBehavior.reset();
+                    _captureAndShowImage(context);
+                    // Navigator.of(context).pop();
                     Navigator.of(context).pop();
-                    generatePDF_Daily();
                   }
                 },
               ),
@@ -99,6 +101,7 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
     });
   }
 
+  final dateFormatter = DateFormat('dd-MM-yyyy HH:mm:ss');
   void generatePDF_Daily() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final logoBytes = await rootBundle.load('assets/Wavevison-Logo.png');
@@ -155,7 +158,6 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
             footer(context.pageNumber, context.pagesCount),
         build: (pw.Context context) {
           List<pw.Widget> content = [];
-
           content.add(
             pw.Stack(children: [
               pw.Positioned.fill(
@@ -188,8 +190,38 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
                       mainAxisAlignment: pw.MainAxisAlignment.center,
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       children: [
-                        pw.Text('PressData® Report - $selectedGasesHeader',
-                            style: titleStyle),
+                        pw.RichText(
+                          text: pw.TextSpan(
+                            text: 'Press', // Text before "Data"
+                            style: titleStyle, // Your predefined title style
+                            children: [
+                              pw.TextSpan(
+                                text:
+                                    'Data', // Main text with the registered symbol
+                                style: titleStyle,
+                                children: [
+                                  pw.WidgetSpan(
+                                    child: pw.Transform(
+                                      transform: Matrix4.translationValues(2, 4,
+                                          0), // Correctly position the symbol above "Data"
+                                      child: pw.Text(
+                                        '®',
+                                        style: titleStyle.copyWith(
+                                            fontSize:
+                                                10), // Adjust font size for the trademark symbol
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              pw.TextSpan(
+                                text:
+                                    ' Report - $selectedGasesHeader', // Continuation of the text after "Data"
+                                style: titleStyle,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     pw.SizedBox(height: 4),
@@ -253,8 +285,9 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
                           maxPressure[index].toString(),
                           minPressure[index].toString(),
                           avgPressure[index].toString(),
-                          maxPressureTime[index].toIso8601String(),
-                          minPressureTime[index].toIso8601String(),
+                          dateFormatter.format(
+                              maxPressureTime[index]), // Formatted max time
+                          dateFormatter.format(minPressureTime[index]),
                         ];
                       }),
                       cellStyle: regularStyle,
@@ -499,7 +532,8 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
           padding: const EdgeInsets.all(8.0),
           child: ElevatedButton(
             onPressed: () {
-              _captureAndShowImage(context);
+              // _captureAndShowImage(context);
+              _showRemarkDialog();
             },
             child: _isLoading
                 ? CircularProgressIndicator(color: Colors.white)
@@ -523,8 +557,10 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       pngBytes = byteData!.buffer.asUint8List();
 
+      Navigator.of(context).pop();
+      generatePDF_Daily();
       // Pop WeeklyChart page
-      _showRemarkDialog();
+      //  _showRemarkDialog();
       // Navigator.pop(context, pngBytes);
       // Navigator.of(context).push(
       //   MaterialPageRoute(

@@ -5,6 +5,7 @@ class Logs {
   List<DateTime> time;
   List<int> maxvalue;
   List<int> minvalue;
+  List<int> values;
   List<String> log;
 
   Logs(
@@ -12,6 +13,7 @@ class Logs {
       required this.log,
       required this.maxvalue,
       required this.minvalue,
+      required this.values,
       required this.time});
 }
 
@@ -23,6 +25,7 @@ Logs getlogs(List<ErrorTableData> data, List<String> selectedValues) {
       maxvalue: [],
       minvalue: [],
       time: [],
+      values: [],
       log: [],
     );
   }
@@ -31,24 +34,33 @@ Logs getlogs(List<ErrorTableData> data, List<String> selectedValues) {
   List<DateTime> time = [];
   List<int> minvalue = [];
   List<String> logSet = [];
+  List<int> values = [];
   List<String> parameter = [];
   for (String value in selectedValues) {
+    print(value);
     print("inside for");
     // int maxValue = data.first.getPressureValueMax(value);
     // int minValue = data.first.getPressureValueMin(value);
     // DateTime recordTime = data.first.recordedAt!;
     //  String logEntry = data.first.getlogslist(value);
-
+    if (value == "TEMP") {
+      value = "Temp";
+    }
+    if (value == "HUMI") {
+      value = "Humi";
+    }
     for (var record in data) {
       print("inside record");
       // String currentLog = record.getlogslist(value);
       //print("currentLog->>>>>>>>>>>$currentLog + $value");
-
+      print("record.parameter${record.parameter}");
       if (record.parameter == value) {
+        print("Paramenter:${record.parameter} ");
         parameter.add(record.parameter);
         minvalue.add(record.minValue);
         maxvalue.add(record.maxValue);
         logSet.add(record.logValue);
+        values.add(record.value);
         time.add(record.recordedAt!);
       }
     }
@@ -59,6 +71,7 @@ Logs getlogs(List<ErrorTableData> data, List<String> selectedValues) {
     minvalue: minvalue,
     maxvalue: maxvalue,
     time: time,
+    values: values,
     log: logSet,
   );
 }

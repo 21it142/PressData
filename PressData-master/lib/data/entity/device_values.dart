@@ -8,6 +8,6 @@ class ErrorTable extends Table {
   TextColumn get logValue => text().named('log_value')();
   IntColumn get minValue => integer().named('min_value')();
   IntColumn get maxValue => integer().named('max_value')();
- // IntColumn get parametervalues => integer().named('')();
+  IntColumn get value => integer().named('value')();
   DateTimeColumn get recordedAt => dateTime().nullable()();
 }

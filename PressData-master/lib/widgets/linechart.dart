@@ -25,9 +25,8 @@ import 'package:pressdata/screens/Limit%20Setting/O2_2.dart';
 import 'package:pressdata/screens/Limit%20Setting/TEMP.dart';
 import 'package:http/http.dart' as http;
 import 'package:pressdata/screens/Past_Report.dart';
-import 'package:pressdata/screens/ReportScreen.dart';
+
 import 'package:pressdata/screens/main_page.dart';
-import 'package:pressdata/screens/setting.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -223,6 +222,15 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     o22Data.add(ChartData(0, -1));
   }
 
+  int temp_temp = -1;
+  int temp_humi = -1;
+  int temp_o21 = -1;
+  int temp_o22 = -1;
+  int temp_air = -1;
+  int temp_co2 = -1;
+  int temp_vac = -1;
+  int temp_n2o = -1;
+
   int counter_temp_min = 0;
   int counter_temp_max = 0;
   int counter_temp_not = 0;
@@ -253,7 +261,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     final response = await http.get(url);
 
     final data = json.decode(response.body);
-    DateTime dateTime = DateTime.now();
+    //DateTime dateTime = DateTime.now();
     //List<String> errors = [];
     errors.clear();
 
@@ -261,6 +269,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       PressData pressData = PressData.fromJson(jsonData);
       serrialNo = pressData.serialNo;
       location = pressData.locationName;
+
       // Temperature
       temp = int.parse(pressData.temperature);
       _streamDatatemp.sink.add(int.parse(pressData.temperature));
@@ -269,6 +278,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         temp = 0;
         temp_error = 'No Error';
       } else if (temp < 3) {
+        temp_temp = temp;
         temp_error = 'Not Available';
         if (counter_temp_not < 2) {
           counter_temp_not++;
@@ -276,32 +286,37 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
 
         if (counter_temp_not == 1) {
           store_error('Temp', 'Not Available', TEMP_minLimit, TEMP_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, temp);
         }
-
         errors.add("TEMP is Not Available");
       } else if (temp > TEMP_maxLimit) {
         if (counter_temp_max < 2) {
+          temp_temp = temp;
           counter_temp_max++;
         }
 
         if (counter_temp_max == 1) {
-          store_error(
-              'Temp', 'HIGH', TEMP_minLimit, TEMP_maxLimit, pressData.serialNo);
+          store_error('Temp', 'HIGH', TEMP_minLimit, TEMP_maxLimit,
+              pressData.serialNo, temp);
         }
         print("->>>>I am Inside TEmp");
-
+        // errorNotifier.value = null;
         errors.add("Temp is Above High Setting");
         print("heloooo i am inside this temp");
         temp_error = 'HIGH';
       } else if (temp < TEMP_minLimit) {
+        print("hellloooo inside the minLimit");
+
         if (counter_temp_min < 2) {
+          temp_temp = temp;
+          print("helllooooo");
           counter_temp_min++;
         }
 
         if (counter_temp_min == 1) {
-          store_error(
-              'Temp', 'LOW', TEMP_minLimit, TEMP_maxLimit, pressData.serialNo);
+          print(" hellloooo storing the temp error");
+          store_error('Temp', 'LOW', TEMP_minLimit, TEMP_maxLimit,
+              pressData.serialNo, temp);
         }
 
         errors.add("Temp is Below Low Setting");
@@ -309,8 +324,17 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         temp_error = 'LOW';
       } else {
         counter_temp_not = 0;
-        counter_temp_max = 0;
-        counter_temp_min = 0;
+        if (TEMP_maxLimit - TEMP_minLimit == 1) {
+          counter_temp_max = 0;
+          counter_temp_min = 0;
+        }
+        if (temp <= TEMP_maxLimit - 2) {
+          counter_temp_max = 0;
+        }
+        if (temp >= TEMP_minLimit + 2) {
+          print("helllllllllllllllllllllllloooooooooooooooooooo");
+          counter_temp_min = 0;
+        }
         temp_error = 'NO Error';
       }
 
@@ -322,44 +346,62 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         humi = 0;
         humi_error = 'No Error';
       } else if (humi < 3) {
+        temp_humi = humi;
         if (counter_humi_not < 2) {
           counter_humi_not++;
         }
 
         if (counter_humi_not == 1) {
           store_error('Humi', 'Not Available', HUMI_minLimit, HUMI_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, humi);
         }
         errors.add("HUMI is Not Available");
         humi_error = 'Not Available';
       } else if (humi > HUMI_maxLimit) {
+        temp_humi = humi;
+
         if (counter_humi_max < 2) {
           counter_humi_max++;
         }
-
+        print("Counter of Humi max:$counter_humi_max");
         if (counter_humi_max == 1) {
-          store_error(
-              'Humi', 'HIGH', HUMI_minLimit, HUMI_maxLimit, pressData.serialNo);
+          print("In error of humi max");
+          store_error('Humi', 'HIGH', HUMI_minLimit, HUMI_maxLimit,
+              pressData.serialNo, humi);
         }
 
         print("->>>humi is above high setting");
+        // errorNotifier.value = null;
         errors.add("HUMI is Above High Setting");
         humi_error = 'HIGH';
       } else if (humi < HUMI_minLimit) {
+        temp_humi = humi;
+        print("In error of humi min");
         if (counter_humi_min < 2) {
           counter_humi_min++;
         }
 
         if (counter_humi_min == 1) {
-          store_error(
-              'Humi', 'LOW', HUMI_minLimit, HUMI_maxLimit, pressData.serialNo);
+          print("heloooooooo HUMI is Below Low Setting");
+          store_error('Humi', 'LOW', HUMI_minLimit, HUMI_maxLimit,
+              pressData.serialNo, humi);
         }
-        //
+        //  errorNotifier.value = null;
         errors.add("HUMI is Below Low Setting");
+
         humi_error = 'LOW';
       } else {
-        counter_humi_max = 0;
-        counter_humi_min = 0;
+        if (HUMI_maxLimit - HUMI_minLimit == 1) {
+          counter_humi_min = 0;
+          counter_humi_max = 0;
+        }
+        if (humi <= HUMI_maxLimit - 2) {
+          counter_humi_max = 0;
+        }
+        if (HUMI_minLimit + 2 <= humi) {
+          counter_humi_min = 0;
+        }
+
         counter_humi_not = 0;
         humi_error = 'No Error';
       }
@@ -372,6 +414,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         o21 = 0;
         o2_1_error = 'No Error';
       } else if (o21 < 3) {
+        temp_o21 = o21;
         if (counter_o21_not < 2) {
           print("not working fine");
           counter_o21_not++;
@@ -381,37 +424,51 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
           print("hello not working fine");
 
           store_error('O2(1)', 'Not Available', O2_minLimit, O2_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, o21);
         }
 
         errors.add("O2 (1) is Not Available");
         o2_1_error = 'Not Available';
       } else if (o21 > O2_maxLimit) {
+        temp_o21 = o21;
+        print("In error of o2 max");
         if (counter_o21_max < 2) {
           counter_o21_max++;
         }
         if (counter_o21_max == 1) {
-          store_error(
-              'O2(1)', 'HIGH', O2_minLimit, O2_maxLimit, pressData.serialNo);
+          store_error('O2(1)', 'HIGH', O2_minLimit, O2_maxLimit,
+              pressData.serialNo, o21);
         }
-
+        // errorNotifier.value = null;
         errors.add("O2 (1) is Above High Setting");
         o2_1_error = 'HIGH';
       } else if (o21 < O2_minLimit) {
+        temp_o21 = o21;
+        print("In error of  o2 min");
         if (counter_o21_min < 2) {
           counter_o21_min++;
         }
         if (counter_o21_min == 1) {
-          store_error(
-              'O2(1)', 'LOW', O2_minLimit, O2_maxLimit, pressData.serialNo);
+          store_error('O2(1)', 'LOW', O2_minLimit, O2_maxLimit,
+              pressData.serialNo, o21);
         }
 
         print("->>>>I am Inside the O21");
+        //  errorNotifier.value = null;
         errors.add("O2 (1) is Below Low Setting");
         o2_1_error = 'LOW';
       } else {
-        counter_o21_max = 0;
-        counter_o21_min = 0;
+        if (O2_maxLimit - O2_minLimit == 1) {
+          counter_o21_max = 0;
+          counter_o21_min = 0;
+        }
+        if (O2_maxLimit - 2 >= o21) {
+          counter_o21_max = 0;
+        }
+        if (O2_minLimit + 2 <= o21) {
+          counter_o21_min = 0;
+        }
+
         counter_o21_not = 0;
         o2_1_error = 'No Error';
       }
@@ -424,42 +481,56 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         vac = 0;
         vac_error = 'No Error';
       } else if (vac < 3) {
+        temp_vac = vac;
         if (counter_vac_not < 2) {
           counter_vac_not++;
         }
         if (counter_vac_not == 1) {
           store_error('VAC', 'Not Available', VAC_minLimit, VAC_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, vac);
         }
 
         errors.add("VAC is Not Available");
         vac_error = 'Not Available';
       } else if (vac > VAC_maxLimit) {
+        temp_vac = vac;
+        print("In error of vac max");
         if (counter_vac_max < 2) {
           counter_vac_max++;
         }
         if (counter_vac_max == 1) {
-          store_error(
-              'VAC', 'HIGH', VAC_minLimit, VAC_maxLimit, pressData.serialNo);
+          store_error('VAC', 'HIGH', VAC_minLimit, VAC_maxLimit,
+              pressData.serialNo, vac);
         }
-
+        // errorNotifier.value = null;
         errors.add("VAC is Above High Setting");
         vac_error = 'HIGH';
       } else if (vac < VAC_minLimit) {
+        temp_vac = vac;
+        print("In error of  vac min");
         if (counter_vac_min < 2) {
           counter_vac_min++;
         }
         if (counter_vac_min == 1) {
-          store_error(
-              'VAC', 'LOW', VAC_minLimit, VAC_maxLimit, pressData.serialNo);
+          store_error('VAC', 'LOW', VAC_minLimit, VAC_maxLimit,
+              pressData.serialNo, vac);
         }
-
+        errorNotifier.value = null;
         errors.add("VAC is Below Low Setting");
         vac_error = 'LOW';
       } else {
+        if (VAC_maxLimit - VAC_minLimit == 1) {
+          counter_vac_max = 0;
+          counter_vac_min = 0;
+        }
+        if (VAC_maxLimit - 2 >= vac) {
+          counter_vac_max = 0;
+        }
+        if (VAC_minLimit + 2 <= vac) {
+          counter_vac_min = 0;
+        }
         counter_vac_not = 0;
-        counter_vac_max = 0;
-        counter_vac_min = 0;
+
         vac_error = 'No Error';
       }
 
@@ -471,41 +542,57 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         n2o = 0;
         n2o_error = 'No Error';
       } else if (n2o < 3) {
+        temp_n2o = n2o;
         if (counter_n2o_not < 2) {
           counter_n2o_not++;
         }
         if (counter_n2o_not == 1) {
           store_error('N2O', 'Not Available', N2O_minLimit, N2O_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, n2o);
         }
 
         errors.add("N2O is Not Available");
         n2o_error = 'Not Available';
       } else if (n2o > N2O_maxLimit) {
+        temp_n2o = n2o;
+
+        print("In error of n2o max");
         if (counter_n2o_max < 2) {
           counter_n2o_max++;
         }
         if (counter_n2o_max == 1) {
-          store_error(
-              'N2O', 'HIGH', N2O_minLimit, N2O_maxLimit, pressData.serialNo);
+          store_error('N2O', 'HIGH', N2O_minLimit, N2O_maxLimit,
+              pressData.serialNo, n2o);
         }
-
+        //  errorNotifier.value = null;
         errors.add("N2O is Above High Setting");
         n2o_error = 'HIGH';
       } else if (n2o < N2O_minLimit) {
+        temp_n2o = n2o;
+
+        print("In error of n2o min");
         if (counter_n2o_min < 2) {
           counter_n2o_min++;
         }
         if (counter_n2o_min == 1) {
-          store_error(
-              'N2O', 'LOW', N2O_minLimit, N2O_maxLimit, pressData.serialNo);
+          store_error('N2O', 'LOW', N2O_minLimit, N2O_maxLimit,
+              pressData.serialNo, n2o);
         }
-
+        //  errorNotifier.value = null;
         errors.add("N2O is Below Low Setting");
         n2o_error = 'LOW';
       } else {
-        counter_n2o_min = 0;
-        counter_n2o_max = 0;
+        if (N2O_maxLimit - N2O_minLimit == 1) {
+          counter_n2o_max = 0;
+          counter_n2o_min = 0;
+        }
+        if (N2O_maxLimit - 2 >= n2o) {
+          counter_n2o_max = 0;
+        }
+        if (N2O_minLimit + 2 <= n2o) {
+          counter_n2o_min = 0;
+        }
+
         counter_n2o_not = 0;
         n2o_error = 'No Error';
       }
@@ -519,41 +606,55 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         air_error = 'No Error';
         forair = '-333';
       } else if (air < 3) {
+        temp_air = air;
         if (counter_air_not < 2) {
           counter_air_not++;
         }
         if (counter_air_not == 1) {
           store_error('AIR', 'Not Available', AIR_minLimit, AIR_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, air);
         }
 
         errors.add("AIR is Not Available");
         air_error = 'Not Available';
       } else if (air > AIR_maxLimit) {
+        temp_air = air;
+        print("In error of  air max");
         if (counter_air_max < 2) {
           counter_air_max++;
         }
         if (counter_air_max == 1) {
-          store_error(
-              'AIR', 'HIGH', AIR_minLimit, AIR_maxLimit, pressData.serialNo);
+          store_error('AIR', 'HIGH', AIR_minLimit, AIR_maxLimit,
+              pressData.serialNo, air);
         }
-
+        // errorNotifier.value = null;
         errors.add("AIR is Above High Setting");
         air_error = 'HIGH';
       } else if (air < AIR_minLimit) {
+        temp_air = air;
+        print("In error of air min");
         if (counter_air_min < 2) {
           counter_air_min++;
         }
         if (counter_air_min == 1) {
-          store_error(
-              'AIR', 'LOW', AIR_minLimit, AIR_maxLimit, pressData.serialNo);
+          store_error('AIR', 'LOW', AIR_minLimit, AIR_maxLimit,
+              pressData.serialNo, air);
         }
-
+        //  errorNotifier.value = null;
         errors.add("AIR is Below Low Setting");
         air_error = 'LOW';
       } else {
-        counter_air_max = 0;
-        counter_air_max = 0;
+        if (AIR_maxLimit - AIR_minLimit == 1) {
+          counter_air_max = 0;
+          counter_air_min = 0;
+        }
+        if (AIR_maxLimit - 2 >= air) {
+          counter_air_max = 0;
+        }
+        if (AIR_minLimit + 2 <= air) {
+          counter_air_min = 0;
+        }
+
         counter_air_not = 0;
 
         air_error = 'No Error';
@@ -568,43 +669,58 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         co2 = 0;
         co2_error = 'No Error';
       } else if (co2 < 3) {
+        temp_co2 = co2;
         if (counter_co2_not < 2) {
           counter_co2_not++;
         }
         if (counter_co2_not == 1) {
           store_error('CO2', 'Not Available', CO2_minLimit, CO2_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, co2);
         }
 
         errors.add("CO2 is Not Available");
         co2_error = 'Not Available';
       } else if (co2 > CO2_maxLimit) {
+        temp_co2 = co2;
+        print("In error of co2 max");
         if (counter_co2_max < 2) {
           counter_co2_max++;
         }
         if (counter_co2_max == 1) {
-          store_error(
-              'CO2', 'HIGH', CO2_minLimit, CO2_maxLimit, pressData.serialNo);
+          store_error('CO2', 'HIGH', CO2_minLimit, CO2_maxLimit,
+              pressData.serialNo, co2);
         }
 
         // storedata_database();
+        // errorNotifier.value = null;
         errors.add("CO2 is Above High Setting");
         co2_error = 'HIGH';
       } else if (co2 < CO2_minLimit) {
+        temp_co2 = co2;
         if (counter_co2_min < 2) {
           counter_co2_min++;
         }
         if (counter_co2_min == 1) {
-          store_error(
-              'CO2', 'LOW', CO2_minLimit, CO2_maxLimit, pressData.serialNo);
+          store_error('CO2', 'LOW', CO2_minLimit, CO2_maxLimit,
+              pressData.serialNo, co2);
         }
 
         // storedata_database();
+        // errorNotifier.value = null;
         errors.add("CO2 is Below Low Setting");
         co2_error = 'LOW';
       } else {
-        counter_co2_max = 0;
-        counter_co2_min = 0;
+        if (CO2_maxLimit - CO2_minLimit == 1) {
+          counter_co2_max = 0;
+          counter_co2_min = 0;
+        }
+        if (CO2_maxLimit - 2 >= co2) {
+          counter_co2_max = 0;
+        }
+        if (CO2_minLimit + 2 <= co2) {
+          counter_co2_min = 0;
+        }
+
         counter_co2_not = 0;
         co2_error = 'No Error';
       }
@@ -619,42 +735,58 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       }
       //print("O22 Maximum$O2_2_maxLimit");
       else if (o22 < 3) {
+        temp_o22 = o22;
         if (counter_o22_not < 2) {
-          counter_co2_not++;
+          counter_o22_not++;
         }
         if (counter_o22_not == 1) {
           store_error('O2(2)', 'Not Available', O2_2_minLimit, O2_2_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, o22);
         }
         errors.add("O2 (2) is Not Available");
         o2_2_error = 'Not Available';
       } else if (o22 > O2_2_maxLimit) {
+        temp_o22 = o22;
+        print("In error of o22 max");
         if (counter_o22_max < 2) {
-          counter_co2_max++;
+          counter_o22_max++;
         }
         if (counter_o22_max == 1) {
           store_error('O2(2)', 'HIGH', O2_2_minLimit, O2_2_maxLimit,
-              pressData.serialNo);
+              pressData.serialNo, o22);
         }
-
+        // errorNotifier.value = null;
         print("O22 Maximum$O2_2_maxLimit");
         errors.add("O2 (2) is Above High Setting");
         o2_2_error = 'HIGH';
       } else if (o22 < O2_2_minLimit) {
+        print("helloooooooooooooo");
+        temp_o22 = o22;
+        print("Counter o22: $counter_o22_min");
         if (counter_o22_min < 2) {
-          counter_co2_min++;
+          counter_o22_min++;
         }
         if (counter_o22_min == 1) {
-          store_error(
-              'O2(2)', 'LOW', O2_2_minLimit, O2_2_maxLimit, pressData.serialNo);
+          print("In error of o22 min");
+          store_error('O2(2)', 'LOW', O2_2_minLimit, O2_2_maxLimit,
+              pressData.serialNo, o22);
         }
-
+        // errorNotifier.value = null;
         errors.add("O2 (2) is Below Low Setting");
         print("O22 Maximum$O2_2_minLimit");
         o2_2_error = 'LOW';
       } else {
-        counter_o22_max = 0;
-        counter_o22_min = 0;
+        if (O2_2_maxLimit - O2_2_minLimit == 1) {
+          counter_o22_max = 0;
+          counter_o22_min = 0;
+        }
+        if (O2_2_maxLimit - 2 >= o22) {
+          counter_o22_max = 0;
+        }
+        if (O2_2_minLimit + 2 <= o22) {
+          counter_o22_min = 0;
+        }
+
         counter_o22_not = 0;
         o2_2_error = 'No Error';
       }
@@ -670,7 +802,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       // Stop the timer if there are no errors
       print("Stopping error cycle as there are no errors.");
       _errorTimer!.cancel();
-      errorNotifier.value = "All systems normal";
+      errorNotifier.value = "SYSTEM IS RUNNING OK";
     }
     print("chartData.length ${chartData.length}");
 
@@ -678,14 +810,16 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     await Future.delayed(Duration(seconds: 1));
   }
 
-  Future<void> store_error(
-      String params, String log, int min, int max, String deviceno) async {
+  Future<void> store_error(String params, String log, int min, int max,
+      String deviceno, int value) async {
     final entity = ErrorTableCompanion(
       parameter: drift.Value(params), // Replace with actual parameter
       logValue: drift.Value(log), // Replace with actual log value
       minValue: drift.Value(min), // Replace with actual min value
-      maxValue: drift.Value(max), // Replace with actual max value
+      maxValue: drift.Value(max),
+      // Replace with actual max value
       DeviceNo: drift.Value(deviceno),
+      value: drift.Value(value),
       recordedAt: drift.Value(DateTime.now()),
     );
     copy_database();
@@ -700,13 +834,27 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     final data = json.decode(response.body);
     for (var jsonData in data) {
       PressData pressData = PressData.fromJson(jsonData);
-
-      temp1min = int.parse(pressData.temperature);
-      humi1min = int.parse(pressData.humidity);
+      if (int.parse(pressData.temperature) >= 50) {
+        temp1min = 50;
+      } else {
+        temp1min = int.parse(pressData.temperature);
+      }
+      if (int.parse(pressData.humidity) >= 99) {
+        humi1min = 99;
+      } else {
+        humi1min = int.parse(pressData.humidity);
+      }
+      if (int.parse(pressData.vacuum) >= 750) {
+        vac1min = 0;
+      } else {
+        vac1min = int.parse(pressData.vacuum);
+      }
+      //temp1min = int.parse(pressData.temperature);
+      // humi1min = int.parse(pressData.humidity);
       o211min = int.parse(pressData.o2_1);
       o221min = int.parse(pressData.o2_2);
       co21min = int.parse(pressData.co2);
-      vac1min = int.parse(pressData.vacuum);
+      //vac1min = int.parse(pressData.vacuum);
       n2o1min = int.parse(pressData.n2o);
       air1min = int.parse(pressData.air);
       print("I am beign called After 1 min");
@@ -714,17 +862,30 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     }
   }
 
-  List<Color> _getGradientColors() {
-    if (forair == '-333') {
-      return [Colors.black, Colors.white];
-    } else if (air < 3) {
-      return [Colors.yellow, Colors.yellow];
-    } else if (air < AIR_minLimit) {
-      return [Colors.yellow, Colors.yellow];
-    } else if (air > AIR_maxLimit) {
-      return [Color.fromARGB(255, 182, 12, 0), Color.fromARGB(255, 182, 12, 0)];
+  List<Color> airColor = [
+    Colors.black,
+    Colors.white
+  ]; // Make this a list that you can update
+
+  void _getGradientColors(String value) {
+    if (value == 'No Error') {
+      print("helooooooooooooooooooooooooooooooooo");
+      airColor = [Colors.black, Colors.white];
+    } else if (value == 'Not Available') {
+      airColor = [Colors.yellow, Colors.yellow];
+    } else if (value == 'LOW') {
+      print("hergrbrbrfbrfbrbrbrfbrbrbrbrbrbrbrbrbrb");
+      airColor = [
+        Color.fromRGBO(255, 158, 0, 50),
+        Color.fromRGBO(255, 158, 0, 50)
+      ];
+    } else if (value == 'HIGH') {
+      airColor = [
+        Color.fromARGB(255, 182, 12, 0),
+        Color.fromARGB(255, 182, 12, 0)
+      ];
     } else {
-      return [Colors.black, Colors.white];
+      airColor = [Colors.black, Colors.white];
     }
   }
 
@@ -775,7 +936,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         onRendererCreated: (ChartSeriesController controller) {
           _o22RateChartController = controller;
         },
-        name: "o2 (2)",
+        name: "O2(2)",
         color: Color.fromARGB(255, 0, 0, 0),
         dataSource: o22Data,
         xValueMapper: (ChartData data, _) => data.time,
@@ -796,7 +957,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         onRendererCreated: (ChartSeriesController controller) {
           _tempChartController = controller;
         },
-        name: "Temp",
+        name: "TEMP",
         color: Colors.red,
         dataSource: tempData,
         xValueMapper: (ChartData data, _) => data.time,
@@ -806,7 +967,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
         onRendererCreated: (ChartSeriesController controller) {
           _humiRateChartController = controller;
         },
-        name: "Humi",
+        name: "HUMI",
         color: Colors.blue,
         dataSource: humiData,
         xValueMapper: (ChartData data, _) => data.time,
@@ -1084,12 +1245,12 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
           fetchMin_Max8();
         }
       case 9:
-        result = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Setting1()));
-        if (result == 1) {
-          fetchMin_Max4();
-          fetchMin_Max8();
-        }
+      // result = await Navigator.push(
+      //     context, MaterialPageRoute(builder: (context) => Setting1()));
+      // if (result == 1) {
+      //   fetchMin_Max4();
+      //   fetchMin_Max8();
+      // }
       default:
         print("Invalid index");
         break;
@@ -1362,14 +1523,6 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       });
     });
   }
-
-  // String secondsToTime(int seconds) {
-  //   int minutes = seconds ~/ 60;
-  //   int remainingSeconds = seconds % 60;
-  //   String minutesStr = minutes.toString().padLeft(2, '0');
-  //   String secondsStr = remainingSeconds.toString().padLeft(2, '0');
-  //   return '$minutesStr:$secondsStr';
-  // }
 
   void _updateDataSource() {
     _tempChartController?.updateDataSource(
@@ -1658,6 +1811,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       Colors.grey,
       const Color.fromARGB(255, 255, 255, 255),
     ];
+
     final List<Color> parameterTextColor = [
       const Color.fromARGB(255, 255, 255, 255),
       Color.fromARGB(255, 0, 0, 0),
@@ -1700,7 +1854,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     Color cardColorvac = Colors.yellow;
     switch (o2_1_error) {
       case 'LOW':
-        cardColoro21 = Colors.yellow;
+        cardColoro21 = Color.fromRGBO(255, 158, 0, 50);
         break;
       case 'Not Available':
         cardColoro21 = Colors.yellow;
@@ -1710,10 +1864,24 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       default:
         cardColoro21 = parameterColors[2];
     }
+    switch (air_error) {
+      case 'LOW':
+        print("vfewrefefbe4brtb4egt4tbrgb4etb4rtb4tgb43rtbrtgb4tbr");
+        _getGradientColors("LOW");
+        break;
+      case 'Not Available':
+        _getGradientColors("Not Available");
+      case 'HIGH':
+        _getGradientColors("HIGH");
+
+        break;
+      default:
+        _getGradientColors("No Error");
+    }
     switch (o2_2_error) {
       case 'LOW':
         print("I am inside swithc case low");
-        cardColoro22 = Colors.yellow;
+        cardColoro22 = Color.fromRGBO(255, 158, 0, 50);
         break;
       case 'Not Available':
         print("I am inside swithc case low");
@@ -1727,7 +1895,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     }
     switch (temp_error) {
       case 'LOW':
-        cardColortemp = Colors.yellow;
+        cardColortemp = Color.fromRGBO(255, 158, 0, 50);
         break;
       case 'Not Available':
         cardColortemp = Colors.yellow;
@@ -1741,12 +1909,13 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     }
     switch (humi_error) {
       case 'LOW':
-        cardColorhumi = Colors.yellow;
+        cardColorhumi = Color.fromRGBO(255, 158, 0, 50);
         break;
       case 'Not Available':
         cardColorhumi = Colors.yellow;
         break;
       case 'HIGH':
+        parameterColors[1] = Colors.white;
         cardColorhumi = Color.fromARGB(255, 182, 12, 0);
         break;
       default:
@@ -1754,7 +1923,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     }
     switch (vac_error) {
       case 'LOW':
-        cardColorvac = Colors.yellow;
+        cardColorvac = Color.fromRGBO(255, 158, 0, 50);
         break;
       case 'Not Available':
         cardColorvac = Colors.yellow;
@@ -1767,7 +1936,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     }
     switch (n2o_error) {
       case 'LOW':
-        cardColorn2o = Colors.yellow;
+        cardColorn2o = Color.fromRGBO(255, 158, 0, 50);
         parameterTextColor[4] = Colors.black;
         break;
       case 'Not Available':
@@ -1838,6 +2007,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
                               ),
                             ],
                             primaryXAxis: NumericAxis(
+                              //  edgeLabelPlacement: EdgeLabelPlacement.shift,
                               interval: 10,
                               labelFormat: '{value}',
                               axisLabelFormatter:
@@ -1860,83 +2030,11 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
                             legend: Legend(isVisible: true),
                             series: _getlineSeries(),
                           )
-                        // child: StreamBuilder<int>(
-                        //     stream: _streamDatahumi.stream,
-                        //     builder: (context, snapshot) {
-                        //       print("DAta is ${snapshot.data}");
-                        //       List<int> list = [];
-                        //       list.add(snapshot.data!);
-                        //       return SfCartesianChart(
-                        //         // isTransposed: true,
-                        //         zoomPanBehavior: ZoomPanBehavior(
-                        //           enablePinching: true,
-                        //           enableMouseWheelZooming: true,
-                        //           zoomMode:
-                        //               ZoomMode.xy, // Specify zoom mode if needed
-                        //           maximumZoomLevel: 0.5,
-                        //         ),
-                        //         tooltipBehavior: TooltipBehavior(enable: false),
-                        //         axes: <ChartAxis>[
-                        //           NumericAxis(
-                        //             labelStyle: TextStyle(
-                        //               color: Color.fromARGB(
-                        //                   255, 0, 0, 0), // Black color
-                        //               fontWeight: FontWeight.bold, // Bold text
-                        //             ),
-                        //             name: 'hello123456789',
-                        //             opposedPosition: false,
-                        //             interval: 150,
-                        //             minimum: 0,
-                        //             maximum: 750,
-                        //           ),
-                        //         ],
-                        //         // primaryXAxis: NumericAxis(
-                        //         //   labelStyle: TextStyle(
-                        //         //     color: Color.fromARGB(
-                        //         //         255, 0, 0, 0), // Black color
-                        //         //     fontWeight: FontWeight.bold, // Bold text
-                        //         //   ),
-                        //         //   title: AxisTitle(
-                        //         //     text: 'Time (s)',
-                        //         //     textStyle: TextStyle(
-                        //         //       color: Color.fromARGB(
-                        //         //           255, 0, 0, 0), // Black color
-                        //         //       fontWeight: FontWeight.bold, // Bold text
-                        //         //     ),
-                        //         //   ),
-                        //         //   interval: 10,
-                        //         //   edgeLabelPlacement: EdgeLabelPlacement.shift,
-                        //         //   majorGridLines: MajorGridLines(width: 1),
-                        //         // ),
-                        //         primaryXAxis: CategoryAxis(
-                        //           interval: 10,
-                        //         ),
-                        //         primaryYAxis: NumericAxis(
-                        //           edgeLabelPlacement: EdgeLabelPlacement.shift,
-                        //           name: "nohello",
-                        //           labelStyle: TextStyle(
-                        //             color: Color.fromARGB(
-                        //                 255, 0, 0, 0), // Black color
-                        //             fontWeight: FontWeight.bold, // Bold text
-                        //           ),
-                        //           interval: 20,
-                        //           minimum: 0,
-                        //           maximum: 100,
-                        //         ),
-                        //         legend: Legend(isVisible: true),
-
-                        //         series: _getSplineSeries(list),
-                        //       );
-                        // })
-                        // : Center(
-                        //     child: CircularProgressIndicator(),
-                        //   )
                         : Dashboard(),
                   ),
                 ),
               ),
               // Parameters on the right
-
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -2264,16 +2362,26 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
                         onTap: () => _navigateToDetailPage(5),
                         child: Container(
                           height: MediaQuery.of(context).size.height * 0.19,
-                          width: 120,
+                          width: 110,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: _getGradientColors(),
+                              colors: airColor,
                               stops: [0.5, 0.5], // Half black, half white
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
-                            borderRadius: BorderRadius.circular(
-                                14.0), // Adjust the radius if needed
+                            borderRadius: BorderRadius.circular(14.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withOpacity(0.3), // Shadow color
+                                spreadRadius:
+                                    1, // How much the shadow will spread
+                                blurRadius: 6, // The blur effect of the shadow
+                                offset: Offset(
+                                    0, 3), // Offset: (horizontal, vertical)
+                              ),
+                            ], // Adjust the radius if needed
                           ),
                           child: Stack(
                             children: [
@@ -2404,6 +2512,21 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
                                                           FontWeight.bold,
                                                     ),
                                                   ),
+                                              // if (data < 10 && data < 3)
+                                              //   if (data != -333)
+                                              //     Text(
+                                              //       value[0],
+                                              //       style: TextStyle(
+                                              //         color: Color.fromARGB(
+                                              //             255,
+                                              //             0,
+                                              //             0,
+                                              //             0), // On black background
+                                              //         fontSize: 32,
+                                              //         fontWeight:
+                                              //             FontWeight.bold,
+                                              //       ),
+                                              //     ),
                                               if (data < 10 && data > 3)
                                                 Text(
                                                   '0',
@@ -3310,136 +3433,6 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
             ],
           ),
         ),
-        // Align(
-        //   child: ValueListenableBuilder<String?>(
-        //     valueListenable: errorNotifier,
-        //     builder: (context, errorMessage, child) {
-        //       if (errorMessage != "SYSTEM IS RUNNING OK") {
-        //         // Play beep sound if not muted
-        //         if (!isMuted.value) {
-        //           audioPlayer.play(AssetSource('assets/beep.mp3'));
-        //         } else {
-        //           audioPlayer.stop();
-        //         }
-        //       } else {
-        //         // Stop beep sound if no error
-        //         audioPlayer.stop();
-        //       }
-
-        //       return Container(
-        //         height: 30,
-        //         color: errorMessage != null
-        //             ? Colors.red
-        //             : Colors.green, // Background color of the bar
-        //         padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        //         child: Row(
-        //           mainAxisAlignment: MainAxisAlignment.start,
-        //           children: [
-        //             if (errorMessage != "SYSTEM IS RUNNING OK")
-        //               ValueListenableBuilder<bool>(
-        //                 valueListenable: isMuted,
-        //                 builder: (context, muted, child) {
-        //                   return IconButton(
-        //                     icon: Icon(
-        //                       muted ? Icons.volume_off : Icons.volume_up,
-        //                       color: Colors.black,
-        //                     ),
-        //                     onPressed: () {
-        //                       isMuted.value = !isMuted.value;
-        //                       if (isMuted.value) {
-        //                         audioPlayer.stop();
-        //                       } else if (errorMessage !=
-        //                           "SYSTEM IS RUNNING OK") {
-        //                         audioPlayer.play(
-        //                           AssetSource('assets/beep.mp3'),
-        //                         );
-        //                       }
-        //                     },
-        //                   );
-        //                 },
-        //               ),
-        //             Spacer(flex: 10),
-        //             Text(
-        //               errorMessage ?? "SYSTEM IS RUNNING OK",
-        //               style: TextStyle(
-        //                 fontSize: 15,
-        //                 fontWeight: FontWeight.bold,
-        //                 color: Colors.black,
-        //               ),
-        //             ),
-        //             Spacer(flex: 10),
-        //             ElevatedButton(
-        //               style: ElevatedButton.styleFrom(
-        //                 padding: EdgeInsets.symmetric(horizontal: 12.0),
-        //                 shape: RoundedRectangleBorder(
-        //                   side: BorderSide(
-        //                       style: BorderStyle.solid, color: Colors.black87),
-        //                   borderRadius:
-        //                       BorderRadius.circular(5), // Square corners
-        //                 ),
-        //                 minimumSize: Size(
-        //                     100, 25), // Set minimum size to maintain height
-        //                 backgroundColor: Color.fromARGB(255, 192, 191, 191),
-        //               ),
-        //               onPressed: () async {
-        //                 _navigateToDetailPage(9);
-        //               },
-        //               child: const Text(
-        //                 'Settings',
-        //                 style: TextStyle(
-        //                   fontSize: 15,
-        //                   color: Color.fromARGB(255, 0, 0, 0),
-        //                   shadows: [
-        //                     Shadow(
-        //                       blurRadius: 4,
-        //                       color: Colors.grey,
-        //                       offset: Offset(2, 1.5),
-        //                     ),
-        //                   ],
-        //                 ),
-        //               ),
-        //             ),
-        //             SizedBox(width: 20), // Add spacing between the buttons
-        //             ElevatedButton(
-        //               style: ElevatedButton.styleFrom(
-        //                 padding: EdgeInsets.symmetric(horizontal: 12.0),
-        //                 shape: RoundedRectangleBorder(
-        //                   side: BorderSide(
-        //                       style: BorderStyle.solid, color: Colors.black87),
-        //                   borderRadius:
-        //                       BorderRadius.circular(5), // Square corners
-        //                 ),
-        //                 minimumSize: Size(
-        //                     100, 25), // Set minimum size to maintain height
-        //                 backgroundColor: Color.fromARGB(255, 192, 191, 191),
-        //               ),
-        //               onPressed: () async {
-        //                 _navigateToDetailPage(8);
-        //               },
-        //               child: const Text(
-        //                 'Report',
-        //                 style: TextStyle(
-        //                   fontSize: 15,
-        //                   color: Color.fromARGB(255, 0, 0, 0),
-        //                   shadows: [
-        //                     Shadow(
-        //                       blurRadius: 4,
-        //                       color: Colors.grey,
-        //                       offset: Offset(2, 1.5),
-        //                     ),
-        //                   ],
-        //                 ),
-        //               ),
-        //             ),
-        //             SizedBox(
-        //               width: 5,
-        //             )
-        //           ],
-        //         ),
-        //       );
-        //     },
-        //   ),
-        // ),
         Expanded(
           flex: 1,
           child: Align(
@@ -3448,20 +3441,35 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
               builder: (context, errorMessage, child) {
                 if (errorMessage != "SYSTEM IS RUNNING OK") {
                   // Play beep sound if not muted
-                  if (!isMuted1) {
+                  if (!isMuted1 && errorMessage != null) {
+                    print("Heloooooooooooooooooooo");
+                    // if (errorMessage == null) {
+                    //   print("Heloooooooooooooooooooo");
+                    //   print("Error Message:${errorMessage}");
+                    //   print("helooooooooooooooo inside the else if");
+                    //   stopBackgroundMusic();
+                    // }
                     playBackgroundMusic();
-                  } else {
-                    stopBackgroundMusic();
                   }
+                  // else if (errors.isNotEmpty) {
+                  //   print("Error Message:${errorMessage}");
+                  //   print("helooooooooooooooo inside the else if");
+                  //   stopBackgroundMusic();
+                  // }
                 } else {
                   // Stop beep sound if no error
                   stopBackgroundMusic();
                 }
-
                 return Container(
                   // height: 30,
                   color: errorMessage != null
-                      ? Colors.red
+                      ? (errorMessage.contains("High")
+                          ? Colors.red
+                          : (errorMessage.contains("low")
+                              ? Color.fromRGBO(255, 158, 0, 50)
+                              : (errorMessage.contains("Available")
+                                  ? Colors.yellow
+                                  : Colors.green)))
                       : Colors.green, // Background color of the bar
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: Row(
@@ -3516,48 +3524,6 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
                         ),
                       ),
                       Spacer(flex: 10),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 12.0),
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              style: BorderStyle.solid,
-                              color: Colors.black87,
-                            ),
-                            borderRadius:
-                                BorderRadius.circular(5), // Square corners
-                          ),
-                          minimumSize: Size(
-                              100, 25), // Set minimum size to maintain height
-                          backgroundColor:
-                              const Color.fromARGB(255, 192, 191, 191),
-                        ),
-                        onPressed: () async {
-                          _navigateToDetailPage(9);
-                        },
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.settings,
-                              color: Colors.black,
-                            ),
-                            Text(
-                              'Settings',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 4,
-                                    color: Colors.grey,
-                                    offset: Offset(2, 1.5),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                       SizedBox(width: 10),
                       if (_showButton ==
                           true) // Add spacing between the buttons
@@ -3654,123 +3620,6 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
             ),
           ),
         ),
-        //   child: LiveDataBuilder<String>(
-        //     liveData: errorNotifier,
-        //     //stream: _streamDataerror.stream,
-        //     builder: (BuildContext context, String message) {
-        //       return Text(message);
-        //       // if (snapshot.hasData) {
-        //       //   print("->>>>>>>>>${snapshot.data}");
-        //       //   print(_currentIndex);
-        //       //   if (!_message.contains(snapshot.data.toString())) {
-        //       //     _message.add(snapshot.data.toString());
-        //       //     print("efbvfwergf----$_message");
-        //       //   }
-
-        //       //   message = _message.isNotEmpty
-        //       //       ? _message[_currentIndex]
-        //       //       : "SYSTEM IS RUNNING OK";
-        //       //   // if (message != "SYSTEM IS RUNNING OK") {
-        //       //   //   _startBeep(context);
-        //       //   // } else {
-        //       //   //   _stopBeep();
-        //       //   // }
-        //       //   return Container(
-        //       //     height: 30,
-        //       //     color: _currentString == 'SYSTEM IS RUNNING OK'
-        //       //         ? Colors.grey[200]
-        //       //         : Colors.red, // Background color of the bar
-        //       //     padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        //       //     child: Row(
-        //       //       mainAxisAlignment: MainAxisAlignment.start,
-        //       //       children: [
-        //       //         Spacer(flex: 20),
-        //       //         Text(
-        //       //           _currentString,
-        //       //           style: TextStyle(
-        //       //             fontSize: 15,
-        //       //             fontWeight: FontWeight.bold,
-        //       //             color: Colors.black,
-        //       //           ),
-        //       //         ),
-        //       //         Spacer(flex: 10),
-        //       //         ElevatedButton(
-        //       //           style: ElevatedButton.styleFrom(
-        //       //             padding: EdgeInsets.symmetric(horizontal: 12.0),
-        //       //             shape: RoundedRectangleBorder(
-        //       //               side: BorderSide(
-        //       //                   style: BorderStyle.solid,
-        //       //                   color: Colors.black87),
-        //       //               borderRadius:
-        //       //                   BorderRadius.circular(5), // Square corners
-        //       //             ),
-        //       //             minimumSize: Size(
-        //       //                 100, 25), // Set minimum size to maintain height
-        //       //             backgroundColor: Color.fromARGB(255, 192, 191, 191),
-        //       //           ),
-        //       //           onPressed: () async {
-        //       //             _navigateToDetailPage(9);
-        //       //           },
-        //       //           child: const Text(
-        //       //             'Settings',
-        //       //             style: TextStyle(
-        //       //               fontSize: 15,
-        //       //               color: Color.fromARGB(255, 0, 0, 0),
-        //       //               shadows: [
-        //       //                 Shadow(
-        //       //                   blurRadius: 4,
-        //       //                   color: Colors.grey,
-        //       //                   offset: Offset(2, 1.5),
-        //       //                 ),
-        //       //               ],
-        //       //             ),
-        //       //           ),
-        //       //         ),
-        //       //         SizedBox(width: 20), // Add spacing between the buttons
-        //       //         ElevatedButton(
-        //       //           style: ElevatedButton.styleFrom(
-        //       //             padding: EdgeInsets.symmetric(horizontal: 12.0),
-        //       //             shape: RoundedRectangleBorder(
-        //       //               side: BorderSide(
-        //       //                   style: BorderStyle.solid,
-        //       //                   color: Colors.black87),
-        //       //               borderRadius:
-        //       //                   BorderRadius.circular(5), // Square corners
-        //       //             ),
-        //       //             minimumSize: Size(
-        //       //                 100, 25), // Set minimum size to maintain height
-        //       //             backgroundColor: Color.fromARGB(255, 192, 191, 191),
-        //       //           ),
-        //       //           onPressed: () async {
-        //       //             _navigateToDetailPage(8);
-        //       //           },
-        //       //           child: const Text(
-        //       //             'Report',
-        //       //             style: TextStyle(
-        //       //               fontSize: 15,
-        //       //               color: Color.fromARGB(255, 0, 0, 0),
-        //       //               shadows: [
-        //       //                 Shadow(
-        //       //                   blurRadius: 4,
-        //       //                   color: Colors.grey,
-        //       //                   offset: Offset(2, 1.5),
-        //       //                 ),
-        //       //               ],
-        //       //             ),
-        //       //           ),
-        //       //         ),
-        //       //         SizedBox(
-        //       //           width: 5,
-        //       //         )
-        //       //       ],
-        //       //     ),
-        //       //   );
-        //       // } else {
-        //       //   return Text("SYSTEM IS RUNNING OK");
-        //       // }
-        //     },
-        //   ),
-        // ),
       ]),
     );
   }
@@ -3863,7 +3712,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     _errorTimer = Timer.periodic(Duration(seconds: 5), (timer) {
       if (errors.isEmpty) {
         print("No errors left to display.");
-        errorNotifier.value = "All systems normal";
+        errorNotifier.value = "SYSTEM IS RUNNING OK";
         timer.cancel();
       } else {
         print("Displaying error: ${errors[_currentErrorIndex]}");

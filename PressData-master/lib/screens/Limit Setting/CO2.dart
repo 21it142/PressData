@@ -24,7 +24,7 @@ class _CO2State extends State<CO2> {
   late int min = widget.minco2;
   final LimitSetting _dataService = LimitSetting();
   List<dynamic> _postJson = [];
- // bool _isLoading = false;
+  // bool _isLoading = false;
   late Timer _timer;
 
   @override
@@ -68,7 +68,7 @@ class _CO2State extends State<CO2> {
   // }
 
   void updateMaxLimit(double value) async {
-   // final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // final SharedPreferences prefs = await SharedPreferences.getInstance();
     final newValue = (value.clamp(min.toDouble() + 1, 75.0)).toInt();
     setState(() {
       max = newValue;
@@ -125,22 +125,48 @@ class _CO2State extends State<CO2> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-          iconSize: 50,
+          iconSize: 25,
           onPressed: () {
             Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back_outlined),
         ),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "CO₂ Alaram Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "PSI",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'CO2 ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(PSI)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -153,6 +179,7 @@ class _CO2State extends State<CO2> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(

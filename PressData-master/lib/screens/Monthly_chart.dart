@@ -1,7 +1,7 @@
 // import 'dart:math';
 import 'dart:async';
 import 'dart:io';
-
+import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -15,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:open_file/open_file.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:pressdata/data/db.dart';
 
@@ -132,6 +133,17 @@ class _LineChartScreenState extends State<LineChartScreen> {
     return nextMonth.subtract(const Duration(seconds: 1));
   }
 
+  Future<bool> _requestStoragePermission() async {
+    PermissionStatus status = await Permission.storage.status;
+
+    if (status.isDenied || status.isPermanentlyDenied) {
+      status = await Permission.storage.request();
+    }
+
+    return status.isGranted;
+  }
+
+  final dateFormatter = DateFormat('dd-MM-yyyy HH:mm:ss');
   void generatePDF_Monthly() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final logoBytes = await rootBundle.load('assets/Wavevison-Logo.png');
@@ -192,8 +204,37 @@ class _LineChartScreenState extends State<LineChartScreen> {
               mainAxisAlignment: pw.MainAxisAlignment.center,
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text('PressData® Report - $selectedGasesHeader',
-                    style: titleStyle),
+                pw.RichText(
+                  text: pw.TextSpan(
+                    text: 'Press', // Text before "Data"
+                    style: titleStyle, // Your predefined title style
+                    children: [
+                      pw.TextSpan(
+                        text: 'Data', // Main text with the registered symbol
+                        style: titleStyle,
+                        children: [
+                          pw.WidgetSpan(
+                            child: pw.Transform(
+                              transform: Matrix4.translationValues(2, 4,
+                                  0), // Correctly position the symbol above "Data"
+                              child: pw.Text(
+                                '®',
+                                style: titleStyle.copyWith(
+                                    fontSize:
+                                        10), // Adjust font size for the trademark symbol
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.TextSpan(
+                        text:
+                            ' Report - $selectedGasesHeader', // Continuation of the text after "Data"
+                        style: titleStyle,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             pw.SizedBox(height: 4),
@@ -279,8 +320,9 @@ class _LineChartScreenState extends State<LineChartScreen> {
                         maxPressure[index].toString(),
                         minPressure[index].toString(),
                         avgPressure[index].toString(),
-                        maxPressureTime[index].toIso8601String(),
-                        minPressureTime[index].toIso8601String(),
+                        dateFormatter.format(
+                            maxPressureTime[index]), // Formatted max time
+                        dateFormatter.format(minPressureTime[index]),
                       ];
                     }),
                     cellStyle: regularStyle,
@@ -321,6 +363,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
                 pw.Table.fromTextArray(
                   headers: [
                     'Parameters',
+                    'Value',
                     'Max Value',
                     'Min Value',
                     'Log',
@@ -330,10 +373,11 @@ class _LineChartScreenState extends State<LineChartScreen> {
                     int i = start + index;
                     return [
                       parameters_log[i],
+                      values_fetched[i].toString(),
                       maxvalue[i].toString(),
                       minvalue[i].toString(),
                       logs[i].toString(),
-                      time[i].toIso8601String(),
+                      dateFormatter.format(time[index]),
                     ];
                   }),
                   cellStyle: regularStyle,
@@ -392,38 +436,114 @@ class _LineChartScreenState extends State<LineChartScreen> {
       ),
     );
 
-    final documentsDirStore =
-        Directory('/storage/emulated/0/Download/PressData/Monthly');
-    final documentsDir = await getExternalStorageDirectory();
-    if (!documentsDirStore.existsSync()) {
-      documentsDirStore.createSync(recursive: true);
-    }
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
 
-    String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final pdfpath = '/ReportMonthly${widget.serial}_$timestamp.pdf';
-    final filePath = '${documentsDir!.path}${pdfpath}';
-    final filepathStore = '${documentsDirStore.path}${pdfpath}';
-    final file = File(filePath);
-    final filestore = File(filepathStore);
-    final pdfBytes = await pdf.save();
-    print("PDF Bytes: $pdfBytes");
-    await filestore.writeAsBytes(pdfBytes);
-    await file.writeAsBytes(pdfBytes);
-    print("File saved to: $filePath");
+    int sdkVersion = androidInfo.version.sdkInt;
+    String versionRelease = androidInfo.version.release;
 
-    if (await file.exists()) {
-      print("File exists, attempting to open...");
-      final result = await OpenFile.open(filePath);
-      print("File open result: ${result.message}");
+    print('Android SDK: $sdkVersion');
+    print('Android Version: $versionRelease');
+    print("Sdk version:$sdkVersion");
+    if (sdkVersion <= 29) {
+      if (await _requestStoragePermission()) {
+        // Android 10 or below - permission granted, generate and save report
+        final directory = Directory('/storage/emulated/0/Download');
+        if (!directory.existsSync()) {
+          directory.createSync(recursive: true);
+        }
+
+        String timestamp =
+            DateTime.now().toString().replaceAll(RegExp(r'[:.]'), '_');
+        final filePath = '${directory.path}/ReportMonthly_${timestamp}.pdf';
+        final file = File(filePath);
+
+        final pdfBytes =
+            await pdf.save(); // Assuming you have the pdf data ready
+        await file.writeAsBytes(pdfBytes);
+
+        OpenFile.open(filePath);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('PDF saved to Downloads: $filePath')),
+        );
+      }
+    } else if (sdkVersion > 29) {
+      // Android 11 and above
+      final documentsDirstore =
+          Directory('/storage/emulated/0/Download/PressData/Daily');
+      final documentsDir =
+          await getExternalStorageDirectory(); // Get external storage directory
+      if (!documentsDirstore.existsSync()) {
+        documentsDirstore.createSync(
+            recursive: true); // Create directory if it doesn't exist
+      }
+
+      String timestamp = DateFormat('yyyyMMdd_HHmmss')
+          .format(DateTime.now()); // Format timestamp
+      final pdfpath = '/ReportMonthly_$timestamp.pdf';
+      final filePath = '${documentsDir?.path}$pdfpath';
+      final filepathStore = '${documentsDirstore.path}$pdfpath';
+
+      final file =
+          File(filePath); // Create file for the external storage directory
+      final filestore =
+          File(filepathStore); // Create file for the 'PressData' directory
+
+      final pdfBytes = await pdf.save(); // Save PDF bytes
+      await file.writeAsBytes(pdfBytes); // Write to external storage directory
+      await filestore.writeAsBytes(pdfBytes); // Write to 'PressData' directory
+
+      OpenFile.open(filePath); // Open the file
+
+      _clearSelectedData(); // Clear any selected data after saving
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF saved to $filePath')),
+      );
     } else {
-      print("File does not exist at path: $filePath");
+      // Permission denied - generate report but not save it
+      final pdfBytes = await pdf.save();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Permission denied. Report generated but not saved.')),
+      );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF saved to $filePath')),
-    );
+    // final documentsDirStore =
+    //     Directory('/storage/emulated/0/Download/PressData/Monthly');
+    // final documentsDir = await getExternalStorageDirectory();
+    // if (!documentsDirStore.existsSync()) {
+    //   documentsDirStore.createSync(recursive: true);
+    // }
 
-    _clearSelectedData();
+    // String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    // final pdfpath = '/ReportMonthly${widget.serial}_$timestamp.pdf';
+    // final filePath = '${documentsDir!.path}${pdfpath}';
+    // final filepathStore = '${documentsDirStore.path}${pdfpath}';
+    // final file = File(filePath);
+    // final filestore = File(filepathStore);
+    // final pdfBytes = await pdf.save();
+    // print("PDF Bytes: $pdfBytes");
+    // await filestore.writeAsBytes(pdfBytes);
+    // await file.writeAsBytes(pdfBytes);
+    // print("File saved to: $filePath");
+
+    // if (await file.exists()) {
+    //   print("File exists, attempting to open...");
+    //   final result = await OpenFile.open(filePath);
+    //   print("File open result: ${result.message}");
+    // } else {
+    //   print("File does not exist at path: $filePath");
+    // }
+
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('PDF saved to $filePath')),
+    // );
+
+    // _clearSelectedData();
   }
 
   DateTime start_date = DateTime.now();
@@ -447,8 +567,12 @@ class _LineChartScreenState extends State<LineChartScreen> {
   List<int> minvalue = [];
   List<DateTime> time = [];
   List<int> maxvalue = [];
+  List<int> values_fetched = [];
   List<String> logs = [];
   List<String> parameters_log = [];
+  int androidVersion = 0;
+  int sdkVersion = 0;
+  String versionRelease = "";
   void _convertMonthToDateTime() {
     try {
       DateFormat dateFormat = DateFormat('MMMM yyyy');
@@ -652,6 +776,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       time = stat.time;
 
@@ -751,6 +876,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       time = stat.time;
       // calculatePressureStats(data, widget.selectedValues);

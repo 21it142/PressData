@@ -1,4 +1,4 @@
-package aim.inmed.pressdata
+package wave.aim.pressdata
 
 import android.Manifest
 import android.content.ContentValues
@@ -20,7 +20,7 @@ import java.io.OutputStream
 
 class MainActivity : FlutterActivity() {
 
-    private val CHANNEL = "aim.inmed.pressdata/native"
+    private val CHANNEL = "wave.aim.pressdata/native"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

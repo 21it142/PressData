@@ -45,25 +45,6 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:335915757727:android:e2270e2608ce123cc2b2aa",
-        "android_client_info": {
-          "package_name": "aim.inmed.pr"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCIhsUoAS5-csykwWMBhYkbVnF8G-lkoUM"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:335915757727:android:fc560c4f123f1a9bc2b2aa",
         "android_client_info": {
           "package_name": "aim.inmed.pressdata"
@@ -86,6 +67,25 @@
         "mobilesdk_app_id": "1:335915757727:android:ac72060549aa9700c2b2aa",
         "android_client_info": {
           "package_name": "com.hexawave.otlight"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIhsUoAS5-csykwWMBhYkbVnF8G-lkoUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335915757727:android:85d7ab187e9531b5c2b2aa",
+        "android_client_info": {
+          "package_name": "wave.aim.pressdata"
         }
       },
       "oauth_client": [],

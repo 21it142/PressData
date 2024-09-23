@@ -190,205 +190,281 @@ class _DashboardState extends State<Dashboard>
     });
   }
 
+  Future<bool> _onWillPop() async {
+    // Show the dialog box to confirm exit
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: Row(
+              children: [
+                Icon(Icons.exit_to_app), // Exit icon
+                SizedBox(width: 8),
+                Text('Confirm Exit'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/exit.jpg', // Replace with your image URL
+                  height: 100,
+                  width: 100,
+                ),
+                SizedBox(height: 16),
+                Text('Do you want to leave the app?'),
+              ],
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(false), // Stay on the app
+                    child: Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Exit the app
+                      SystemChannels.platform
+                          .invokeMethod<void>('SystemNavigator.pop');
+                    },
+                    child: Text('Yes'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ) ??
+        false; // If the dialog is dismissed, stay on the app
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Text(
-              deviceNo,
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15),
-            ),
-            Center(
-              child: RichText(
-                text: const TextSpan(
-                  text: 'Press',
-                  style: TextStyle(
-                    color: Color.fromRGBO(0, 25, 152, 1),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          // automaticallyImplyLeading: true,
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(
+                deviceNo,
+                style: TextStyle(
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Data\u00AE ', // Adding the trademark symbol here
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Medical Gas Alarm + Analyser ',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
+                    fontSize: 15),
               ),
-            ),
-            Text(
-              date,
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold),
-            )
-          ],
-        ),
-        toolbarHeight: 30,
-        backgroundColor: Color.fromRGBO(228, 100, 128, 100),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : checker
-              ? Stack(
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _lineChartWid,
-                  ],
-                )
-              : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: _animation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _animation.value,
-                            child: Icon(
-                              Icons.wifi_off,
-                              size: 100,
-                            ),
-                          );
-                        },
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Device is not connected",
-                        style: TextStyle(fontSize: 30),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    RichText(
+                      text: const TextSpan(
+                        text: 'Press',
+                        style: TextStyle(
+                          color: Color.fromRGBO(0, 25, 152, 1),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
                         children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  style: BorderStyle.solid,
-                                  color: Colors.black87,
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(5), // Square corners
-                              ),
-                              minimumSize: Size(190,
-                                  50), // Set minimum size to maintain height
-                              backgroundColor:
-                                  Color.fromRGBO(228, 100, 128, 100),
-                            ),
-                            onPressed: () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const DemoWid()),
-                              );
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.play_circle_filled,
-                                    size: 30,
-                                    color: Color.fromARGB(255, 0, 0, 0)),
-                                // Replace with the desired icon
-                                SizedBox(
-                                    width:
-                                        8), // Add some space between the icon and the text
-                                const Text(
-                                  'Demo Mode',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 4,
-                                        color: Colors.grey,
-                                        offset: Offset(2, 1.5),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  style: BorderStyle.solid,
-                                  color: Colors.black87,
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(5), // Square corners
-                              ),
-                              minimumSize: Size(190,
-                                  50), // Set minimum size to maintain height
-                              backgroundColor:
-                                  Color.fromRGBO(228, 100, 128, 100),
-                            ),
-                            onPressed: () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ReportScreenPast()),
-                              );
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.insert_chart,
-                                    size: 30,
-                                    color: Color.fromARGB(255, 0, 0,
-                                        0)), // Choose an appropriate icon
-                                SizedBox(
-                                    width:
-                                        5), // Add some space between the icon and the text
-                                const Text(
-                                  'Reports',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 4,
-                                        color: Colors.grey,
-                                        offset: Offset(2, 1.5),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          TextSpan(
+                            text: 'Data', // Adding the trademark symbol here
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      '®', // Registered trademark symbol
+                      style: TextStyle(
+                        color: Colors.red, // Red color
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          height: 2,
+                        ),
+                        Text(
+                          ' Medical Gas Alarm + Analyser ',
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+              Text(
+                date,
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold),
+              )
+            ],
+          ),
+          toolbarHeight: 30,
+          backgroundColor: Color.fromRGBO(228, 100, 128, 100),
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : checker
+                ? Stack(
+                    children: [
+                      _lineChartWid,
+                    ],
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _animation,
+                          builder: (context, child) {
+                            return Transform.scale(
+                              scale: _animation.value,
+                              child: Icon(
+                                Icons.wifi_off,
+                                size: 100,
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Device is not connected",
+                          style: TextStyle(fontSize: 30),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(
+                                    style: BorderStyle.solid,
+                                    color: Colors.black87,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                      5), // Square corners
+                                ),
+                                minimumSize: Size(190,
+                                    50), // Set minimum size to maintain height
+                                backgroundColor:
+                                    Color.fromRGBO(228, 100, 128, 100),
+                              ),
+                              onPressed: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const DemoWid()),
+                                );
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.play_circle_filled,
+                                      size: 30,
+                                      color: Color.fromARGB(255, 0, 0, 0)),
+                                  // Replace with the desired icon
+                                  SizedBox(
+                                      width:
+                                          8), // Add some space between the icon and the text
+                                  const Text(
+                                    'Demo Mode',
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 4,
+                                          color: Colors.grey,
+                                          offset: Offset(2, 1.5),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(
+                                    style: BorderStyle.solid,
+                                    color: Colors.black87,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                      5), // Square corners
+                                ),
+                                minimumSize: Size(190,
+                                    50), // Set minimum size to maintain height
+                                backgroundColor:
+                                    Color.fromRGBO(228, 100, 128, 100),
+                              ),
+                              onPressed: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ReportScreenPast()),
+                                );
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.insert_chart,
+                                      size: 30,
+                                      color: Color.fromARGB(255, 0, 0,
+                                          0)), // Choose an appropriate icon
+                                  SizedBox(
+                                      width:
+                                          5), // Add some space between the icon and the text
+                                  const Text(
+                                    'Reports',
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 4,
+                                          color: Colors.grey,
+                                          offset: Offset(2, 1.5),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+      ),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 //import 'package:pressdata/screens/main_page.dart';
-import 'package:pressdata/widgets/demo.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AIRD extends StatefulWidget {
@@ -28,8 +28,8 @@ class _CO2State extends State<AIRD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('AIR_maxLimit') ?? 50;
-      minLimit = prefs.getInt('AIR_minLimit') ?? 0;
+      maxLimit = prefs.getInt('AIR_maxLimit') ?? 60;
+      minLimit = prefs.getInt('AIR_minLimit') ?? 40;
     });
   }
 
@@ -37,15 +37,12 @@ class _CO2State extends State<AIRD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(minLimit.toDouble() + 1, 75.0)).toInt();
-      prefs.setInt('AIR_maxLimit', maxLimit);
     });
   }
 
   void updateMinLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(30, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('AIR_minLimit', minLimit);
     });
   }
 
@@ -85,21 +82,47 @@ class _CO2State extends State<AIRD> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            iconSize: 50,
+            iconSize: 25,
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "AIR Limit Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "PSI",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'AIR ',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(PSI)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -112,6 +135,7 @@ class _CO2State extends State<AIRD> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(
@@ -212,8 +236,16 @@ class _CO2State extends State<AIRD> {
                 height: 70,
                 width: 100,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setInt('AIR_maxLimit', maxLimit);
+                    prefs.setInt('AIR_minLimit', minLimit);
+                    List<int> myList = List.filled(2, 0);
+                    myList[0] = maxLimit;
+                    myList[1] = minLimit;
+                    print("${myList[0]}, ${myList[1]}");
+                    Navigator.pop(context, myList);
                   },
                   child: Text(
                     "OK",

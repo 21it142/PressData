@@ -29,8 +29,8 @@ class _TEMPState extends State<TEMPD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      maxLimit = prefs.getInt('TEMP_maxLimit') ?? 70;
-      minLimit = prefs.getInt('TEMP_minLimit') ?? 0;
+      maxLimit = prefs.getInt('TEMP_maxLimit') ?? 40;
+      minLimit = prefs.getInt('TEMP_minLimit') ?? 20;
     });
   }
 
@@ -57,10 +57,8 @@ class _TEMPState extends State<TEMPD> {
   }
 
   void updateMaxLimit(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       maxLimit = (value.clamp(minLimit.toDouble() + 1, 50.0)).toInt();
-      prefs.setInt('TEMP_maxLimit', maxLimit);
     });
   }
 
@@ -68,7 +66,6 @@ class _TEMPState extends State<TEMPD> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       minLimit = (value.clamp(10.0, maxLimit.toDouble() - 1.0)).toInt();
-      prefs.setInt('TEMP_minLimit', minLimit);
     });
   }
 
@@ -84,21 +81,47 @@ class _TEMPState extends State<TEMPD> {
       backgroundColor: Color.fromRGBO(134, 248, 255, 1),
       appBar: AppBar(
         leading: IconButton(
-            iconSize: 50,
+            iconSize: 25,
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_outlined)),
         title: Center(
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "TEMP Limit Settings",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "°C",
-                style: TextStyle(fontSize: 15),
+              Text.rich(
+                TextSpan(
+                  text: 'TEMP',
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ), // Normal text style
+                  children: [
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: const Offset(
+                            0, 5), // Move text down to simulate subscript
+                        child: Text(
+                          '(°C)',
+                          style: TextStyle(
+                            fontSize:
+                                18, // Slightly smaller font to mimic subscript
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text: ' Alarm Settings',
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ],
+                ),
               )
             ],
           ),
@@ -111,6 +134,7 @@ class _TEMPState extends State<TEMPD> {
             height: 4.0, // Height of the bottom border
           ),
         ),
+        toolbarHeight: 50,
       ),
       body: Center(
         child: Padding(
@@ -213,7 +237,12 @@ class _TEMPState extends State<TEMPD> {
                 height: 70,
                 width: 100,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setInt('TEMP_minLimit', minLimit);
+                    prefs.setInt('TEMP_maxLimit', maxLimit);
+
                     Navigator.pop(context);
                   },
                   child: Text(

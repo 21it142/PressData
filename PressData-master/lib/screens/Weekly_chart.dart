@@ -8,13 +8,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:ui' as ui;
-
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:open_file/open_file.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:pressdata/data/db.dart';
 
@@ -136,8 +137,18 @@ class _LineChartScreenState extends State<LineChartScreen> {
     );
   }
 
-  DateTimeRange? _selectedWeeklyDateRange;
+  Future<bool> _requestStoragePermission() async {
+    PermissionStatus status = await Permission.storage.status;
 
+    if (status.isDenied || status.isPermanentlyDenied) {
+      status = await Permission.storage.request();
+    }
+
+    return status.isGranted;
+  }
+
+  DateTimeRange? _selectedWeeklyDateRange;
+  final dateFormatter = DateFormat('dd-MM-yyyy HH:mm:ss');
   void generatePDF_weekly() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final logoBytes = await rootBundle.load('assets/Wavevison-Logo.png');
@@ -196,8 +207,37 @@ class _LineChartScreenState extends State<LineChartScreen> {
               mainAxisAlignment: pw.MainAxisAlignment.center,
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text('PressData® Weekly Report - $selectedGasesHeader',
-                    style: titleStyle),
+                pw.RichText(
+                  text: pw.TextSpan(
+                    text: 'Press', // Text before "Data"
+                    style: titleStyle, // Your predefined title style
+                    children: [
+                      pw.TextSpan(
+                        text: 'Data', // Main text with the registered symbol
+                        style: titleStyle,
+                        children: [
+                          pw.WidgetSpan(
+                            child: pw.Transform(
+                              transform: Matrix4.translationValues(2, 4,
+                                  0), // Correctly position the symbol above "Data"
+                              child: pw.Text(
+                                '®',
+                                style: titleStyle.copyWith(
+                                    fontSize:
+                                        10), // Adjust font size for the trademark symbol
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.TextSpan(
+                        text:
+                            ' Report - $selectedGasesHeader', // Continuation of the text after "Data"
+                        style: titleStyle,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             pw.SizedBox(height: 4),
@@ -283,8 +323,9 @@ class _LineChartScreenState extends State<LineChartScreen> {
                         maxPressure[index].toString(),
                         minPressure[index].toString(),
                         avgPressure[index].toString(),
-                        maxPressureTime[index].toIso8601String(),
-                        minPressureTime[index].toIso8601String(),
+                        dateFormatter.format(
+                            maxPressureTime[index]), // Formatted max time
+                        dateFormatter.format(minPressureTime[index]),
                       ];
                     }),
                     cellStyle: regularStyle,
@@ -325,6 +366,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
                 pw.Table.fromTextArray(
                   headers: [
                     'Parameters',
+                    'Value',
                     'Max Value',
                     'Min Value',
                     'Log',
@@ -334,10 +376,11 @@ class _LineChartScreenState extends State<LineChartScreen> {
                     int i = start + index;
                     return [
                       parameters_log[i],
+                      values_fetched[i].toString(),
                       maxvalue[i].toString(),
                       minvalue[i].toString(),
                       logs[i].toString(),
-                      time[i].toIso8601String(),
+                      dateFormatter.format(time[index]),
                     ];
                   }),
                   cellStyle: regularStyle,
@@ -396,38 +439,113 @@ class _LineChartScreenState extends State<LineChartScreen> {
       ),
     );
 
-    final documentsDirStore =
-        Directory('/storage/emulated/0/Download/PressData/Weekly');
-    final documentsDir = await getExternalStorageDirectory();
-    if (!documentsDirStore.existsSync()) {
-      documentsDirStore.createSync(recursive: true);
-    }
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
 
-    String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final pdfpath = '/ReportWeekly${widget.serial}_$timestamp.pdf';
-    final filePath = '${documentsDirStore.path}${pdfpath}';
-    final filepathStore = '${documentsDir!.path}${pdfpath}';
-    final file = File(filePath);
-    final filestore = File(filepathStore);
-    final pdfBytes = await pdf.save();
-    print("PDF Bytes: $pdfBytes");
-    await filestore.writeAsBytes(pdfBytes);
-    await file.writeAsBytes(pdfBytes);
-    print("File saved to: $filePath");
+    int sdkVersion = androidInfo.version.sdkInt;
+    String versionRelease = androidInfo.version.release;
 
-    if (await file.exists()) {
-      print("File exists, attempting to open...");
-      final result = await OpenFile.open(filepathStore);
-      print("File open result: ${result.message}");
+    print('Android SDK: $sdkVersion');
+    print('Android Version: $versionRelease');
+    print("Sdk version:$sdkVersion");
+    if (sdkVersion <= 29) {
+      if (await _requestStoragePermission()) {
+        // Android 10 or below - permission granted, generate and save report
+        final directory = Directory('/storage/emulated/0/Download');
+        if (!directory.existsSync()) {
+          directory.createSync(recursive: true);
+        }
+
+        String timestamp =
+            DateTime.now().toString().replaceAll(RegExp(r'[:.]'), '_');
+        final filePath = '${directory.path}/ReportWeekly_${timestamp}.pdf';
+        final file = File(filePath);
+
+        final pdfBytes =
+            await pdf.save(); // Assuming you have the pdf data ready
+        await file.writeAsBytes(pdfBytes);
+
+        OpenFile.open(filePath);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('PDF saved to Downloads: $filePath')),
+        );
+      }
+    } else if (sdkVersion > 29) {
+      // Android 11 and above
+      final documentsDirstore =
+          Directory('/storage/emulated/0/Download/PressData/Daily');
+      final documentsDir =
+          await getExternalStorageDirectory(); // Get external storage directory
+      if (!documentsDirstore.existsSync()) {
+        documentsDirstore.createSync(
+            recursive: true); // Create directory if it doesn't exist
+      }
+
+      String timestamp = DateFormat('yyyyMMdd_HHmmss')
+          .format(DateTime.now()); // Format timestamp
+      final pdfpath = '/ReportWeekly_$timestamp.pdf';
+      final filePath = '${documentsDir?.path}$pdfpath';
+      final filepathStore = '${documentsDirstore.path}$pdfpath';
+
+      final file =
+          File(filePath); // Create file for the external storage directory
+      final filestore =
+          File(filepathStore); // Create file for the 'PressData' directory
+
+      final pdfBytes = await pdf.save(); // Save PDF bytes
+      await file.writeAsBytes(pdfBytes); // Write to external storage directory
+      await filestore.writeAsBytes(pdfBytes); // Write to 'PressData' directory
+
+      OpenFile.open(filePath); // Open the file
+
+      _clearSelectedData(); // Clear any selected data after saving
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF saved to $filePath')),
+      );
     } else {
-      print("File does not exist at path: $filePath");
+      // Permission denied - generate report but not save it
+      final pdfBytes = await pdf.save();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Permission denied. Report generated but not saved.')),
+      );
     }
+    // final documentsDirStore =
+    //     Directory('/storage/emulated/0/Download/PressData/Weekly');
+    // final documentsDir = await getExternalStorageDirectory();
+    // if (!documentsDirStore.existsSync()) {
+    //   documentsDirStore.createSync(recursive: true);
+    // }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF saved to $filePath')),
-    );
+    // String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    // final pdfpath = '/ReportWeekly${widget.serial}_$timestamp.pdf';
+    // final filePath = '${documentsDirStore.path}${pdfpath}';
+    // final filepathStore = '${documentsDir!.path}${pdfpath}';
+    // final file = File(filePath);
+    // final filestore = File(filepathStore);
+    // final pdfBytes = await pdf.save();
+    // print("PDF Bytes: $pdfBytes");
+    // await filestore.writeAsBytes(pdfBytes);
+    // await file.writeAsBytes(pdfBytes);
+    // print("File saved to: $filePath");
 
-    _clearSelectedData();
+    // if (await file.exists()) {
+    //   print("File exists, attempting to open...");
+    //   final result = await OpenFile.open(filepathStore);
+    //   print("File open result: ${result.message}");
+    // } else {
+    //   print("File does not exist at path: $filePath");
+    // }
+
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('PDF saved to $filePath')),
+    // );
+
+    // _clearSelectedData();
   }
 
   String? selectedOption;
@@ -447,8 +565,12 @@ class _LineChartScreenState extends State<LineChartScreen> {
   List<int> minvalue = [];
   List<DateTime> time = [];
   List<int> maxvalue = [];
+  List<int> values_fetched = [];
   List<String> logs = [];
   List<String> parameters_log = [];
+  int androidVersion = 0;
+  int sdkVersion = 0;
+  String versionRelease = "";
 
   @override
   void initState() {
@@ -464,195 +586,6 @@ class _LineChartScreenState extends State<LineChartScreen> {
     fetchData(widget.stardate);
   }
 
-  // Future<void> fetchData(DateTime date) async {
-  //   List<PressDataTableData> datao2 =
-  //       await db!.getDataForDateRange(widget.stardate, widget.endDate);
-
-  //   print("Fetched Data: $datao2");
-  //   print("Data Length: ${datao2.length}");
-  //   if (widget.selectedValues.contains('O2(1)')) {
-  //     setState(() {
-  //       chartData = datao2
-  //           .map((d) => ChartData(d.recordedAt!, d.o2.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-  //       PressureStats stats =
-  //           calculatePressureStats(datao2, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('TEMP')) {
-  //     List<PressDataTableData> datatemp =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = datatemp
-  //           .map((d) => ChartData(d.recordedAt!, d.temperature.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(datatemp, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('HUMI')) {
-  //     List<PressDataTableData> datahumi =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = datahumi
-  //           .map((d) => ChartData(d.recordedAt!, d.humidity.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(datahumi, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('O2(2)')) {
-  //     List<PressDataTableData> datao22 =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = datao22
-  //           .map((d) => ChartData(d.recordedAt!, d.o22.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(datao22, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('N2O')) {
-  //     List<PressDataTableData> datan2o =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = datan2o
-  //           .map((d) => ChartData(d.recordedAt!, d.n2o.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(datan2o, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('AIR')) {
-  //     List<PressDataTableData> dataair =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = dataair
-  //           .map((d) => ChartData(d.recordedAt!, d.airPressure.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(dataair, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('CO2')) {
-  //     List<PressDataTableData> dataco2 =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = dataco2
-  //           .map((d) => ChartData(d.recordedAt!, d.co2.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(dataco2, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   } else if (widget.selectedValues.contains('VAC')) {
-  //     List<PressDataTableData> datavac =
-  //         await db!.getDataForDateRange(widget.stardate, widget.endDate);
-  //     setState(() {
-  //       chartData = datavac
-  //           .map((d) => ChartData(d.recordedAt!, d.vac.toDouble()))
-  //           .toList();
-  //       print("Chart Data: $chartData");
-  //       seriesList = generateSeries(chartData);
-
-  //       PressureStats stats =
-  //           calculatePressureStats(datavac, widget.selectedValues);
-  //       maxPressure = stats.maxPressure;
-  //       maxPressureTime = stats.maxPressureTime;
-  //       minPressure = stats.minPressure;
-  //       minPressureTime = stats.minPressureTime;
-  //       avgPressure = stats.avgPressure;
-  //       print("-..........$maxPressure");
-  //       print("-..........$maxPressureTime");
-  //       print("-..........$minPressure");
-  //       print("-..........$minPressureTime");
-  //       print("-..........$avgPressure");
-  //     });
-  //   }
-  // }
   bool isDataAvailable = true;
   Future<void> fetchData(DateTime date) async {
     List<PressDataTableData> data = await db!
@@ -806,6 +739,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       time = stat.time;
       // var pressurvalue = Prssurevalues(avgPressure, maxPressure,
@@ -904,6 +838,7 @@ class _LineChartScreenState extends State<LineChartScreen> {
       parameters_log = stat.parameter;
       maxvalue = stat.maxvalue;
       minvalue = stat.minvalue;
+      values_fetched = stat.values;
       logs = stat.log;
       time = stat.time;
       // calculatePressureStats(data, widget.selectedValues);
