@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pressdata/screens/splash_scree.dart';
 import 'package:keep_screen_on/keep_screen_on.dart';
+import 'package:pressdata/widgets/raw_data.dart';
 
+bool state = false;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   KeepScreenOn.turnOn();
@@ -29,7 +31,6 @@ class MyApp extends StatelessWidget {
     // });
 
     return MaterialApp(
-      
         debugShowCheckedModeBanner: false,
         navigatorObservers: [_routeObserver],
         home: SplashScreen());

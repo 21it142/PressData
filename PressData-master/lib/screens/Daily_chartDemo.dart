@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+import 'package:pressdata/data/datapoint.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -50,11 +52,24 @@ class DailyChartGenearator extends StatefulWidget {
 }
 
 class _DailyChartScreenState extends State<DailyChartGenearator> {
+  List<DataPoint> datachart = [];
   DateTime? selectedDate;
   final GlobalKey chartKey = GlobalKey();
   bool _isLoading = false;
   late final Uint8List pngBytes;
   TextEditingController _remarkController = TextEditingController();
+
+  Future<void> loadData() async {
+    try {
+      final String response = await rootBundle.loadString('assets/data.json');
+      final List<dynamic> data = json.decode(response)['Sheet1'];
+      datachart = data.map((item) => DataPoint.fromJson(item)).toList();
+      setState(() {});
+    } catch (e) {
+      print('Error loading data: $e');
+    }
+  }
+
   void _showRemarkDialog() {
     showDialog(
       context: context,
@@ -381,19 +396,26 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
     DateTime.now(),
   ];
   List<int> avgPressure = [23, 45, 56, 67, 78, 89, 23, 14];
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final data = generateDailyRandomData();
-    final datao21 = generateDailyConstantData(10);
-    final datatemp = generateDailyConstantData(60);
-    final datahumi = generateDailyConstantData(70);
-    final datao22 = generateDailyConstantData(50);
-    final dataco2 = generateDailyConstantData(40);
-    final datavac = generateDailyConstantData(30);
-    final datan2o = generateDailyConstantData(20);
-    final dataair = generateDailyConstantData(80);
-    final minData = generateDailyConstantData(47);
-    final maxData = generateDailyConstantData(60);
+    // final data = generateDailyRandomData();
+    // final datao21 = generateDailyConstantData(10);
+    // final datatemp = generateDailyConstantData(60);
+    // final datahumi = generateDailyConstantData(70);
+    // final datao22 = generateDailyConstantData(50);
+    // final dataco2 = generateDailyConstantData(40);
+    // final datavac = generateDailyConstantData(30);
+    // final datan2o = generateDailyConstantData(20);
+    // final dataair = generateDailyConstantData(80);
+    List<ChartData> minData = generateDailyConstantData(40);
+    List<ChartData> maxData = generateDailyConstantData(60);
     List<CartesianSeries> seriesList = [];
     print("qwefrtgvefbgrgve${widget.selectedValues}");
     print("wefgrgvqwernhtge${widget.selectedDate}");
@@ -401,73 +423,73 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
     print(widget.selectedValues.length);
     if (widget.selectedValues.length > 1) {
       if (widget.selectedValues.contains('O2(1)')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datao21,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
-          color: ui.Color.fromARGB(255, 188, 225, 255),
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.o2_1,
+          color: ui.Color.fromARGB(255, 0, 0, 0),
           name: 'O2(1)',
         ));
       }
       if (widget.selectedValues.contains('VAC')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datavac,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.vac,
           color: Colors.yellow,
           name: 'VAC',
         ));
       }
       if (widget.selectedValues.contains('CO2')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: dataco2,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.co2,
           color: ui.Color.fromARGB(255, 110, 113, 116),
           name: 'CO2',
         ));
       }
       if (widget.selectedValues.contains('O2(2)')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datao22,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
-          color: ui.Color.fromARGB(255, 132, 200, 255),
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.o2_2,
+          color: ui.Color.fromARGB(255, 0, 0, 0),
           name: 'O2(2)',
         ));
       }
       if (widget.selectedValues.contains('TEMP')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datatemp,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.temp,
           color: ui.Color.fromARGB(255, 255, 0, 0),
           name: 'TEMP',
         ));
       }
       if (widget.selectedValues.contains('HUMI')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datahumi,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.humidity,
           color: ui.Color.fromARGB(117, 93, 172, 240),
           name: 'HUMI',
         ));
       }
       if (widget.selectedValues.contains('N2O')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: datan2o,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.n2o,
           color: ui.Color.fromARGB(255, 0, 34, 255),
           name: 'N2O',
         ));
       }
       if (widget.selectedValues.contains('AIR')) {
-        seriesList.add(LineSeries<ChartData, DateTime>(
-          dataSource: dataair,
-          xValueMapper: (ChartData data, _) => data.time,
-          yValueMapper: (ChartData data, _) => data.value,
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.air,
           color: const ui.Color.fromARGB(255, 101, 101, 102),
           name: 'AIR',
         ));
@@ -475,27 +497,200 @@ class _DailyChartScreenState extends State<DailyChartGenearator> {
     }
     // Add min and max lines if only one value is selected
     if (widget.selectedValues.length == 1) {
-      seriesList.add(LineSeries<ChartData, DateTime>(
-        dataSource: minData,
-        xValueMapper: (ChartData data, _) => data.time,
-        yValueMapper: (ChartData data, _) => data.value,
-        color: Colors.yellow,
-        name: 'Min',
-      ));
-      seriesList.add(LineSeries<ChartData, DateTime>(
-        dataSource: data,
-        xValueMapper: (ChartData data, _) => data.time,
-        yValueMapper: (ChartData data, _) => data.value,
-        color: Colors.black,
-        name: 'Actual Value',
-      ));
-      seriesList.add(LineSeries<ChartData, DateTime>(
-        dataSource: maxData,
-        xValueMapper: (ChartData data, _) => data.time,
-        yValueMapper: (ChartData data, _) => data.value,
-        color: Colors.red,
-        name: 'Max',
-      ));
+      if (widget.selectedValues.contains('O2(1)')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.o2_1,
+          color: Colors.black,
+          name: 'O2(1)',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      } else if (widget.selectedValues.contains('O2(2)')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.o2_2,
+          color: Colors.black,
+          name: 'O2(2)',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('VAC')) {
+        maxData = generateDailyConstantData(300);
+        minData = generateDailyConstantData(100);
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.vac,
+          color: Colors.black,
+          name: 'VAC',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('AIR')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.air,
+          color: Colors.black,
+          name: 'AIR',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('N2O')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.n2o,
+          color: Colors.black,
+          name: 'N2O',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('HUMI')) {
+        maxData = generateDailyConstantData(70);
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.humidity,
+          color: Colors.black,
+          name: 'Humi',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('TEMP')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.temp,
+          color: Colors.black,
+          name: 'TEMP',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
+      if (widget.selectedValues.contains('CO2')) {
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: minData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.yellow,
+          name: 'Min',
+        ));
+
+        seriesList.add(LineSeries<DataPoint, DateTime>(
+          dataSource: datachart,
+          xValueMapper: (DataPoint data, _) => data.time,
+          yValueMapper: (DataPoint data, _) => data.co2,
+          color: Colors.black,
+          name: 'CO2',
+        ));
+        seriesList.add(LineSeries<ChartData, DateTime>(
+          dataSource: maxData,
+          xValueMapper: (ChartData data, _) => data.time,
+          yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.red,
+          name: 'Max',
+        ));
+      }
     }
 
     return Column(

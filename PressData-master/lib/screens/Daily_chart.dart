@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 

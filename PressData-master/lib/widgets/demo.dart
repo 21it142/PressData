@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math';
-
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:pressdata/data/Pressure1.dart';
+import 'package:pressdata/data/db.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/air.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/co2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/humi.dart';
@@ -14,6 +16,7 @@ import 'package:pressdata/screens/LimitSetting(Demo)/o2-2.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/temp.dart';
 import 'package:pressdata/screens/LimitSetting(Demo)/vac.dart';
 import 'package:pressdata/screens/report_screenDemo.dart';
+import 'package:pressdata/screens/setting.dart';
 // import 'package:pressdata/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -50,6 +53,7 @@ class DemoWid extends StatefulWidget {
 class _DemoWidState extends State<DemoWid> with RouteAware {
   final O21 _o21widget = const O21();
   late List<LiveData> chartData;
+  final db = PressDataDb();
   late ChartSeriesController _chartSeriesController0;
   late ChartSeriesController _chartSeriesController1;
   late ChartSeriesController _chartSeriesController2;
@@ -96,18 +100,63 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
       data.add(
         LiveData(
           i,
-          Random().nextInt(10) + 31,
-          Random().nextInt(10) + 211,
-          Random().nextInt(10) + 41,
-          Random().nextInt(10) + 51,
-          Random().nextInt(10) + 61,
-          Random().nextInt(10) + 71,
-          Random().nextInt(10) + 1,
-          Random().nextInt(10) + 21,
+          jsonData[i % jsonData.length]["O2(1)"], // Use O2(1) from jsonData
+          jsonDataVac[i % jsonDataVac.length]["Vac"],
+          jsonDataN2o[i % jsonDataN2o.length]["N2O"],
+          jsonDataAir[i % jsonDataAir.length]["AIR"],
+          jsonDataCo2[i % jsonDataCo2.length]["CO2"],
+          jsonDataO22[i % jsonDataO22.length]["O2(2)"],
+          jsonDataTemp[i % jsonDataTemp.length]["Temp"],
+          jsonDataHumi[i % jsonDataHumi.length]["Humi"],
         ),
       );
     }
     return data;
+  }
+
+  void storedata_database() async {
+    // int tempstore = int.parse(temp) ;
+    final entity = PressDataDemoTableCompanion(
+      temperature: drift.Value(parameters[0].value),
+      humidity: drift.Value(parameters[1].value),
+      o2: drift.Value(parameters[2].value),
+      vac: drift.Value(parameters[3].value),
+      n2o: drift.Value(parameters[4].value),
+      airPressure: drift.Value(parameters[5].value),
+      co2: drift.Value(parameters[6].value),
+      o22: drift.Value(parameters[7].value),
+      DeviceNo: const drift.Value("PDA06249999"),
+      LocationID: const drift.Value("OT-2 Wave"),
+      Temp_min: drift.Value(TEMP_minLimit!),
+      Temp_max: drift.Value(TEMP_maxLimit!),
+      Humi_min: drift.Value(HUMI_minLimit!),
+      Humi_max: drift.Value(HUMI_maxLimit!),
+      O2_1_min: drift.Value(O2_minLimit!),
+      O2_1_max: drift.Value(O2_maxLimit!),
+      o2_2_min: drift.Value(O2_2_minLimit!),
+      o2_2_max: drift.Value(O2_2_maxLimit!),
+      n2o_max: drift.Value(N2O_maxLimit!),
+      n2o_min: drift.Value(N2O_minLimit!),
+      vac_min: drift.Value(VAC_minLimit!),
+      vac_max: drift.Value(VAC_maxLimit!),
+      air_max: drift.Value(AIR_maxLimit!),
+      air_min: drift.Value(AIR_minLimit!),
+      co2_min: drift.Value(CO2_minLimit!),
+      co2_max: drift.Value(CO2_maxLimit!),
+      temp_error: drift.Value(temp_error),
+      humi_error: drift.Value(humi_error),
+      o2_1_error: drift.Value(o2_1_error),
+      o2_2_error: drift.Value(o2_2_error),
+      co2_error: drift.Value(co2_error),
+      vac_error: drift.Value(vac_error),
+      n2o_error: drift.Value(n2o_error),
+      air_error: drift.Value(air_error),
+      recordedAt: drift.Value(DateTime.now()),
+    );
+    //copy_database();
+    print("entity->>>>>>>>>>>>>>>>>>>>>$entity");
+    await db.getAllDemoPressData().toString();
+    await db.insertDemoPressData(entity);
   }
 
   void _startErrorCycle() {
@@ -244,6 +293,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
 
   void _storeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     setState(() {
       O2_maxLimit = prefs.getInt('O2_maxLimit') ?? 50;
       O2_minLimit = prefs.getInt('O2_minLimit') ?? 30;
@@ -262,27 +312,27 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
       HUMI_maxLimit = prefs.getInt('HUMI_maxLimit') ?? 70;
       HUMI_minLimit = prefs.getInt('HUMI_minLimit') ?? 15;
     });
-    // print("O2(1): $O2_minLimit");
-    // print("O2(1) value ${parameters[2].value}");
-    // if (parameters[2].value > O2_maxLimit!) {
-    //   print("helllooooooooooooooo");
-    //   errors.add("O2(1) is Above High Limit");
-    // }
-    // if (parameters[2].value < O2_minLimit!) {
-    //   print("helllooooooooooooooo");
-    //   errors.add("O2(1) is Below Low Limit");
-    // }
-    // print("Errors detected: ${errors.join(', ')}");
+    print("O2(1): $O2_minLimit");
+    print("O2(1) value ${parameters[2].value}");
+    if (parameters[0].value > TEMP_maxLimit!) {
+      print("helllooooooooooooooo");
+      errors.add("O2(1) is Above High Limit");
+    }
+    if (parameters[0].value < TEMP_minLimit!) {
+      print("helllooooooooooooooo");
+      errors.add("TEMP is Below Low Limit");
+    }
+    print("Errors detected: ${errors.join(', ')}");
 
-    // // Start error cycle if there are errors
-    // if (errors.isNotEmpty && (_errorTimer == null || !_errorTimer!.isActive)) {
-    //   _startErrorCycle();
-    // } else if (errors.isEmpty && _errorTimer != null && _errorTimer!.isActive) {
-    //   // Stop the timer if there are no errors
-    //   print("Stopping error cycle as there are no errors.");
-    //   _errorTimer!.cancel();
-    //   errorNotifier.value = "SYSTEM IS RUNNING OK";
-    // }
+    // Start error cycle if there are errors
+    if (errors.isNotEmpty && (_errorTimer == null || !_errorTimer!.isActive)) {
+      _startErrorCycle();
+    } else if (errors.isEmpty && _errorTimer != null && _errorTimer!.isActive) {
+      // Stop the timer if there are no errors
+      print("Stopping error cycle as there are no errors.");
+      _errorTimer!.cancel();
+      errorNotifier.value = "SYSTEM IS RUNNING OK";
+    }
   }
 
   void _navigateToDetailPage(int index) async {
@@ -333,9 +383,22 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
         context,
         MaterialPageRoute(builder: (context) => ReportScreen()),
       );
+    } else if (index == 9) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EditRegistrationScreen()),
+      );
     }
   }
 
+  int currentIndex = 0;
+  int temp_index = 0;
+  int humi_index = 0;
+  int vac_index = 0;
+  int n2o_index = 0;
+  int co2_index = 0;
+  int air_index = 0;
+  int o22_index = 0;
   late StreamController<void> _updateController;
   late StreamSubscription<void> _streamSubscription;
   Future<void> loadMuteState() async {
@@ -392,14 +455,27 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
       _updateController.add(null);
       date = DateFormat('dd-MM-yyyy  HH:mm').format(DateTime.now());
     });
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      storedata_database();
+    });
   }
 
   void _updateData() {
+    final o2Data = jsonData[currentIndex];
+    final tempData = jsonDataTemp[temp_index];
+    final humiData = jsonDataHumi[humi_index];
+    final vacData = jsonDataVac[vac_index];
+    final n2odata = jsonDataN2o[n2o_index];
+    final co2data = jsonDataCo2[co2_index];
+    final airdata = jsonDataAir[air_index];
+    final o22data = jsonDataO22[o22_index];
+
+    final newValue = o2Data["O2(1)"];
     setState(() {
       parameters = parameters.map((param) {
         if (param.name == "O2(1)") {
-          int newvalue = Random().nextInt(10) + 31;
-          if (newvalue > O2_maxLimit! || newvalue < O2_minLimit!) {
+          // int newvalue = Random().nextInt(10) + 31;
+          if (newValue > O2_maxLimit! || newValue < O2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
               //   SnackBar(
@@ -408,12 +484,12 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
               //   ),
               // );
             });
-            return ParameterData(param.name, Colors.red, newvalue);
+            return ParameterData(param.name, Colors.red, newValue);
           } else {
-            return ParameterData(param.name, Colors.white, newvalue);
+            return ParameterData(param.name, Colors.white, newValue);
           }
         } else if (param.name == "VAC") {
-          int newvalue = Random().nextInt(10) + 211;
+          int newvalue = vacData["Vac"];
           if (newvalue > VAC_maxLimit! || newvalue < VAC_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -428,7 +504,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
             return ParameterData(param.name, Colors.yellow, newvalue);
           }
         } else if (param.name == "N2O") {
-          int newvalue = Random().nextInt(10) + 41;
+          int newvalue = n2odata["N2O"];
           if (newvalue > N2O_maxLimit! || newvalue < N2O_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -443,7 +519,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                 param.name, const Color.fromARGB(255, 0, 34, 145), newvalue);
           }
         } else if (param.name == "AIR") {
-          int newvalue = Random().nextInt(10) + 51;
+          int newvalue = airdata["AIR"];
           if (newvalue > AIR_maxLimit! || newvalue < AIR_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -459,7 +535,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                 param.name, const Color.fromARGB(255, 198, 230, 255), newvalue);
           }
         } else if (param.name == "CO2") {
-          int newvalue = Random().nextInt(10) + 61;
+          int newvalue = co2data["CO2"];
           if (newvalue > CO2_maxLimit! || newvalue < CO2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -476,7 +552,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                 param.name, const Color.fromRGBO(62, 66, 70, 1), newvalue);
           }
         } else if (param.name == "O2(2)") {
-          int newvalue = Random().nextInt(10) + 71;
+          int newvalue = o22data["O2(2)"];
           if (newvalue > O2_2_maxLimit! || newvalue < O2_2_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -492,7 +568,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
             return ParameterData(param.name, Colors.white, newvalue);
           }
         } else if (param.name == "TEMP") {
-          int newvalue = Random().nextInt(10) + 1;
+          int newvalue = tempData["Temp"];
           if (newvalue > TEMP_maxLimit! || newvalue < TEMP_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -508,7 +584,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                 param.name, const Color.fromARGB(255, 195, 0, 0), newvalue);
           }
         } else {
-          int newvalue = Random().nextInt(10) + 21;
+          int newvalue = humiData["Humi"];
           if (newvalue > HUMI_maxLimit! || newvalue < HUMI_minLimit!) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // ScaffoldMessenger.of(context).showSnackBar(
@@ -523,6 +599,15 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
           }
         }
       }).toList();
+
+      currentIndex = (currentIndex + 1) % jsonData.length;
+      temp_index = (temp_index + 1) % jsonDataTemp.length;
+      humi_index = (humi_index + 1) % jsonDataHumi.length;
+      vac_index = (vac_index + 1) % jsonDataVac.length;
+      n2o_index = (n2o_index + 1) % jsonDataN2o.length;
+      co2_index = (co2_index + 1) % jsonDataCo2.length;
+      o22_index = (o22_index + 1) % jsonDataO22.length;
+      air_index = (air_index + 1) % jsonDataAir.length;
     });
   }
 
@@ -530,20 +615,23 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
   void _updateDataSource(Timer timer) {
     chartData.add(LiveData(
       time++,
-      Random().nextInt(10) + 31,
-      Random().nextInt(10) + 211,
-      Random().nextInt(10) + 41,
-      Random().nextInt(10) + 51,
-      Random().nextInt(10) + 61,
-      Random().nextInt(10) + 71,
-      Random().nextInt(10) + 1,
-      Random().nextInt(10) + 21,
+      jsonData[time % jsonData.length]["O2(1)"], // Use O2(1) from jsonData
+      jsonDataVac[time % jsonDataVac.length]["Vac"],
+      jsonDataN2o[time % jsonDataN2o.length]["N2O"],
+      jsonDataAir[time % jsonDataAir.length]["AIR"],
+      jsonDataCo2[time % jsonDataCo2.length]["CO2"],
+      jsonDataO22[time % jsonDataO22.length]["O2(2)"],
+      jsonDataTemp[time % jsonDataTemp.length]["Temp"],
+      jsonDataHumi[time % jsonDataHumi.length]["Humi"],
     ));
 
     // Remove the oldest data point
     chartData.removeAt(0);
 
-    // List of controllers
+    // Increment and loop timeIndex to cycle through jsonData
+    time++;
+
+    // Update all controllers in a loop
     final List<ChartSeriesController> controllers = [
       _chartSeriesController0,
       _chartSeriesController1,
@@ -555,7 +643,6 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
       _chartSeriesController7,
     ];
 
-    // Update all controllers in a loop
     for (var controller in controllers) {
       controller.updateDataSource(
         addedDataIndex: chartData.length - 1,
@@ -576,6 +663,16 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     String parammeterAir = parameters[5].value.toString();
     print("AIR maximum and AIR minimum: ${AIR_maxLimit}, ${AIR_minLimit}");
+    int timeIndex = 0;
+    var data = jsonData[currentIndex];
+    var temp_data = jsonDataTemp[temp_index];
+    var humi_data = jsonDataHumi[humi_index];
+    var vac_data = jsonDataVac[vac_index];
+    var n2o_data = jsonDataN2o[n2o_index];
+    var air_data = jsonDataAir[air_index];
+    var o22_data = jsonDataO22[o22_index];
+    var co2_data = jsonDataCo2[co2_index];
+    String air_StringData = air_data["AIR"].toString();
     return Scaffold(
       appBar: AppBar(
         leading: Row(
@@ -860,7 +957,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             width: 10,
                                           ),
                                           Text(
-                                            ' ${parameters[2].value}',
+                                            ' ${data["O2(1)"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[2],
                                               fontSize: 32,
@@ -910,7 +1007,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            ' ${parameters[4].value}',
+                                            ' ${n2o_data["N2O"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[4],
                                               fontSize: 32,
@@ -988,7 +1085,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             ),
                                             if (parameters[5].value < 10)
                                               Text(
-                                                '${parammeterAir}',
+                                                '${air_StringData}',
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -997,7 +1094,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                               ),
                                             if (parameters[5].value > 10)
                                               Text(
-                                                '${parammeterAir[0]}',
+                                                '${air_StringData[0]}',
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -1006,7 +1103,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                               ),
                                             if (parameters[5].value > 10)
                                               Text(
-                                                '${parammeterAir[1]}',
+                                                '${air_StringData[1]}',
                                                 style: TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 32,
@@ -1065,7 +1162,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            ' ${parameters[6].value}',
+                                            ' ${co2_data["CO2"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[6],
                                               fontSize: 32,
@@ -1122,7 +1219,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             width: 10,
                                           ),
                                           Text(
-                                            ' ${parameters[7].value}',
+                                            ' ${o22_data["O2(2)"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[7],
                                               fontSize: 32,
@@ -1172,7 +1269,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             MainAxisAlignment.spaceAround,
                                         children: [
                                           Text(
-                                            ' ${parameters[3].value}',
+                                            ' ${vac_data["Vac"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[3],
                                               fontSize: 32,
@@ -1228,7 +1325,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             width: 12,
                                           ),
                                           Text(
-                                            ' ${parameters[0].value}',
+                                            ' ${temp_data["Temp"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[0],
                                               fontSize: 31.5,
@@ -1278,7 +1375,7 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            ' ${parameters[1].value}',
+                                            ' ${humi_data["Humi"]}',
                                             style: TextStyle(
                                               color: parameterTextColor[1],
                                               fontSize: 32,
@@ -1407,6 +1504,44 @@ class _DemoWidState extends State<DemoWid> with RouteAware {
                         ),
                       ),
                       Spacer(flex: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 12.0),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              style: BorderStyle.solid,
+                              color: Colors.black87,
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(5), // Square corners
+                          ),
+                          minimumSize: Size(
+                              100, 25), // Set minimum size to maintain height
+                          backgroundColor:
+                              const Color.fromARGB(255, 192, 191, 191),
+                        ),
+                        onPressed: () async {
+                          _navigateToDetailPage(9);
+                        },
+                        child: Row(
+                          children: [
+                            const Text(
+                              'Edit Details',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 4,
+                                    color: Colors.grey,
+                                    offset: Offset(2, 1.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       SizedBox(width: 10),
                       if (_showButton ==
                           false) // Add spacing between the buttons

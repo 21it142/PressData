@@ -5,6 +5,8 @@ import 'package:pressdata/data/entity/press_data_entity.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:pressdata/data/entity_demo/device_values_demo.dart';
+import 'package:pressdata/data/entity_demo/pressData_Demo_entity.dart';
 import 'package:pressdata/models/distinct_data.dart';
 part 'db.g.dart';
 
@@ -18,12 +20,13 @@ LazyDatabase _openConnection() {
   });
 }
 
-@DriftDatabase(tables: [PressDataTable, ErrorTable])
+@DriftDatabase(
+    tables: [PressDataTable, ErrorTable, ErrordemoTable, PressDataDemoTable])
 class PressDataDb extends _$PressDataDb {
   PressDataDb() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) {
@@ -44,6 +47,17 @@ class PressDataDb extends _$PressDataDb {
     final end = _endOfDay(date);
 
     return (select(pressDataTable)
+          ..where((tbl) => tbl.recordedAt.isBetweenValues(start, end))
+          ..where((tbl) => tbl.DeviceNo.equals(serialNo)))
+        .get();
+  }
+
+  Future<List<PressDataDemoTableData>> getDataDemoForDay(
+      DateTime date, String serialNo) async {
+    final start = _startOfDay(date);
+    final end = _endOfDay(date);
+
+    return (select(pressDataDemoTable)
           ..where((tbl) => tbl.recordedAt.isBetweenValues(start, end))
           ..where((tbl) => tbl.DeviceNo.equals(serialNo)))
         .get();
@@ -263,9 +277,17 @@ class PressDataDb extends _$PressDataDb {
     return into(pressDataTable).insert(entity);
   }
 
+  Future<int> insertDemoPressData(PressDataDemoTableCompanion entity) {
+    return into(pressDataDemoTable).insert(entity);
+  }
+
   // Retrieve all data from the PressData table
   Future<List<PressDataTableData>> getAllPressData() {
     return select(pressDataTable).get();
+  }
+
+  Future<List<PressDataDemoTableData>> getAllDemoPressData() {
+    return select(pressDataDemoTable).get();
   }
 
   // Delete all data from the PressData table

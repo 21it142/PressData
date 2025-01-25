@@ -13,11 +13,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:jetpack/jetpack.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:pressdata/data/db.dart';
 //import 'package:pressdata/data/entity/press_data_entity.dart';
 
 import 'package:pressdata/models/model.dart';
 import 'package:pressdata/models/para1.dart';
+import 'package:pressdata/mqtt/mqtt.dart';
 import 'package:pressdata/screens/Limit%20Setting/AIR.dart';
 import 'package:pressdata/screens/Limit%20Setting/HUMI.dart';
 import 'package:pressdata/screens/Limit%20Setting/N2O.dart';
@@ -38,15 +40,21 @@ import 'package:tuple/tuple.dart';
 import '../screens/Limit Setting/CO2.dart';
 import '../screens/Limit Setting/VAC.dart';
 
-class LineCharWid extends StatefulWidget {
-  LineCharWid({
+class LineCharWid_mqtt extends StatefulWidget {
+  MqttService? mqqtservice;
+  // Stream<String>? messageStream;
+  // Stream<String>? messageStream_para1;
+  String? Login_state;
+  LineCharWid_mqtt({
     Key? key,
+    this.Login_state,
+    this.mqqtservice,
   }) : super(
           key: key,
         );
 
   @override
-  State<LineCharWid> createState() => _LineCharWidState();
+  State<LineCharWid_mqtt> createState() => _LineCharWid_mqttState();
 }
 
 class ChartData {
@@ -55,7 +63,7 @@ class ChartData {
   final double value;
 }
 
-class _LineCharWidState extends State<LineCharWid> with RouteAware {
+class _LineCharWid_mqttState extends State<LineCharWid_mqtt> with RouteAware {
   String serrialNo = "";
   String location = "";
   int time = 0;
@@ -1295,7 +1303,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       _isFirstBuild = false;
       errorNotifier.value = null;
       print("Hello this is in did change dependencies: ${errorNotifier.value}");
-      fetchMin_Max4();
+      //   fetchMin_Max4();
 
       // Obtain the RouteObserver from the widget tree
       final RouteObserver<PageRoute>? routeObserver = ModalRoute.of(context)
@@ -1308,9 +1316,9 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       // Not the first time the page is being built
       print("Inside did change dependencies");
       errorNotifier.value = null;
-      storedata_database();
+      // storedata_database();
       print("Hello this is in did change dependencies: ${errorNotifier.value}");
-      fetchMin_Max4();
+      //  fetchMin_Max4();
 
       // Obtain the RouteObserver from the widget tree
       final RouteObserver<PageRoute>? routeObserver = ModalRoute.of(context)
@@ -1329,19 +1337,121 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     super.didPopNext();
     // Call your methods here when coming back to this page
     //  errorNotifier.value = null;
-    fetchMin_Max4();
-    fetchMin_Max8();
+    // fetchMin_Max4();
+    //  fetchMin_Max8();
     errors.clear();
   }
 
   final AudioPlayer bgAudio = AudioPlayer();
-  @override
+  PressData? _currentData;
+//  Para1? _currentData_para1;
+
   void initState() {
     super.initState();
-    _initialData();   
+    _initialData();
+    if (widget.Login_state == "Internet Device") {
+      widget.mqqtservice!.messageStream.listen((message) {
+        // Parse the received JSON message
+        final Map<String, dynamic> jsonData = jsonDecode(message);
+
+        // Create PressData object from the JSON
+        PressData pressData = PressData.fromJson(jsonData);
+
+        print("Message received main page : ${pressData.temperature}");
+        // Update the chart widget
+        setState(() {
+          temp = int.parse(pressData.temperature);
+          print("Value of Temp :$temp");
+          _streamDatatemp.sink.add(temp);
+          streamtemp.add(temp.toDouble());
+        });
+
+        if (temp == -333) {
+          temp = 0;
+          temp_error = 'No Error';
+        } else if (temp < 3) {
+          temp_temp = temp;
+          temp_error = 'Not Available';
+
+          errors.add("TEMP is Not Available");
+        } else if (temp > TEMP_maxLimit) {
+          print("->>>>I am Inside TEmp");
+          // errorNotifier.value = null;
+          errors.add("Temp is Above High Setting");
+          print("heloooo i am inside this temp");
+          temp_error = 'HIGH';
+        } else if (temp < TEMP_minLimit) {
+          errors.add("Temp is Below Low Setting");
+          temp_error = 'LOW';
+        } else {
+          temp_error = 'NO Error';
+        }
+        //     humi = int.parse(_currentData!.humidity);
+        //     _streamDatahumi.sink.add(int.parse(_currentData!.humidity));
+        //     streamhumi.add(humi.toDouble());
+        //     if (humi == -333) {
+        //       humi = 0;
+        //       humi_error = 'No Error';
+        //     } else if (humi < 3) {
+        //       temp_humi = humi;
+
+        //       errors.add("HUMI is Not Available");
+        //       humi_error = 'Not Available';
+        //     } else if (humi > HUMI_maxLimit) {
+        //       temp_humi = humi;
+
+        //       print("->>>humi is above high setting");
+        //       // errorNotifier.value = null;
+        //       errors.add("HUMI is Above High Setting");
+        //       humi_error = 'HIGH';
+        //     } else if (humi < HUMI_minLimit) {
+        //       temp_humi = humi;
+        //       print("In error of humi min");
+
+        //       //  errorNotifier.value = null;
+        //       errors.add("HUMI is Below Low Setting");
+
+        //       humi_error = 'LOW';
+        //     } else {
+        //       if (HUMI_maxLimit - HUMI_minLimit == 1) {
+        //         counter_humi_min = 0;
+        //         counter_humi_max = 0;
+        //       }
+        //       if (humi <= HUMI_maxLimit - 2) {
+        //         counter_humi_max = 0;
+        //       }
+        //       if (HUMI_minLimit + 2 <= humi) {
+        //         counter_humi_min = 0;
+        //       }
+
+        //       counter_humi_not = 0;
+        //       humi_error = 'No Error';
+        //     }
+
+        //     o21 = int.parse(_currentData!.o2_1);
+        //     _streamDatao21.sink.add(int.parse(_currentData!.o2_1));
+        //     streamo21.add(o21.toDouble());
+        //     o22 = int.parse(_currentData!.o2_2);
+        //     _streamDatao22.sink.add(int.parse(_currentData!.o2_2));
+        //     streamo22.add(o22.toDouble());
+        //     n2o = int.parse(_currentData!.n2o);
+        //     _streamDatan2o.sink.add(int.parse(_currentData!.n2o));
+        //     streamn2o.add(n2o.toDouble());
+        //     co2 = int.parse(_currentData!.co2);
+        //     _streamDataco2.sink.add(int.parse(_currentData!.co2));
+        //     streamco2.add(co2.toDouble());
+        //     air = int.parse(_currentData!.air);
+        //     _streamDataair.sink.add(int.parse(_currentData!.air));
+        //     streamair.add(air.toDouble());
+        //     vac = int.parse(_currentData!.vacuum);
+        //     _streamDatavac.sink.add(int.parse(_currentData!.vacuum));
+        //     streamvac.add(vac.toDouble());
+      });
+    }
+
     loadMuteState();
-    fetchMin_Max4();
-    fetchMin_Max8();
+    // fetchMin_Max4();
+    //fetchMin_Max8();
     _storeData();
     _startTimer();
     Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -1350,7 +1460,7 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
 
     _message.clear();
     _timer = Timer.periodic(Duration(minutes: 1), (Timer timer) {
-      get1minData();
+      // get1minData();
     });
     _timer = Timer.periodic(Duration(seconds: 5), (Timer timer) {
       setState(() {
@@ -1364,8 +1474,8 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
       });
     });
     Timer.periodic(const Duration(seconds: 1), (timer) {
-      fetchMin_Max4();
-      fetchMin_Max8();
+      // fetchMin_Max4();
+      // fetchMin_Max8();
     });
     updatedata();
     Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -1377,13 +1487,15 @@ class _LineCharWidState extends State<LineCharWid> with RouteAware {
     });
     Timer.periodic(Duration(seconds: 1), (timer) {
       timeime++;
-      getdata();
+      // getdata();
       _updateString();
     });
 
     tempsub = streamtemp.stream.listen((data) {
+      print("temp data plotted : ${data}");
       setState(() {
         tempData.add(ChartData(timeime, data));
+        print("Print tempData:${tempData.length}");
         if (tempData.length > 60) tempData.removeAt(0);
       });
 

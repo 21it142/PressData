@@ -40,16 +40,17 @@ class PressData {
 
   factory PressData.fromJson(Map<String, dynamic> json) {
     return PressData(
-      temperature: json['Temperature'],
-      humidity: json['Humidity'],
-      o2_1: json['O2_1'],
-      o2_2: json['O2_2'],
-      n2o: json['N2O'],
-      vacuum: json['Vacuum'],
-      air: json['AIR'],
-      co2: json['CO2'],
-      serialNo: json['serialNo'],
-      locationName: json['locationName'],
+      temperature:
+          json['Temperature'] ?? 'N/A', // Provide a default value for null
+      humidity: json['Humidity'] ?? 'N/A',
+      o2_1: json['O2_1'] ?? 'N/A',
+      o2_2: json['O2_2'] ?? 'N/A',
+      n2o: json['N2O'] ?? 'N/A',
+      vacuum: json['Vacuum'] ?? 'N/A',
+      air: json['AIR'] ?? 'N/A',
+      co2: json['CO2'] ?? 'N/A',
+      serialNo: json['serialNo'] ?? 'N/A',
+      locationName: json['locationName'] ?? 'N/A',
     );
   }
 
